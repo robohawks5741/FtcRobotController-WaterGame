@@ -53,8 +53,8 @@ class BotShared(opMode: OpMode) {
 
     init {
         // IMU orientation/calibration
-        val logo = LogoFacingDirection.UP
-        val usb = UsbFacingDirection.LEFT
+        val logo = LogoFacingDirection.LEFT
+        val usb = UsbFacingDirection.BACKWARD
         val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
         imu.initialize(IMU.Parameters(orientationOnRobot))
         imu.resetYaw()

@@ -67,5 +67,5 @@ dependencies {
 //    implementation 'com.acmerobotics.roadrunner:actions:1.0.0-beta4'
 //    implementation "org.nanohttpd:nanohttpd:2.3.1"
 //    implementation "org.nanohttpd:nanohttpd-websocket:2.3.1"
-//    implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.0"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.0"
 }
