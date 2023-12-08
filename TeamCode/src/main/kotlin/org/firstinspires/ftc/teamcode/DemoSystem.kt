@@ -1,23 +1,28 @@
-import android.os.Build
+package org.firstinspires.ftc.teamcode
+
+//import kotlinx.serialization.json.Json
+//import kotlinx.serialization.json.JsonArray
+//import kotlinx.serialization.json.JsonNull
+import android.util.Base64
 import android.util.Log
-import org.firstinspires.ftc.teamcode.*
-import com.qualcomm.robotcore.eventloop.opmode.Disabled
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonNull
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.hardware.Gamepad
-import org.json.JSONArray
-import org.json.JSONStringer
+import org.firstinspires.ftc.teamcode.*
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
-import java.nio.file.Files
-import kotlin.math.floor
 import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
-import java.util.Base64
 
+@Suppress("unused")
 object DemoSystem {
 
     val PLAYBACK_OPMODE: KClass<*> = DriverControl::class
@@ -26,12 +31,12 @@ object DemoSystem {
     var frames1: ArrayList<ByteArray?> = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
     var frames2: ArrayList<ByteArray?> = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
 
-    fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
+    fun ByteArray.toBase64(): String = String(Base64.encode(this, Base64.DEFAULT or Base64.NO_WRAP))
 
     @Autonomous(name = "Play Recorded Demo", group = "DemoSystem")
     class DemoPlayback : OpMode() {
 
-        val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
+        private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
 //         var lastTickTime: Double = 0.0
 
         override fun init() {
@@ -41,20 +46,21 @@ object DemoSystem {
                 dir.mkdir()
             }
             val file = File(dir, "0.replay")
-            val reader = BufferedReader(file)
-            var jsonAllFrames = JSONArray(reader.lines().collect(Collectors.joining()))
+            val fileReader = FileReader(file)
+            val reader = BufferedReader(fileReader)
+            val lines = StringBuilder(file.length().toInt())
+            while (true) {
+                val line = reader.readLine()
+                if (line == null) break; else lines.append(line)
+            }
+            val gson = Gson()
+            val jsonAllFrames: Array<Array<String?>> = gson.fromJson(lines.toString(), Array<Array<String?>>::class.java)
 
             var totalSize = 0
-            var jsonFrames1 = jsonAllFrames.getJSONArray(0)
-            var jsonFrames2 = jsonAllFrames.getJSONArray(1)
-            val jf1l = jsonFrames1.toList()
-            for ((i, e) in jf1l.withIndex()) {
-                if (e is String) frames1[i] = Base64.getDecoder().decode(e); else null
-            }
-            val jf2l = jsonFrames2.toList()
-            for ((i, e) in jf2l.withIndex()) {
-                if (e is String) frames2[i] = Base64.getDecoder().decode(e); else null
-            }
+            val jsonFrames1 = jsonAllFrames[0]
+            val jsonFrames2 = jsonAllFrames[1]
+            for ((i, e) in jsonFrames1.withIndex()) frames1[i] = if (e is String) Base64.decode(e, Base64.DEFAULT or Base64.NO_WRAP) else null
+            for ((i, e) in jsonFrames2.withIndex()) frames2[i] = if (e is String) Base64.decode(e, Base64.DEFAULT or Base64.NO_WRAP) else null
 
             emulatedOpMode.gamepad1 = Gamepad()
             emulatedOpMode.gamepad2 = Gamepad()
@@ -91,7 +97,7 @@ object DemoSystem {
     @TeleOp(name = "Record Demo", group = "DemoSystem")
     class DemoRecorder : OpMode() {
 
-        val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
+        private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
 //         var lastTickTime: Double = 0.0
 
         override fun init() {
@@ -158,16 +164,17 @@ object DemoSystem {
                 dir.mkdir()
             }
             val file = File(dir, "0.replay")
-            var jsonAllFrames = JSONArray()
-            var jsonFrames1 = JSONArray()
-            var jsonFrames2 = JSONArray()
+            val jsonAllFrames = JsonArray()
+            val jsonFrames1 = JsonArray()
+            val jsonFrames2 = JsonArray()
             val writer = FileWriter(file)
             var totalSize = 0
-            for (e in frames1) if (e == null) jsonFrames1.put(JSONObject.NULL); else jsonFrames1.put(e.toBase64())
-            for (e in frames2) if (e == null) jsonFrames2.put(JSONObject.NULL); else jsonFrames2.put(e.toBase64())
-            jsonAllFrames.put(jsonFrames1)
-            jsonAllFrames.put(jsonFrames2)
-            jsonAllFrames.write(writer)
+            for (e in frames1) if (e == null) jsonFrames1.add(JsonNull.INSTANCE); else jsonFrames1.add(e.toBase64())
+            for (e in frames2) if (e == null) jsonFrames2.add(JsonNull.INSTANCE); else jsonFrames2.add(e.toBase64())
+            jsonAllFrames.add(jsonFrames1)
+            jsonAllFrames.add(jsonFrames2)
+            writer.write(jsonAllFrames.toString())
+            writer.close()
         }
     }
 }
