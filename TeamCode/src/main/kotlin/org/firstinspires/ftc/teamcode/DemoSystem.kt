@@ -1,6 +1,5 @@
 import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import org.firstinspires.ftc.teamcode.*
 import com.qualcomm.robotcore.eventloop.opmode.Disabled
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -13,11 +12,11 @@ import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
 import java.nio.file.Files
-import java.nio.file.attribute.FileAttribute
 import kotlin.math.floor
 import kotlin.math.ceil
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
+import java.util.Base64
 
 object DemoSystem {
 
@@ -27,11 +26,7 @@ object DemoSystem {
     var frames1: ArrayList<ByteArray?> = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
     var frames2: ArrayList<ByteArray?> = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
 
-    fun readFrames(anyOpMode: OpMode) {
-        val context = anyOpMode.hardwareMap.appContext
-         val file = File(context.filesDir, "0.replay")
-         val reader = FileReader(file)
-    }
+    fun ByteArray.toBase64(): String = String(Base64.getEncoder().encode(this))
 
     @Autonomous(name = "Play Recorded Demo", group = "DemoSystem")
     class DemoPlayback : OpMode() {
@@ -40,19 +35,26 @@ object DemoSystem {
 //         var lastTickTime: Double = 0.0
 
         override fun init() {
-//            if (frames1[0] == null) {
-//                val dir = File(hardwareMap.appContext.filesDir, "demoReplays")
-//                if (!dir.exists()) {
-//                    dir.mkdir()
-//                }
-//
-//                val file = File(dir, "0.replay")
-//                val reader = FileWriter(file)
-//                var totalSize = 0
-//                for (e in frames1) {
-//
-//                }
-//            }
+            val context = hardwareMap.appContext
+            val dir = File(context.filesDir, "demoReplays")
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+            val file = File(dir, "0.replay")
+            val reader = BufferedReader(file)
+            var jsonAllFrames = JSONArray(reader.lines().collect(Collectors.joining()))
+
+            var totalSize = 0
+            var jsonFrames1 = jsonAllFrames.getJSONArray(0)
+            var jsonFrames2 = jsonAllFrames.getJSONArray(1)
+            val jf1l = jsonFrames1.toList()
+            for ((i, e) in jf1l.withIndex()) {
+                if (e is String) frames1[i] = Base64.getDecoder().decode(e); else null
+            }
+            val jf2l = jsonFrames2.toList()
+            for ((i, e) in jf2l.withIndex()) {
+                if (e is String) frames2[i] = Base64.getDecoder().decode(e); else null
+            }
 
             emulatedOpMode.gamepad1 = Gamepad()
             emulatedOpMode.gamepad2 = Gamepad()
@@ -150,19 +152,22 @@ object DemoSystem {
             }
             Log.i("DEMOREPLAY", "No more frames.")
 
-//            val context = hardwareMap.appContext
-//            val dir = File(context.filesDir, "demoReplays")
-//            if (!dir.exists()) {
-//                dir.mkdir()
-//            }
-//            val file = File(dir, "0.replay")
-//            var jsonFrames = ArrayList<JSONArray>(frames1.size)
-//            val writer = FileWriter(file)
-//            var totalSize = 0
-//            for (e in frames1) {
-//                jsonFrames.add(JSONArray(e))
-//            }
-
+            val context = hardwareMap.appContext
+            val dir = File(context.filesDir, "demoReplays")
+            if (!dir.exists()) {
+                dir.mkdir()
+            }
+            val file = File(dir, "0.replay")
+            var jsonAllFrames = JSONArray()
+            var jsonFrames1 = JSONArray()
+            var jsonFrames2 = JSONArray()
+            val writer = FileWriter(file)
+            var totalSize = 0
+            for (e in frames1) if (e == null) jsonFrames1.put(JSONObject.NULL); else jsonFrames1.put(e.toBase64())
+            for (e in frames2) if (e == null) jsonFrames2.put(JSONObject.NULL); else jsonFrames2.put(e.toBase64())
+            jsonAllFrames.put(jsonFrames1)
+            jsonAllFrames.put(jsonFrames2)
+            jsonAllFrames.write(writer)
         }
     }
 }
