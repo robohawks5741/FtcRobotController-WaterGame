@@ -12,6 +12,14 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients
  */
 class LSD(opMode: OpMode, private val slide: DcMotorEx) : BotModule(opMode) {
 
+    companion object {
+        /**
+         * The maximum position of the slide, in encoder ticks.
+         */
+        const val SLIDE_HEIGHT_MAX = 1086
+        const val SLIDE_HEIGHT_MIN = 0
+    }
+
     private val coefficients = PIDFCoefficients(
         0.0,
         0.0,
@@ -19,19 +27,6 @@ class LSD(opMode: OpMode, private val slide: DcMotorEx) : BotModule(opMode) {
         0.0,
         MotorControlAlgorithm.PIDF
     )
-
-    // Enum for the position of the slide
-    enum class SlideHeight(val height: Double) {
-        UNKNOWN(0),
-        PRECISE(1),
-        BOTTOM(270),  // bottom, stop here
-        LOW(-1350),
-        MIDDLE(-2133),
-//        HIGH(-2133),
-        TOP(-2375);
-
-        constructor(stopPower: Int): this(stopPower.toDouble())
-    }
 
     init {
         slide.targetPosition = 0

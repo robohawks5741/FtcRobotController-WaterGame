@@ -60,10 +60,10 @@ class BotShared(opMode: OpMode) {
         imu.resetYaw()
 
         // Drive motor directions **(DO NOT CHANGE THESE!!!)**
-        motorLeftFront.     direction =         REVERSE
-        motorLeftBack.      direction =         REVERSE
-        motorRightFront.    direction =         FORWARD
-        motorRightBack.     direction =         FORWARD
+        motorRightFront.    direction =         REVERSE
+        motorLeftFront.     direction =         FORWARD
+        motorRightBack.     direction =         REVERSE
+        motorLeftBack.      direction =         FORWARD
         // Modes
         motorTruss?.        mode =              RUN_WITHOUT_ENCODER
         motorIntakeSpin?.   mode =              RUN_WITHOUT_ENCODER
