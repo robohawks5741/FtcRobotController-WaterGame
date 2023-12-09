@@ -27,6 +27,9 @@ object DemoSystem {
 
     val PLAYBACK_OPMODE: KClass<*> = DriverControl::class
     const val TICK_RATE: Double = 30.0
+    const val DEMO_DIRECTORY: String = "demos"
+    var outputFileName: String = "0.replay"
+    var inputFileName: String = "0.replay"
 
     var frames1: ArrayList<ByteArray?> = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
     var frames2: ArrayList<ByteArray?> = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
@@ -41,11 +44,11 @@ object DemoSystem {
 
         override fun init() {
             val context = hardwareMap.appContext
-            val dir = File(context.filesDir, "demoReplays")
+            val dir = File(context.filesDir, DEMO_DIRECTORY)
             if (!dir.exists()) {
                 dir.mkdir()
             }
-            val file = File(dir, "0.replay")
+            val file = File(dir, inputFileName)
             val fileReader = FileReader(file)
             val reader = BufferedReader(fileReader)
             val lines = StringBuilder(file.length().toInt())
@@ -61,6 +64,8 @@ object DemoSystem {
             val jsonFrames2 = jsonAllFrames[1]
             for ((i, e) in jsonFrames1.withIndex()) frames1[i] = if (e is String) Base64.decode(e, Base64.DEFAULT or Base64.NO_WRAP) else null
             for ((i, e) in jsonFrames2.withIndex()) frames2[i] = if (e is String) Base64.decode(e, Base64.DEFAULT or Base64.NO_WRAP) else null
+
+            println()
 
             emulatedOpMode.gamepad1 = Gamepad()
             emulatedOpMode.gamepad2 = Gamepad()
@@ -80,14 +85,14 @@ object DemoSystem {
             emulatedOpMode.time = this.time
 
             val index = floor(this.time * TICK_RATE).toInt()
-            
+
             if (index < frames1.size && frames1[index] != null) {
                 emulatedOpMode.gamepad1.fromByteArray(frames1[index])
                 emulatedOpMode.gamepad2.fromByteArray(frames2[index])
                 telemetry.addLine("frame #${index}")
-                Log.i("DEMOREPLAY", "playing frame #$index")
+                Log.i("DemoSystem", "playing frame #$index")
             } else {
-                Log.i("DEMOREPLAY", "skipping frame read #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
+                Log.i("DemoSystem", "skipping frame read #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
             }
 
             emulatedOpMode.loop()
@@ -101,7 +106,7 @@ object DemoSystem {
 //         var lastTickTime: Double = 0.0
 
         override fun init() {
-//            val dir = File(hardwareMap.appContext.filesDir, "demoReplays")
+//            val dir = File(hardwareMap.appContext.filesDir, "DemoSystems")
 //            if (!dir.exists()) {
 //                dir.mkdir()
 //            }
@@ -129,7 +134,7 @@ object DemoSystem {
             emulatedOpMode.gamepad1.copy(this.gamepad1)
             emulatedOpMode.gamepad2.copy(this.gamepad2)
             emulatedOpMode.start()
-            Log.i("DEMOREPLAY", "Started recording.")
+            Log.i("DemoSystem", "Started recording.")
         }
 
         override fun loop() {
@@ -138,32 +143,32 @@ object DemoSystem {
             emulatedOpMode.gamepad2.copy(this.gamepad2)
 
             val index = floor(this.time * TICK_RATE).toInt()
-            
+
             if (index < frames1.size && frames1[index] == null) {
                 frames1[index] = emulatedOpMode.gamepad1.toByteArray()
                 frames2[index] = emulatedOpMode.gamepad2.toByteArray()
-                Log.i("DEMOREPLAY", "recorded frame #$index")
+                Log.i("DemoSystem", "recorded frame #$index")
             } else {
-                Log.i("DEMOREPLAY", "skipping frame write #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
+                Log.i("DemoSystem", "skipping frame write #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
             }
 
             emulatedOpMode.loop()
         }
 
         override fun stop() {
-            Log.i("DEMOREPLAY", "Demo recorded, frames:")
+            Log.i("DemoSystem", "Demo recorded, frames:")
             for ((i, e) in frames1.withIndex()) {
                 if (e == null) continue
-                Log.i("DEMOREPLAY", "#$i: $e")
+                Log.i("DemoSystem", "#$i: $e")
             }
-            Log.i("DEMOREPLAY", "No more frames.")
+            Log.i("DemoSystem", "No more frames.")
 
             val context = hardwareMap.appContext
-            val dir = File(context.filesDir, "demoReplays")
+            val dir = File(context.filesDir, DEMO_DIRECTORY)
             if (!dir.exists()) {
                 dir.mkdir()
             }
-            val file = File(dir, "0.replay")
+            val file = File(dir, outputFileName)
             val jsonAllFrames = JsonArray()
             val jsonFrames1 = JsonArray()
             val jsonFrames2 = JsonArray()
@@ -175,6 +180,7 @@ object DemoSystem {
             jsonAllFrames.add(jsonFrames2)
             writer.write(jsonAllFrames.toString())
             writer.close()
+            Log.i("DemoSystem", "Wrote demo to ${file.absolutePath}")
         }
     }
 }

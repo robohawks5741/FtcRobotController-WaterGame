@@ -15,7 +15,6 @@ class Intake(opMode: OpMode, private val motorLift: DcMotorEx?, private val moto
         motorSpin?.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         motorSpin?.power = 0.0
         motorLift?.power = 0.2
-//        servoRight
     }
 
     // 0.0 is off, 1.0 is inwards, -1.0 is outwards

@@ -162,10 +162,10 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     private fun updateTrussHang() {
         // TODO: should this be locked until endgame?
         //       we could use (timer > xx.xx) or something
-        shared.motorTruss?.power =
-            if (gamepad2.right_bumper) -1.0     // pull it in
-            else if (gamepad2.left_bumper) 1.0  // let it loose
-            else 0.0
+//        shared.motorTruss?.power =
+//            if (gamepad2.right_bumper) -1.0     // pull it in
+//            else if (gamepad2.left_bumper) 1.0  // let it loose
+//            else 0.0
     }
 
     /**
@@ -246,7 +246,8 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      */
     private fun updateIntake() {
         val intake = shared.intake
-        val arm = shared.servoArm
+        val armLeft = shared.servoArmLeft
+//        val armRight = shared.servoArmRight
         val claw = shared.claw
 
         // Claw
@@ -264,19 +265,21 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         }
 
         // Arm
-        if (arm != null) {
-            val armPos = (arm.position + Servo.MAX_POSITION * /*deltaTime*/ 0.01 * -gamepad2.right_stick_y)
-            arm.position = armPos.clamp(Servo.MIN_POSITION, Servo.MAX_POSITION)
+        if (armLeft != null /* && armRight != null*/) {
+            val armPos = (armLeft.position + Servo.MAX_POSITION * /*deltaTime*/ 0.01 * -gamepad2.right_stick_y)
+            armLeft.position = armPos.clamp(Servo.MIN_POSITION, Servo.MAX_POSITION)
 
-            telemetry.addLine("Arm Position: ${arm.position}")
+            telemetry.addLine("Arm Position: ${armLeft.position}")
         } else {
             telemetry.addLine("WARNING: Safeguard triggered (arm not present)");
         }
 
         // spinner
+        if (intake == null) telemetry.addLine("WARNING: Safeguard triggered (intake not present)");
         intake?.active =
             if (gamepad1.dpad_down) 1.0     // inwards
             else if (gamepad1.dpad_up) -1.0 // outwards
             else 0.0                        // off
+        telemetry.addLine("Intake State: ${intake?.active}")
     }
 }

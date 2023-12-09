@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.botmodule
+package org.firstinspires.ftc.teamcode
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
@@ -15,7 +15,6 @@ class UnwindTruss : OpMode() {
 
     override fun start() {
         super.start()
-        shared.motorTruss?.power = gamepad1.right_trigger.toDouble() - gamepad1.right_trigger.toDouble()
     }
 
     override fun loop() {

@@ -5,6 +5,7 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
@@ -20,7 +21,7 @@ import org.firstinspires.ftc.teamcode.botmodule.March
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 
 // TODO: should this be a superclass? our codebase has grown so much, and we might want to reconsider
-/**
+    /**
  * Shared data.
  * Construct during the init phase. Contains HardwareMap definitions, as well as some other classes like the PixelPlacer and MecanumDrive.
  */
@@ -39,8 +40,10 @@ class BotShared(opMode: OpMode) {
     @JvmField val motorSlide:       DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "lsd"       ] }
     @JvmField val motorIntakeSpin:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "inspin"    ] }
     @JvmField val motorIntakeLift:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "inlift"    ] }
-    @JvmField val motorTruss:       DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "hang"      ] }
-    @JvmField val servoArm:         Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "arm"       ] }
+    @JvmField val servoTrussLeft:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussl"    ] }
+    @JvmField val servoTrussRight:  Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussr"    ] }
+    @JvmField val servoArmLeft:     Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armLeft"  ] }
+//    @JvmField val servoArmRight:         Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armRight"  ] }
     @JvmField val servoClawLeft:    Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "clawl"     ] }
     @JvmField val servoClawRight:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "clawr"     ] }
 
@@ -60,19 +63,17 @@ class BotShared(opMode: OpMode) {
         imu.resetYaw()
 
         // Drive motor directions **(DO NOT CHANGE THESE!!!)**
-        motorRightFront.    direction =         REVERSE
-        motorLeftFront.     direction =         FORWARD
-        motorRightBack.     direction =         REVERSE
-        motorLeftBack.      direction =         FORWARD
+        motorRightFront.    direction =         FORWARD
+        motorLeftFront.     direction =         REVERSE
+        motorRightBack.     direction =         FORWARD
+        motorLeftBack.      direction =         REVERSE
         // Modes
-        motorTruss?.        mode =              RUN_WITHOUT_ENCODER
         motorIntakeSpin?.   mode =              RUN_WITHOUT_ENCODER
         // Zero-power behavior
         motorLeftFront.     zeroPowerBehavior = BRAKE
         motorLeftBack.      zeroPowerBehavior = BRAKE
         motorRightFront.    zeroPowerBehavior = BRAKE
         motorRightBack.     zeroPowerBehavior = BRAKE
-        motorTruss?.        zeroPowerBehavior = BRAKE
         motorSlide?.        zeroPowerBehavior = BRAKE
     }
 
