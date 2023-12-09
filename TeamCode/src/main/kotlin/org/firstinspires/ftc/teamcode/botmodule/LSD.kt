@@ -20,13 +20,13 @@ class LSD(opMode: OpMode, private val slide: DcMotorEx) : BotModule(opMode) {
         const val SLIDE_HEIGHT_MIN = 0
     }
 
-    private val coefficients = PIDFCoefficients(
-        0.0,
-        0.0,
-        0.0,
-        0.0,
-        MotorControlAlgorithm.PIDF
-    )
+//    private val coefficients = PIDFCoefficients(
+//        0.0,
+//        0.0,
+//        0.0,
+//        0.0,
+//        MotorControlAlgorithm.PIDF
+//    )
 
     init {
         slide.targetPosition = 0
@@ -35,7 +35,7 @@ class LSD(opMode: OpMode, private val slide: DcMotorEx) : BotModule(opMode) {
         slide.power = 0.0
         slide.power = 1.0
 //        slide.targetPositionTolerance = 1
-        slide.setPIDFCoefficients(RUN_TO_POSITION, coefficients)
+//        slide.setPIDFCoefficients(RUN_TO_POSITION, coefficients)
     }
 
     private var targetHeight: Double = 0.0

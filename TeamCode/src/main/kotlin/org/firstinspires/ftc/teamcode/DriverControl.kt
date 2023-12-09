@@ -9,7 +9,10 @@ import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.clamp
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
+import com.qualcomm.robotcore.hardware.DcMotor
+import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
+import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
 import computer.living.gamepadyn.Configuration
@@ -20,6 +23,7 @@ import computer.living.gamepadyn.InputType.DIGITAL
 import computer.living.gamepadyn.RawInput
 import computer.living.gamepadyn.ftc.InputSystemFtc
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.CLAW
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.DEBUG_ACTION
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.MOVEMENT
@@ -27,6 +31,7 @@ import org.firstinspires.ftc.teamcode.DriverControlBase.Action.ROTATION
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.SPIN_INTAKE
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TOGGLE_DRIVER_RELATIVITY
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TOGGLE_INTAKE_HEIGHT
+import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TRUSS_HANG
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 import kotlin.math.PI
 import kotlin.math.abs
@@ -83,6 +88,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         CLAW,
         TOGGLE_DRIVER_RELATIVITY,
         TOGGLE_INTAKE_HEIGHT,
+        TRUSS_HANG,
         DEBUG_ACTION
     }
 
@@ -102,6 +108,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
             CLAW                        to GDesc(ANALOG, 1),
             TOGGLE_DRIVER_RELATIVITY    to GDesc(DIGITAL),
             TOGGLE_INTAKE_HEIGHT        to GDesc(DIGITAL),
+            TRUSS_HANG                  to GDesc(DIGITAL),
             DEBUG_ACTION                to GDesc(DIGITAL)
         )
 
@@ -109,10 +116,19 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         gamepadyn.players[0].configuration = Configuration(
             ActionBind(RawInput.FACE_X, TOGGLE_DRIVER_RELATIVITY),
             ActionBind(RawInput.FACE_A, TOGGLE_INTAKE_HEIGHT),
+            ActionBind(RawInput.FACE_Y, TRUSS_HANG),
         )
 
         // toggle driver-relative controls
         gamepadyn.players[0].getEventDigital(TOGGLE_DRIVER_RELATIVITY)!!.addListener { if (it.digitalData) useBotRelative = !useBotRelative }
+        gamepadyn.players[0].getEventDigital(TRUSS_HANG)!!.addListener {
+            if (it.digitalData) {
+                shared.servoTrussLeft?.position = 0.5
+                shared.servoTrussRight?.position = 0.5
+                shared.servoTrussLeft?.position = 0.0
+                shared.servoTrussRight?.position = 0.0
+            }
+        }
 
         val intake = shared.intake
         if (intake != null) {
@@ -121,10 +137,17 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         } else {
             telemetry.addLine("WARNING: Safeguard triggered (intake not present)");
         }
+
+        shared.motorSlide!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        shared.motorSlide!!.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
     }
 
     override fun start() {
         lastLoopTime = time
+        shared.motorSlide!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        shared.motorSlide!!.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        shared.motorSlide!!.targetPosition = 0
+        shared.motorSlide!!.mode = RUN_TO_POSITION
     }
 
     /**
@@ -143,11 +166,35 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         updateIntake()
         updateTrussHang()
 
+        shared.motorTrussPull?.power = 1.0 * ((if (gamepad1.b) 1.0 else 0.0) + (if (gamepad1.a) -1.0 else 0.0))
+//        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
+//        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
+        shared.motorSlide!!.targetPosition = (shared.motorSlide!!.targetPosition + (10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0)))).coerceAtLeast(0).coerceAtMost(1086)
+        shared.motorSlide!!.mode = RUN_TO_POSITION
+        shared.motorSlide!!.power = 1.0
+        telemetry.addLine("Slide target position: ${shared.motorSlide!!.targetPosition}")
+        telemetry.addLine("Slide current position: ${shared.motorSlide!!.currentPosition}")
+        telemetry.addLine("Slide mode: ${shared.motorSlide!!.mode}")
+        telemetry.addLine("Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}")
+        telemetry.addLine("Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}")
+        telemetry.addLine("Slide power: ${shared.motorSlide!!.power}")
+        telemetry.addLine("Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}")
+        telemetry.addLine("Slide velocity: ${shared.motorSlide!!.velocity}")
+        val sarml = shared.servoArmLeft
+        if (sarml != null) {
+            sarml.position = (sarml.position + (0.01 * ((if (gamepad1.right_bumper) 1.0 else 0.0) + (if (gamepad1.left_bumper) -1.0 else 0.0)))) % 1.0
+        }
+        if (gamepad1.y) {
+            shared.servoTrussLeft?.position = 1.0
+            shared.servoTrussRight?.position = 0.0
+        }
+
+
         // Most input values are [-1.0, 1.0]
 
         telemetry.addLine("Left Stick X: ${gamepad1.left_stick_x}")
         telemetry.addLine("Left Stick Y: ${gamepad1.left_stick_y}")
-        telemetry.addLine("Bot Relativity: ${if (useBotRelative) "EN" else "DIS"}ABLED")
+        telemetry.addLine("Using Driver Relativity: ${if (useBotRelative) "TRUE" else "FALSE"}")
         telemetry.addLine("Delta Time: $deltaTime")
         telemetry.update()
 
@@ -162,10 +209,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     private fun updateTrussHang() {
         // TODO: should this be locked until endgame?
         //       we could use (timer > xx.xx) or something
-//        shared.motorTruss?.power =
-//            if (gamepad2.right_bumper) -1.0     // pull it in
-//            else if (gamepad2.left_bumper) 1.0  // let it loose
-//            else 0.0
+
     }
 
     /**
@@ -229,16 +273,16 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Update the linear slide
      */
     private fun updateSlide() {
-        // TODO: replace with Linear Slide Driver
-        val slide = shared.motorSlide
-        //        val lsd = shared.lsd!!
-        if (slide != null) {
-            // lift/slide
-            slide.mode = RUN_WITHOUT_ENCODER
-            slide.power = if (abs(gamepad2.left_stick_y) > 0.1) -gamepad2.left_stick_y.toDouble() else 0.0
-        } else {
-            telemetry.addLine("WARNING: Safeguard triggered (slide not present)");
-        }
+//        // TODO: replace with Linear Slide Driver
+//        val slide = shared.motorSlide
+//        //        val lsd = shared.lsd!!
+//        if (slide != null) {
+//            // lift/slide
+//            slide.mode = RUN_WITHOUT_ENCODER
+//            slide.power = if (abs(gamepad2.left_stick_y) > 0.1) -gamepad2.left_stick_y.toDouble() else 0.0
+//        } else {
+//            telemetry.addLine("WARNING: Safeguard triggered (slide not present)");
+//        }
     }
 
     /**

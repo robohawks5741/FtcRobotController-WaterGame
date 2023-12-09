@@ -37,12 +37,14 @@ object DemoSystem {
     fun ByteArray.toBase64(): String = String(Base64.encode(this, Base64.DEFAULT or Base64.NO_WRAP))
 
     @Autonomous(name = "Play Recorded Demo", group = "DemoSystem")
-    class DemoPlayback : OpMode() {
+    open class DemoPlayback : OpMode() {
 
+        private var
+                timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
 //         var lastTickTime: Double = 0.0
 
-        override fun init() {
+        final override fun init() {
             val context = hardwareMap.appContext
             val dir = File(context.filesDir, DEMO_DIRECTORY)
             if (!dir.exists()) {
@@ -76,15 +78,16 @@ object DemoSystem {
             emulatedOpMode.init()
         }
 
-        override fun start() {
-            emulatedOpMode.time = this.time
+        final override fun start() {
+            this.timeOffset = this.time
+            emulatedOpMode.time = this.time - timeOffset
             emulatedOpMode.start()
         }
 
-        override fun loop() {
-            emulatedOpMode.time = this.time
+        final override fun loop() {
+            emulatedOpMode.time = this.time - timeOffset
 
-            val index = floor(this.time * TICK_RATE).toInt()
+            val index = floor((this.time - timeOffset) * TICK_RATE).toInt()
 
             if (index < frames1.size && frames1[index] != null) {
                 emulatedOpMode.gamepad1.fromByteArray(frames1[index])
@@ -102,6 +105,7 @@ object DemoSystem {
     @TeleOp(name = "Record Demo", group = "DemoSystem")
     class DemoRecorder : OpMode() {
 
+        private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
 //         var lastTickTime: Double = 0.0
 
@@ -130,7 +134,8 @@ object DemoSystem {
         }
 
         override fun start() {
-            emulatedOpMode.time = this.time
+            this.timeOffset = this.time
+            emulatedOpMode.time = this.time - timeOffset
             emulatedOpMode.gamepad1.copy(this.gamepad1)
             emulatedOpMode.gamepad2.copy(this.gamepad2)
             emulatedOpMode.start()
@@ -138,11 +143,11 @@ object DemoSystem {
         }
 
         override fun loop() {
-            emulatedOpMode.time = this.time
+            emulatedOpMode.time = this.time - timeOffset
             emulatedOpMode.gamepad1.copy(this.gamepad1)
             emulatedOpMode.gamepad2.copy(this.gamepad2)
 
-            val index = floor(this.time * TICK_RATE).toInt()
+            val index = floor((this.time - timeOffset) * TICK_RATE).toInt()
 
             if (index < frames1.size && frames1[index] == null) {
                 frames1[index] = emulatedOpMode.gamepad1.toByteArray()
