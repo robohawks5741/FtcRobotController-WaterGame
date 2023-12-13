@@ -39,8 +39,7 @@ object DemoSystem {
     @Autonomous(name = "Play Recorded Demo", group = "DemoSystem")
     open class DemoPlayback : OpMode() {
 
-        private var
-                timeOffset: Double = 0.0
+        private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
 //         var lastTickTime: Double = 0.0
 
