@@ -169,7 +169,25 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         updateTrussHang()
 
         shared.motorTrussPull?.power = 1.0 * ((if (gamepad1.b) 1.0 else 0.0) + (if (gamepad1.a) -1.0 else 0.0))
-
+////        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
+////        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
+//        shared.motorSlide!!.targetPosition = (shared.motorSlide!!.targetPosition + (10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0)))).coerceAtLeast(0).coerceAtMost(1086)
+//        shared.motorSlide!!.mode = RUN_TO_POSITION
+//        shared.motorSlide!!.power = 1.0
+//        telemetry.addLine(
+//            """
+//        |==================================================
+//        |Slide target position: ${shared.motorSlide!!.targetPosition}
+//        |Slide current position: ${shared.motorSlide!!.currentPosition}
+//        |Slide mode: ${shared.motorSlide!!.mode}
+//        |Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}"
+//        |Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}"
+//        |Slide power: ${shared.motorSlide!!.power}"
+//        |Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}"
+//        |Slide velocity: ${shared.motorSlide!!.velocity}
+//        |==================================================
+//        """.trimMargin()
+//        )
         val sarml = shared.servoArmLeft
         if (sarml != null) {
             sarml.position = (sarml.position + (0.01 * ((if (gamepad1.right_bumper) 1.0 else 0.0) + (if (gamepad1.left_bumper) -1.0 else 0.0)))) % 1.0
@@ -206,7 +224,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Update bot movement (drive motors)
      */
     private fun updateDrive() {
-        val drive = shared.drive!!
+//        val drive = shared.drive!!
 
         // counter-clockwise
         val gyroYaw = shared.imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)

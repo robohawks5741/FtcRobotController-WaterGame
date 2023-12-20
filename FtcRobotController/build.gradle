@@ -1,4 +1,4 @@
-import java.text.SimpleDateFormat
+//import java.text.SimpleDateFormat
 
 //
 // build.gradle in FtcRobotController
@@ -25,6 +25,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace = 'com.qualcomm.ftcrobotcontroller'
+    buildFeatures {
+        buildConfig true
+    }
 }
 
 apply from: '../build.dependencies.gradle'
+
+dependencies {
+    implementation "androidx.preference:preference:1.2.1"
+}

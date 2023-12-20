@@ -1,8 +1,51 @@
 package org.firstinspires.ftc.teamcode
 
-//import kotlinx.serialization.json.Json
-//import kotlinx.serialization.json.JsonArray
-//import kotlinx.serialization.json.JsonNull
+/**
+ * RoboHawks 5741 Demo System v1
+ * Used to create an autonomous OpMode in around 2 hours.
+ * It's a bit clunky, but we used it to "reprogram" our autonomous on the fly.
+ * You can record TeleOp gameplay, then play it back as autonomous.
+ * REQUIREMENTS:
+ * - A project with Kotlin support (root buildscript dependency `org.jetbrains.kotlin:kotlin-gradle-plugin` and plugin `org.jetbrains.kotlin.android`)
+ * - Kotlin's reflection library (org.jetbrains.kotlin:kotlin-reflect)
+ * - A TeleOp OpMode written in Kotlin (you can convert Java to Kotlin in Android Studio/IntelliJ IDEA)
+ */
+
+/*
+ * The Clear BSD License
+ *
+ * Copyright (c) 2023 RoboHawks 5741
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted (subject to the limitations in the disclaimer
+ * below) provided that the following conditions are met:
+ *
+ *      * Redistributions of source code must retain the above copyright notice,
+ *      this list of conditions and the following disclaimer.
+ *
+ *      * Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ *      * Neither the name of the copyright holder nor the names of its
+ *      contributors may be used to endorse or promote products derived from this
+ *      software without specific prior written permission.
+ *
+ * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+ * THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND
+ * CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
+
 import android.util.Base64
 import android.util.Log
 import com.google.gson.Gson
@@ -25,6 +68,7 @@ import kotlin.reflect.full.createInstance
 @Suppress("unused")
 object DemoSystem {
 
+    /** Replace this with your own Driver Control. It must be a Kotlin class. */
     val PLAYBACK_OPMODE: KClass<*> = DriverControl::class
     const val TICK_RATE: Double = 30.0
     const val DEMO_DIRECTORY: String = "demos"
@@ -41,7 +85,6 @@ object DemoSystem {
 
         private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
-//         var lastTickTime: Double = 0.0
 
         final override fun init() {
             val context = hardwareMap.appContext
@@ -106,15 +149,8 @@ object DemoSystem {
 
         private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
-//         var lastTickTime: Double = 0.0
 
         override fun init() {
-//            val dir = File(hardwareMap.appContext.filesDir, "DemoSystems")
-//            if (!dir.exists()) {
-//                dir.mkdir()
-//            }
-
-            // TODO: only overwrite if we can load from memory
             frames1 = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
             frames2 = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
 

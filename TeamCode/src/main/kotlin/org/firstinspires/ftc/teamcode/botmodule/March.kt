@@ -34,7 +34,7 @@ class March<T : CameraName>(opMode: OpMode, private val camera: T) : BotModule(o
     /**
      * The variable to store our instance of the vision portal.
      */
-    private lateinit var visionPortal: VisionPortal
+    private var visionPortal: VisionPortal
 
     val detections: ArrayList<AprilTagDetection>
         get() = aprilTag.detections;
