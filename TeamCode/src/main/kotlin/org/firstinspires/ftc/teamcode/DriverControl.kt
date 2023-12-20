@@ -21,7 +21,7 @@ import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.InputType.ANALOG
 import computer.living.gamepadyn.InputType.DIGITAL
 import computer.living.gamepadyn.RawInput
-import computer.living.gamepadyn.ftc.InputSystemFtc
+import computer.living.gamepadyn.ftc.InputBackendFtc
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.CLAW
@@ -107,7 +107,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
 //        val setter = DriverControl::tagCamera.setter
         shared = BotShared(this)
         shared.drive = MecanumDrive(hardwareMap, initialPose)
-        gamepadyn = Gamepadyn(InputSystemFtc(this), true,
+        gamepadyn = Gamepadyn(InputBackendFtc(this), true,
             MOVEMENT                    to GDesc(ANALOG, 2),
             ROTATION                    to GDesc(ANALOG, 1),
             SPIN_INTAKE                 to GDesc(ANALOG, 1),
@@ -144,16 +144,12 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
             telemetry.addLine("WARNING: Safeguard triggered (intake not present)");
         }
 
-        shared.motorSlide!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        shared.motorSlide!!.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+        shared.motorSlideLeft!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+        shared.motorSlideRight!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
     }
 
     override fun start() {
         lastLoopTime = time
-        shared.motorSlide!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        shared.motorSlide!!.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        shared.motorSlide!!.targetPosition = 0
-        shared.motorSlide!!.mode = RUN_TO_POSITION
     }
 
     /**
@@ -173,19 +169,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         updateTrussHang()
 
         shared.motorTrussPull?.power = 1.0 * ((if (gamepad1.b) 1.0 else 0.0) + (if (gamepad1.a) -1.0 else 0.0))
-//        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
-//        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
-        shared.motorSlide!!.targetPosition = (shared.motorSlide!!.targetPosition + (10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0)))).coerceAtLeast(0).coerceAtMost(1086)
-        shared.motorSlide!!.mode = RUN_TO_POSITION
-        shared.motorSlide!!.power = 1.0
-        telemetry.addLine("Slide target position: ${shared.motorSlide!!.targetPosition}")
-        telemetry.addLine("Slide current position: ${shared.motorSlide!!.currentPosition}")
-        telemetry.addLine("Slide mode: ${shared.motorSlide!!.mode}")
-        telemetry.addLine("Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}")
-        telemetry.addLine("Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}")
-        telemetry.addLine("Slide power: ${shared.motorSlide!!.power}")
-        telemetry.addLine("Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}")
-        telemetry.addLine("Slide velocity: ${shared.motorSlide!!.velocity}")
+
         val sarml = shared.servoArmLeft
         if (sarml != null) {
             sarml.position = (sarml.position + (0.01 * ((if (gamepad1.right_bumper) 1.0 else 0.0) + (if (gamepad1.left_bumper) -1.0 else 0.0)))) % 1.0
@@ -279,6 +263,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Update the linear slide
      */
     private fun updateSlide() {
+        val lsd = shared.lsd!!
 //        // TODO: replace with Linear Slide Driver
 //        val slide = shared.motorSlide
 //        //        val lsd = shared.lsd!!
@@ -289,6 +274,17 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
 //        } else {
 //            telemetry.addLine("WARNING: Safeguard triggered (slide not present)");
 //        }
+//        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
+//        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
+        lsd.targetHeight += 10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0))
+//        telemetry.addLine("Slide target position: ${shared.motorSlide!!.targetPosition}")
+//        telemetry.addLine("Slide current position: ${shared.motorSlide!!.currentPosition}")
+//        telemetry.addLine("Slide mode: ${shared.motorSlide!!.mode}")
+//        telemetry.addLine("Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}")
+//        telemetry.addLine("Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}")
+//        telemetry.addLine("Slide power: ${shared.motorSlide!!.power}")
+//        telemetry.addLine("Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}")
+//        telemetry.addLine("Slide velocity: ${shared.motorSlide!!.velocity}")
     }
 
     /**
