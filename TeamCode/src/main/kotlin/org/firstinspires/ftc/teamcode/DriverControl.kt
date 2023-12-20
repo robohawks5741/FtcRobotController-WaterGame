@@ -59,9 +59,15 @@ import kotlin.math.sqrt
  *  - Left Bumper: Extend truss pulley
  *  - A (face down): Toggle intake height
  */
-@TeleOp(name = "Standalone Driver Control", group = "Tele Sub-Mode")
+
+/*
+ * TODO:
+ *      - Store the orientation at the end of autonomous and reload it for DC
+ */
+
+@TeleOp(name = "# Driver Control (Standalone)", group = "# Sub-Mode")
 class StandaloneDriverControl : DriverControlBase(Pose2d(0.0, 0.0, 0.0))
-@TeleOp(name = "# Driver Control", group = "Tele Sub-Mode")
+@TeleOp(name = "# Driver Control", group = "# Sub-Mode")
 class DriverControl : DriverControlBase(BotShared.storedPose)
 
 open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
