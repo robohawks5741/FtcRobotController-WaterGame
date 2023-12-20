@@ -172,14 +172,20 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         shared.motorSlide!!.targetPosition = (shared.motorSlide!!.targetPosition + (10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0)))).coerceAtLeast(0).coerceAtMost(1086)
         shared.motorSlide!!.mode = RUN_TO_POSITION
         shared.motorSlide!!.power = 1.0
-        telemetry.addLine("Slide target position: ${shared.motorSlide!!.targetPosition}")
-        telemetry.addLine("Slide current position: ${shared.motorSlide!!.currentPosition}")
-        telemetry.addLine("Slide mode: ${shared.motorSlide!!.mode}")
-        telemetry.addLine("Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}")
-        telemetry.addLine("Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}")
-        telemetry.addLine("Slide power: ${shared.motorSlide!!.power}")
-        telemetry.addLine("Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}")
-        telemetry.addLine("Slide velocity: ${shared.motorSlide!!.velocity}")
+        telemetry.addLine(
+            """
+        |==================================================
+        |Slide target position: ${shared.motorSlide!!.targetPosition}
+        |Slide current position: ${shared.motorSlide!!.currentPosition}
+        |Slide mode: ${shared.motorSlide!!.mode}
+        |Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}"
+        |Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}"
+        |Slide power: ${shared.motorSlide!!.power}"
+        |Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}"
+        |Slide velocity: ${shared.motorSlide!!.velocity}
+        |==================================================
+        """.trimMargin()
+        )
         val sarml = shared.servoArmLeft
         if (sarml != null) {
             sarml.position = (sarml.position + (0.01 * ((if (gamepad1.right_bumper) 1.0 else 0.0) + (if (gamepad1.left_bumper) -1.0 else 0.0)))) % 1.0
@@ -216,7 +222,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Update bot movement (drive motors)
      */
     private fun updateDrive() {
-        val drive = shared.drive!!
+//        val drive = shared.drive!!
 
         // counter-clockwise
         val gyroYaw = shared.imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
