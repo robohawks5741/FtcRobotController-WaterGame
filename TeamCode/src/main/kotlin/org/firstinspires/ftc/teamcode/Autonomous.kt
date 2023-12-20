@@ -40,7 +40,7 @@ open class AutoSuper(
     private lateinit var shared: BotShared
 
     override fun init() {
-        shared = BotShared(this)
+        shared = BotShared(this, false, null)
 //        shared.drive = MecanumDrive(hardwareMap, initialPose)
     }
 

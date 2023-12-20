@@ -31,6 +31,7 @@ import org.firstinspires.ftc.teamcode.Action.*
  *  - Right Bumper: Retract truss pulley
  *  - Left Bumper: Extend truss pulley
  *  - A (face down): Toggle intake height
+ *  - Y (face up): Truss hang activate
  */
 
 /*
@@ -79,30 +80,11 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
             ActionBind(FACE_A,          TOGGLE_INTAKE_HEIGHT),
             ActionBind(FACE_Y,          TRUSS_HANG),
         )
-
-        gamepadyn.players[0].getEventDigital(TRUSS_HANG)!!.addListener {
-            if (it.digitalData) {
-                shared.servoTrussLeft?.position = 0.5
-                shared.servoTrussRight?.position = 0.5
-                shared.servoTrussLeft?.position = 0.0
-                shared.servoTrussRight?.position = 0.0
-            }
-        }
-
-        val intake = shared.intake
-        if (intake != null) {
-            // toggle intake height
-            gamepadyn.players[0].getEventDigital(TOGGLE_INTAKE_HEIGHT)!!.addListener { if (intake.raised) intake.lower() else intake.raise() }
-        } else {
-            telemetry.addLine("WARNING: Safeguard triggered (intake not present)");
-        }
-
-        shared.motorSlideLeft!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        shared.motorSlideRight!!.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
     }
 
     override fun start() {
         lastLoopTime = time
+        shared.start()
     }
 
     /**
@@ -116,38 +98,11 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         /**
          * Run the various update functions
          */
-        updateDrive()
-        updateSlide()
         updateIntake()
-        updateTrussHang()
 
-        shared.motorTrussPull?.power = 1.0 * ((if (gamepad1.b) 1.0 else 0.0) + (if (gamepad1.a) -1.0 else 0.0))
-////        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
-////        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
-//        shared.motorSlide!!.targetPosition = (shared.motorSlide!!.targetPosition + (10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0)))).coerceAtLeast(0).coerceAtMost(1086)
-//        shared.motorSlide!!.mode = RUN_TO_POSITION
-//        shared.motorSlide!!.power = 1.0
-//        telemetry.addLine(
-//            """
-//        |==================================================
-//        |Slide target position: ${shared.motorSlide!!.targetPosition}
-//        |Slide current position: ${shared.motorSlide!!.currentPosition}
-//        |Slide mode: ${shared.motorSlide!!.mode}
-//        |Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}"
-//        |Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}"
-//        |Slide power: ${shared.motorSlide!!.power}"
-//        |Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}"
-//        |Slide velocity: ${shared.motorSlide!!.velocity}
-//        |==================================================
-//        """.trimMargin()
-//        )
         val sarml = shared.servoArmLeft
         if (sarml != null) {
             sarml.position = (sarml.position + (0.01 * ((if (gamepad1.right_bumper) 1.0 else 0.0) + (if (gamepad1.left_bumper) -1.0 else 0.0)))) % 1.0
-        }
-        if (gamepad1.y) {
-            shared.servoTrussLeft?.position = 1.0
-            shared.servoTrussRight?.position = 0.0
         }
 
 
@@ -155,56 +110,12 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
 
         telemetry.addLine("Left Stick X: ${gamepad1.left_stick_x}")
         telemetry.addLine("Left Stick Y: ${gamepad1.left_stick_y}")
-        telemetry.addLine("Using Driver Relativity: ${if (useBotRelative) "TRUE" else "FALSE"}")
         telemetry.addLine("Delta Time: $deltaTime")
         telemetry.update()
 
         gamepadyn.update()
 
         shared.update()
-    }
-
-    /**
-     * Handle controls for the truss pulley
-     */
-    private fun updateTrussHang() {
-        // TODO: should this be locked until endgame?
-        //       we could use (timer > xx.xx) or something
-
-    }
-
-    /**
-     * Update bot movement (drive motors)
-     */
-    private fun updateDrive() {
-    }
-
-    /**
-     * Update the linear slide
-     */
-    private fun updateSlide() {
-        val lsd = shared.lsd!!
-//        // TODO: replace with Linear Slide Driver
-//        val slide = shared.motorSlide
-//        //        val lsd = shared.lsd!!
-//        if (slide != null) {
-//            // lift/slide
-//            slide.mode = RUN_WITHOUT_ENCODER
-//            slide.power = if (abs(gamepad2.left_stick_y) > 0.1) -gamepad2.left_stick_y.toDouble() else 0.0
-//        } else {
-//            telemetry.addLine("WARNING: Safeguard triggered (slide not present)");
-//        }
-//        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
-//        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
-        lsd.targetHeight += 10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0))
-//        telemetry.addLine("Slide target position: ${shared.motorSlide!!.targetPosition}")
-//        telemetry.addLine("Slide current position: ${shared.motorSlide!!.currentPosition}")
-//        telemetry.addLine("Slide mode: ${shared.motorSlide!!.mode}")
-//        telemetry.addLine("Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}")
-//        telemetry.addLine("Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}")
-//        telemetry.addLine("Slide power: ${shared.motorSlide!!.power}")
-//        telemetry.addLine("Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}")
-//        telemetry.addLine("Slide velocity: ${shared.motorSlide!!.velocity}")
     }
 
     /**

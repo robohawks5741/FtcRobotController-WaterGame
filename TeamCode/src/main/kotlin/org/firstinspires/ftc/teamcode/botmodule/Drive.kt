@@ -96,6 +96,7 @@ class Drive(
 
         opMode.telemetry.addLine("Gyro Yaw: " + imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES))
         opMode.telemetry.addLine("Input Yaw: " + if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0)
+        opMode.telemetry.addLine("Using Driver Relativity: ${if (useBotRelative) "TRUE" else "FALSE"}")
 //        telemetry.addLine("Yaw Difference (bot - input): " + )
     }
 }

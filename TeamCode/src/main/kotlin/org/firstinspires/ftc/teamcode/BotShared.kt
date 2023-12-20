@@ -68,13 +68,15 @@ class BotShared(opMode: OpMode, isTeleOp: Boolean, gamepadyn: Gamepadyn<Action>?
     @JvmField val modules: Set<BotModule?> = setOf(march, lsd, claw, intake)
     @JvmField var rr: MecanumDrive? = null
 
+    /**
+     * Should be called once on start.
+     */
     fun start() {
         for (module in modules) module?.modStart()
     }
 
     /**
      * Should be called every update.
-     * Place any reusable update functions here (i.e. for MecanumDrive)
      */
     fun update() {
 //        drive?.updatePoseEstimate()
