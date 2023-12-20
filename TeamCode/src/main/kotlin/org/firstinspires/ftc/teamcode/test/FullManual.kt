@@ -16,10 +16,10 @@ class FullManual : OpMode() {
 
     override fun loop() {
 
-        val fl = shared.motorLeftFront
-        val fr = shared.motorRightFront
-        val bl = shared.motorLeftBack
-        val br = shared.motorRightBack
+        val fl = shared.motorFrontLeft
+        val fr = shared.motorFrontRight
+        val bl = shared.motorBackLeft
+        val br = shared.motorBackRight
 
         val powers = object {
             var fl = gamepad1.left_stick_x.toDouble()

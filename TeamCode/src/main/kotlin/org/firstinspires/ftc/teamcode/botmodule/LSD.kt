@@ -3,11 +3,13 @@ package org.firstinspires.ftc.teamcode.botmodule
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.Action
 
 /**
  * Linear Slide Driver
  */
-class LSD(opMode: OpMode, private val slideLeft: DcMotorEx, private val slideRight: DcMotorEx) : BotModule(opMode) {
+class LSD(private val slideLeft: DcMotorEx, private val slideRight: DcMotorEx, opMode: OpMode, isTeleOp: Boolean, gamepadyn: Gamepadyn<Action>?) : BotModule(opMode, isTeleOp, gamepadyn) {
 
     companion object {
         /**

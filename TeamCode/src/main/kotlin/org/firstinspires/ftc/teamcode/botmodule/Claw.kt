@@ -1,9 +1,17 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.Servo
+import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.Action
 
-class Claw(opMode: OpMode, private val servoLeft: Servo, private val servoRight: Servo) : BotModule(opMode) {
+class Claw(
+    private val servoLeft: Servo,
+    private val servoRight: Servo,
+    opMode: OpMode, isTeleOp: Boolean, gamepadyn: Gamepadyn<Action>?
+) : BotModule(opMode, isTeleOp, gamepadyn) {
+
     init {
         servoLeft.direction = Servo.Direction.FORWARD
         servoRight.direction = Servo.Direction.FORWARD

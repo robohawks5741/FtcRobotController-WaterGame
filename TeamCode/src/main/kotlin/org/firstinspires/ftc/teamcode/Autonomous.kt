@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 import java.lang.Thread.sleep
 
 @Autonomous(name = "# Auto (Blue Left)", group = "# Sub-Mode")
@@ -42,7 +41,7 @@ open class AutoSuper(
 
     override fun init() {
         shared = BotShared(this)
-        shared.drive = MecanumDrive(hardwareMap, initialPose)
+//        shared.drive = MecanumDrive(hardwareMap, initialPose)
     }
 
     var targetDetection: AprilTagDetection? = null
@@ -85,10 +84,10 @@ open class AutoSuper(
 
             val wheelVels = MecanumKinematics(1.0).inverse<Time>(PoseVelocity2dDual.constant(pv, 1));
 
-            shared.motorLeftFront.power = wheelVels.leftFront[0]
-            shared.motorLeftBack.power = wheelVels.leftBack[0]
-            shared.motorRightBack.power = wheelVels.rightBack[0]
-            shared.motorRightFront.power = wheelVels.rightFront[0]
+            shared.motorFrontLeft.power = wheelVels.leftFront[0]
+            shared.motorBackLeft.power = wheelVels.leftBack[0]
+            shared.motorBackRight.power = wheelVels.rightBack[0]
+            shared.motorFrontRight.power = wheelVels.rightFront[0]
         }
     }
 
@@ -98,7 +97,7 @@ open class AutoSuper(
         // - Do other stuff (we're working on it!)
 
         // alias using JVM references
-        var drive = shared.drive!!
+//        var drive = shared.drive!!
         val march = shared.march!!
 
         while (march.detections.isEmpty()) try {
@@ -178,7 +177,7 @@ open class AutoSuper(
     }
 
     override fun stop() {
-        BotShared.storedPose = shared.drive?.pose!!
+//        BotShared.storedPose = shared.drive?.pose!!
     }
 
 }

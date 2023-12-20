@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.botmodule
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.Action
 
 /**
  * Intake controls
  */
 @Suppress("unused")
-class Intake(opMode: OpMode, private val motorLift: DcMotorEx?, private val motorSpin: DcMotorEx?) : BotModule(opMode) {
+class Intake(private val motorLift: DcMotorEx?, private val motorSpin: DcMotorEx?, opMode: OpMode, isTeleOp: Boolean, gamepadyn: Gamepadyn<Action>?) : BotModule(opMode, isTeleOp, gamepadyn) {
     init {
         motorLift?.targetPosition = 0
         motorLift?.mode = DcMotor.RunMode.RUN_TO_POSITION

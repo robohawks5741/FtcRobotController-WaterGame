@@ -1,44 +1,17 @@
 package org.firstinspires.ftc.teamcode
 
-import com.acmerobotics.roadrunner.MecanumKinematics
 import com.acmerobotics.roadrunner.Pose2d
-import com.acmerobotics.roadrunner.PoseVelocity2d
-import com.acmerobotics.roadrunner.PoseVelocity2dDual
-import com.acmerobotics.roadrunner.Time
-import com.acmerobotics.roadrunner.Vector2d
-import com.acmerobotics.roadrunner.clamp
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
-import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
 import computer.living.gamepadyn.Configuration
-import computer.living.gamepadyn.GDesc
 import computer.living.gamepadyn.Gamepadyn
-import computer.living.gamepadyn.InputType.ANALOG
-import computer.living.gamepadyn.InputType.DIGITAL
 import computer.living.gamepadyn.RawInput
+import computer.living.gamepadyn.RawInput.*
 import computer.living.gamepadyn.ftc.InputBackendFtc
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.CLAW
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.DEBUG_ACTION
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.MOVEMENT
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.ROTATION
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.SPIN_INTAKE
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TOGGLE_DRIVER_RELATIVITY
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TOGGLE_INTAKE_HEIGHT
-import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TRUSS_HANG
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
+import org.firstinspires.ftc.teamcode.Action.*
 
 /**
  * CURRENT CONTROLS:
@@ -84,19 +57,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     // these variables can be deleted when Gamepadyn is finished (state transitions cause headaches)
     /** true for lowered, false for raised */
     private var lastIntakeStatus = false
-    private var useBotRelative = true
     private var isIntakeLiftRaised = true
-
-    enum class Action {
-        MOVEMENT,
-        ROTATION,
-        SPIN_INTAKE,
-        CLAW,
-        TOGGLE_DRIVER_RELATIVITY,
-        TOGGLE_INTAKE_HEIGHT,
-        TRUSS_HANG,
-        DEBUG_ACTION
-    }
 
     private lateinit var gamepadyn: Gamepadyn<Action>
 
@@ -105,28 +66,20 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      */
     override fun init() {
 //        val setter = DriverControl::tagCamera.setter
-        shared = BotShared(this)
-        shared.drive = MecanumDrive(hardwareMap, initialPose)
-        gamepadyn = Gamepadyn(InputBackendFtc(this), true,
-            MOVEMENT                    to GDesc(ANALOG, 2),
-            ROTATION                    to GDesc(ANALOG, 1),
-            SPIN_INTAKE                 to GDesc(ANALOG, 1),
-            CLAW                        to GDesc(ANALOG, 1),
-            TOGGLE_DRIVER_RELATIVITY    to GDesc(DIGITAL),
-            TOGGLE_INTAKE_HEIGHT        to GDesc(DIGITAL),
-            TRUSS_HANG                  to GDesc(DIGITAL),
-            DEBUG_ACTION                to GDesc(DIGITAL)
-        )
+//        shared.drive = MecanumDrive(hardwareMap, initialPose)
+        gamepadyn = Gamepadyn(InputBackendFtc(this), true, Action.actionMap)
+        shared = BotShared(this, true, gamepadyn)
 
         // Configuration
         gamepadyn.players[0].configuration = Configuration(
-            ActionBind(RawInput.FACE_X, TOGGLE_DRIVER_RELATIVITY),
-            ActionBind(RawInput.FACE_A, TOGGLE_INTAKE_HEIGHT),
-            ActionBind(RawInput.FACE_Y, TRUSS_HANG),
+            ActionBind(STICK_LEFT,      MOVEMENT),
+            // TODO: Replace with BindSingleAxis
+            ActionBind(STICK_RIGHT,     ROTATION),
+            ActionBind(FACE_X,          TOGGLE_DRIVER_RELATIVITY),
+            ActionBind(FACE_A,          TOGGLE_INTAKE_HEIGHT),
+            ActionBind(FACE_Y,          TRUSS_HANG),
         )
 
-        // toggle driver-relative controls
-        gamepadyn.players[0].getEventDigital(TOGGLE_DRIVER_RELATIVITY)!!.addListener { if (it.digitalData) useBotRelative = !useBotRelative }
         gamepadyn.players[0].getEventDigital(TRUSS_HANG)!!.addListener {
             if (it.digitalData) {
                 shared.servoTrussLeft?.position = 0.5
@@ -224,57 +177,6 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Update bot movement (drive motors)
      */
     private fun updateDrive() {
-//        val drive = shared.drive!!
-
-        // counter-clockwise
-        val gyroYaw = shared.imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
-
-        // +X = forward
-        // +Y = left
-        val inputVector = Vector2d(
-            // up
-            -gamepad1.left_stick_y.toDouble(),
-            -gamepad1.left_stick_x.toDouble(),
-        )
-
-        // angle of the stick
-        val inputTheta = atan2(inputVector.y, inputVector.x)
-        // evaluated theta
-        val driveTheta = inputTheta - gyroYaw // + PI
-        // magnitude of inputVector clamped to [0, 1]
-        val inputPower = clamp(sqrt(
-            (inputVector.x * inputVector.x) +
-                    (inputVector.y * inputVector.y)
-        ), 0.0, 1.0)
-
-        val driveRelativeX = cos(driveTheta) * inputPower
-        val driveRelativeY = sin(driveTheta) * inputPower
-
-        // \frac{1}{1+\sqrt{2\left(1-\frac{\operatorname{abs}\left(\operatorname{mod}\left(a,90\right)-45\right)}{45}\right)\ }}
-//        val powerModifier = 1.0 / (1.0 + sqrt(2.0 * (1.0 - abs((gyroYaw % (PI / 2)) - (PI / 4)) / (PI / 4))))
-
-        val powerModifier = 1.0
-        val pv = PoseVelocity2d(
-            if (useBotRelative) Vector2d(
-                driveRelativeX,
-                driveRelativeY
-            ) else inputVector,
-            -gamepad1.right_stick_x.toDouble()
-        )
-        // +X = forward, +Y = left
-//        drive.setDrivePowers(pv)
-        val wheelVels = MecanumKinematics(1.0).inverse<Time>(PoseVelocity2dDual.constant(pv, 1));
-
-        shared.motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
-        shared.motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
-        shared.motorRightBack.power = wheelVels.rightBack[0] / powerModifier
-        shared.motorRightFront.power = wheelVels.rightFront[0] / powerModifier
-
-//        Actions.run
-
-        telemetry.addLine("Gyro Yaw: " + shared.imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES))
-        telemetry.addLine("Input Yaw: " + if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0)
-//        telemetry.addLine("Yaw Difference (bot - input): " + )
     }
 
     /**

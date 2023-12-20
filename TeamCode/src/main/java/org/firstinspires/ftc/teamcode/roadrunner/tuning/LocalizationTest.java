@@ -5,12 +5,16 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.BotShared;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 public class LocalizationTest extends LinearOpMode {
+    public BotShared shared;
+
     @Override
     public void runOpMode() throws InterruptedException {
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        shared = new BotShared(this, false, null);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0), shared.motorFrontLeft, shared.motorBackLeft, shared.motorFrontRight, shared.motorBackRight);
 
         waitForStart();
 

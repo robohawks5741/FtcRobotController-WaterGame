@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.Action
 
 abstract class BotModule(
     protected val opMode: OpMode,
+    protected val isTeleOp: Boolean,
+    protected val gamepadyn: Gamepadyn<Action>? = null
 ) {
-    abstract fun modInit()
-    abstract fun modStart()
-    abstract fun modUpdate()
-    open fun <T: Enum<T>> bindTeleOp(gamepadyn: Gamepadyn<T>) {}
+    open fun modStart() {}
+    open fun modUpdate() {}
 }
