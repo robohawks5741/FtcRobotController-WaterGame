@@ -5,7 +5,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
@@ -28,8 +27,9 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
  * Construct during the init phase. Contains HardwareMap definitions, as well as some other classes like the PixelPlacer and MecanumDrive.
  */
 @Suppress("MemberVisibilityCanBePrivate", "RedundantSuppression")
-class BotShared(val opMode: OpMode) {
-    // TODO: i wish the hardware would stop changing so that I could keep the code the same for 5 minutes
+class BotShared(opMode: OpMode) {
+    // NOTE: i wish the hardware would stop changing so that I could keep the code stable for 5 minutes
+    //       i also wish the bot existed
 
     // Get stuff from the hardware map (HardwareMap.get() can be HardwareMap[] in kt)
     val hardwareMap = opMode.hardwareMap!!
@@ -39,7 +39,8 @@ class BotShared(val opMode: OpMode) {
     @JvmField val motorLeftBack:    DcMotorEx   =           hardwareMap[DcMotorEx    ::class.java,   "bl"        ]
     @JvmField val motorRightBack:   DcMotorEx   =           hardwareMap[DcMotorEx    ::class.java,   "br"        ]
     @JvmField val camera:           WebcamName? =   idc {   hardwareMap[WebcamName   ::class.java,   "Webcam 1"  ] }
-    @JvmField val motorSlide:       DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftLeft"  ] }
+    @JvmField val motorSlideLeft:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftLeft"  ] }
+    @JvmField val motorSlideRight:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftRight" ] }
     @JvmField val motorIntakeSpin:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "inspin"    ] }
     @JvmField val motorIntakeLift:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "inlift"    ] }
     @JvmField val motorTrussPull:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "hang"      ] }
@@ -51,10 +52,10 @@ class BotShared(val opMode: OpMode) {
     @JvmField val servoClawRight:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "clawr"     ] }
 
     @JvmField val march               = camera?.    let {   March(opMode, it)   }
-    @JvmField val lsd                 = motorSlide?.let {   LSD(opMode, it)     }
-    @JvmField val claw                = if (servoClawLeft   != null && servoClawRight != null)  Claw(opMode, servoClawLeft, servoClawRight      )   else null
-    @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin )   else null
-    @JvmField var drive: Drive?       = Drive(this)
+    @JvmField val lsd                 = if (motorSlideLeft  != null && motorSlideRight != null) LSD(opMode, motorSlideLeft, motorSlideRight    )   else null
+    @JvmField val claw                = if (servoClawLeft   != null && servoClawRight  != null) Claw(opMode, servoClawLeft, servoClawRight     )   else null
+    @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin)   else null
+//    @JvmField var drive               = Drive(this)
 
     @JvmField var rr: MecanumDrive? = null
 
@@ -67,7 +68,9 @@ class BotShared(val opMode: OpMode) {
         imu.resetYaw()
 
         // Directions
-        motorIntakeSpin?.    direction =         REVERSE
+        motorIntakeSpin?.   direction =         REVERSE
+        motorSlideLeft?.    direction =         REVERSE
+        motorSlideRight?.   direction =         REVERSE
         // Modes
         motorTrussPull?.    mode =              RUN_WITHOUT_ENCODER
         motorIntakeSpin?.   mode =              RUN_WITHOUT_ENCODER
@@ -76,7 +79,8 @@ class BotShared(val opMode: OpMode) {
         motorLeftBack.      zeroPowerBehavior = BRAKE
         motorRightFront.    zeroPowerBehavior = BRAKE
         motorRightBack.     zeroPowerBehavior = BRAKE
-        motorSlide?.        zeroPowerBehavior = BRAKE
+        motorSlideLeft?.    zeroPowerBehavior = BRAKE
+        motorSlideRight?.   zeroPowerBehavior = BRAKE
     }
 
     /**

@@ -1,16 +1,13 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
 import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.MotorControlAlgorithm
-import com.qualcomm.robotcore.hardware.PIDFCoefficients
 
 /**
  * Linear Slide Driver
  */
-class LSD(opMode: OpMode, private val slide: DcMotorEx) : BotModule(opMode) {
+class LSD(opMode: OpMode, private val slideLeft: DcMotorEx, private val slideRight: DcMotorEx) : BotModule(opMode) {
 
     companion object {
         /**
@@ -25,38 +22,48 @@ class LSD(opMode: OpMode, private val slide: DcMotorEx) : BotModule(opMode) {
 //        0.0,
 //        0.0,
 //        0.0,
-//        MotorControlAlgorithm.PIDF
+//        PIDF
 //    )
 
     init {
-        slide.targetPosition = 0
-        slide.mode = RUN_TO_POSITION
-        slide.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        slide.power = 0.0
-        slide.power = 1.0
+        slideLeft.targetPosition = 0
+        slideRight.targetPosition = 0
+        slideLeft.mode = RUN_TO_POSITION
+        slideRight.mode = RUN_TO_POSITION
+    }
+
+    init {
+//        slideLeft.targetPosition = 0
+//        slideLeft.mode = RUN_TO_POSITION
+//        slideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+//        slideLeft.power = 0.0
+//        slideLeft.power = 1.0
+
 //        slide.targetPositionTolerance = 1
 //        slide.setPIDFCoefficients(RUN_TO_POSITION, coefficients)
     }
 
-    private var targetHeight: Double = 0.0
-    // some constant, test later
-    private val maxPosition: Int = 1
-
     @Suppress("MemberVisibilityCanBePrivate")
-    var useManual: Boolean = true
+    private var useManual: Boolean = true
 
-    fun setHeight(pos: Double): Unit {
-        useManual = true
-        TODO()
-//        targetHeight = pos
-    }
+    var targetHeight: Int = 0
+        set(height) {
+            useManual = true
 
-    fun addHeight(offset: Double): Unit {
-        TODO()
-    }
-
-    fun setRow(row: Int): Unit {
-        useManual = false
-        TODO("automatically set the slide to be aligned with a row (0 to 10, -1 for retracted)")
-    }
+            val desiredPower = if (height < field) 0.5 else 1.0
+            slideLeft.power = desiredPower
+            slideRight.power = desiredPower
+            slideLeft.targetPosition = height.coerceIn(SLIDE_HEIGHT_MIN..SLIDE_HEIGHT_MAX)
+            slideRight.targetPosition = height.coerceIn(SLIDE_HEIGHT_MIN..SLIDE_HEIGHT_MAX)
+            field = height
+        }
+//
+//    fun addHeight(offset: Double): Unit {
+////        TODO()
+//    }
+//
+//    fun setRow(row: Int): Unit {
+//        useManual = false
+//        TODO("automatically set the slide to be aligned with a row (0 to 10, -1 for retracted)")
+//    }
 }
