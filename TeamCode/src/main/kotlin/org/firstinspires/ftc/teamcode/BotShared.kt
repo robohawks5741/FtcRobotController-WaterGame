@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.botmodule.Claw
+import org.firstinspires.ftc.teamcode.botmodule.Drive
 import org.firstinspires.ftc.teamcode.botmodule.Intake
 import org.firstinspires.ftc.teamcode.botmodule.LSD
 import org.firstinspires.ftc.teamcode.botmodule.March
@@ -27,7 +28,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
  * Construct during the init phase. Contains HardwareMap definitions, as well as some other classes like the PixelPlacer and MecanumDrive.
  */
 @Suppress("MemberVisibilityCanBePrivate", "RedundantSuppression")
-class BotShared(opMode: OpMode) {
+class BotShared(val opMode: OpMode) {
     // TODO: i wish the hardware would stop changing so that I could keep the code the same for 5 minutes
 
     // Get stuff from the hardware map (HardwareMap.get() can be HardwareMap[] in kt)
@@ -53,8 +54,9 @@ class BotShared(opMode: OpMode) {
     @JvmField val lsd                 = motorSlide?.let {   LSD(opMode, it)     }
     @JvmField val claw                = if (servoClawLeft   != null && servoClawRight != null)  Claw(opMode, servoClawLeft, servoClawRight      )   else null
     @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin )   else null
+    @JvmField var drive: Drive?       = Drive(this)
 
-    @JvmField var drive: MecanumDrive? = null
+    @JvmField var rr: MecanumDrive? = null
 
     init {
         // IMU orientation/calibration
@@ -63,12 +65,6 @@ class BotShared(opMode: OpMode) {
         val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
         imu.initialize(IMU.Parameters(orientationOnRobot))
         imu.resetYaw()
-
-        // Drive motor directions **(DO NOT CHANGE THESE!!!)**
-        motorRightFront.    direction =         FORWARD
-        motorLeftFront.     direction =         REVERSE
-        motorRightBack.     direction =         FORWARD
-        motorLeftBack.      direction =         REVERSE
 
         // Directions
         motorIntakeSpin?.    direction =         REVERSE
@@ -88,7 +84,7 @@ class BotShared(opMode: OpMode) {
      * Place any reusable update functions here (i.e. for MecanumDrive)
      */
     fun update() {
-        drive?.updatePoseEstimate()
+//        drive?.updatePoseEstimate()
     }
 
     companion object {

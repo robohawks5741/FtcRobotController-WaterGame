@@ -2,12 +2,9 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Servo
+import computer.living.gamepadyn.Gamepadyn
 
 class Claw(opMode: OpMode, private val servoLeft: Servo, private val servoRight: Servo) : BotModule(opMode) {
-    init {
-        servoLeft.direction = Servo.Direction.FORWARD
-        servoRight.direction = Servo.Direction.FORWARD
-    }
 
     private var position: Double = 0.0
 
@@ -35,4 +32,14 @@ class Claw(opMode: OpMode, private val servoLeft: Servo, private val servoRight:
             servoLeft.position = interpLeftPos
             servoRight.position = interpRightPos
         }
+
+    override fun modInit() {
+        servoLeft.direction = Servo.Direction.FORWARD
+        servoRight.direction = Servo.Direction.FORWARD
+    }
+
+//    override fun <T : Enum<T>> bindTeleOp(gamepadyn: Gamepadyn<T>) {
+//        super.bindTeleOp(gamepadyn)
+//    }
+
 }
