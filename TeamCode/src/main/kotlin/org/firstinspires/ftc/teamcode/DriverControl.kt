@@ -9,8 +9,6 @@ import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.clamp
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
-import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
 import computer.living.gamepadyn.Configuration
 import computer.living.gamepadyn.GDesc
@@ -27,7 +25,6 @@ import org.firstinspires.ftc.teamcode.DriverControlBase.Action.ROTATION
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.SPIN_INTAKE
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TOGGLE_DRIVER_RELATIVITY
 import org.firstinspires.ftc.teamcode.DriverControlBase.Action.TOGGLE_INTAKE_HEIGHT
-import org.firstinspires.ftc.teamcode.botmodule.Intake
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 import kotlin.math.PI
 import kotlin.math.abs
@@ -225,42 +222,42 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Update the linear slide
      */
     private fun updateOuttake() {
-        val outtake = shared.outtake
+        val outtake = shared.lsd
 
-        //Close Claws
-        if (gamepad1.y || gamepad2.left_bumper){
+        // Close Claws
+        if (gamepad1.y || gamepad2.left_bumper) {
             outtake?.closeClaws()
         }
 
-        //Place Left Pixel
-        if (gamepad1.x){
+        // Place Left Pixel
+        if (gamepad1.x) {
             outtake?.openLeftClaw()
         }
-        //Place Right Pixel
-        if (gamepad1.b){
+        // Place Right Pixel
+        if (gamepad1.b) {
             outtake?.openRightClaw()
         }
-        //Place Both and go down
-        if (gamepad1.a ||gamepad2.right_bumper){
+        // Place Both and go down
+        if (gamepad1.a || gamepad2.right_bumper) {
             outtake?.place()
         }
-        //Increase Count by 1
-        if (gamepad1.dpad_up || gamepad2.dpad_up){
+        // Increase Count by 1
+        if (gamepad1.dpad_up || gamepad2.dpad_up) {
             outtake?.increaseRow()
         }
 
-        //Decrease Count by 1
-        if (gamepad1.dpad_down|| gamepad2.dpad_down){
+        // Decrease Count by 1
+        if (gamepad1.dpad_down || gamepad2.dpad_down) {
             outtake?.decreaseRow()
         }
 
-        //Reset Count
-        if (gamepad1.dpad_right||gamepad2.dpad_left){
+        // Reset Count
+        if (gamepad1.dpad_right || gamepad2.dpad_left) {
             outtake?.resetRow()
         }
 
-        //Execute Count
-        if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger> 0.1){
+        // Execute Count
+        if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger > 0.1) {
             outtake?.runToRow()
         }
     }
