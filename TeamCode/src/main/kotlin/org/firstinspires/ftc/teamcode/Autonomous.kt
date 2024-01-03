@@ -42,7 +42,7 @@ open class AutoSuper(
 
     override fun init() {
         shared = BotShared(this)
-        shared.drive = MecanumDrive(hardwareMap, initialPose)
+        shared.rr = MecanumDrive(hardwareMap, initialPose)
     }
 
     var targetDetection: AprilTagDetection? = null
@@ -98,7 +98,7 @@ open class AutoSuper(
         // - Do other stuff (we're working on it!)
 
         // alias using JVM references
-        var drive = shared.drive!!
+        var drive = shared.rr!!
         val march = shared.march!!
 
         while (march.detections.isEmpty()) try {

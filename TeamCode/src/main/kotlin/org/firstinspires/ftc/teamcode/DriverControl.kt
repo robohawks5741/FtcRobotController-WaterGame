@@ -187,21 +187,6 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         shared.update()
     }
 
-    /**
-     * Handle controls for the truss pulley
-     */
-    private fun updateTrussHang() {
-        // TODO: should this be locked until endgame?
-        //       we could use (timer > xx.xx) or something
-
-    }
-
-    /**
-     * Update bot movement (drive motors)
-     */
-    private fun updateDrive() {
-        shared.drive
-    }
 
     /**
      * Update the linear slide

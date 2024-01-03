@@ -22,7 +22,7 @@ import org.firstinspires.ftc.teamcode.botmodule.March
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 
 // TODO: should this be a superclass? our codebase has grown so much, and we might want to reconsider
-    /**
+/**
  * Shared data.
  * Construct during the init phase. Contains HardwareMap definitions, as well as some other classes like the PixelPlacer and MecanumDrive.
  */
@@ -33,28 +33,14 @@ class BotShared(opMode: OpMode) {
 
     // Get stuff from the hardware map (HardwareMap.get() can be HardwareMap[] in kt)
     val hardwareMap = opMode.hardwareMap!!
-    @JvmField val imu:              IMU         =           hardwareMap[IMU          ::class.java,   "imu"       ]
-    @JvmField val motorLeftFront:   DcMotorEx   =           hardwareMap[DcMotorEx    ::class.java,   "fl"        ]
-    @JvmField val motorRightFront:  DcMotorEx   =           hardwareMap[DcMotorEx    ::class.java,   "fr"        ]
-    @JvmField val motorLeftBack:    DcMotorEx   =           hardwareMap[DcMotorEx    ::class.java,   "bl"        ]
-    @JvmField val motorRightBack:   DcMotorEx   =           hardwareMap[DcMotorEx    ::class.java,   "br"        ]
-    @JvmField val camera:           WebcamName? =   idc {   hardwareMap[WebcamName   ::class.java,   "Webcam 1"  ] }
-    @JvmField val motorSlideLeft:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftLeft"  ] }
-    @JvmField val motorSlideRight:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftRight" ] }
-    @JvmField val motorIntakeSpin:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "inspin"    ] }
-    @JvmField val motorIntakeLift:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "inlift"    ] }
-    @JvmField val motorTrussPull:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "hang"      ] }
-    @JvmField val servoTrussLeft:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussl"    ] }
-    @JvmField val servoTrussRight:  Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussr"    ] }
-    @JvmField val servoArmLeft:     Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armLeft"   ] }
-//    @JvmField val servoArmRight:         Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armRight"  ] }
-    @JvmField val servoClawLeft:    Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "clawl"     ] }
-    @JvmField val servoClawRight:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "clawr"     ] }
 
-    @JvmField val march               = camera?.    let {   March(opMode, it)   }
-    @JvmField val lsd                 = if (motorSlideLeft  != null && motorSlideRight != null) LSD(opMode, motorSlideLeft, motorSlideRight    )   else null
-    @JvmField val claw                = if (servoClawLeft   != null && servoClawRight  != null) Claw(opMode, servoClawLeft, servoClawRight     )   else null
-    @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin)   else null
+    @JvmField val imu:              IMU         =           hardwareMap[IMU          ::class.java,   "imu"       ]
+    @JvmField val camera:           WebcamName? =   idc {   hardwareMap[WebcamName   ::class.java,   "Webcam 1"  ] }
+
+//    @JvmField val march               = camera?.    let {   March(opMode, it)   }
+//    @JvmField val lsd                 = if (motorSlideLeft  != null && motorSlideRight != null) LSD(opMode, motorSlideLeft, motorSlideRight    )   else null
+//    @JvmField val claw                = if (servoClawLeft   != null && servoClawRight  != null) Claw(opMode, servoClawLeft, servoClawRight     )   else null
+//    @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin)   else null
 //    @JvmField var drive               = Drive(this)
 
     @JvmField var rr: MecanumDrive? = null
@@ -67,20 +53,16 @@ class BotShared(opMode: OpMode) {
         imu.initialize(IMU.Parameters(orientationOnRobot))
         imu.resetYaw()
 
-        // Directions
-        motorIntakeSpin?.   direction =         REVERSE
-        motorSlideLeft?.    direction =         REVERSE
-        motorSlideRight?.   direction =         REVERSE
-        // Modes
-        motorTrussPull?.    mode =              RUN_WITHOUT_ENCODER
-        motorIntakeSpin?.   mode =              RUN_WITHOUT_ENCODER
-        // Zero-power behavior
-        motorLeftFront.     zeroPowerBehavior = BRAKE
-        motorLeftBack.      zeroPowerBehavior = BRAKE
-        motorRightFront.    zeroPowerBehavior = BRAKE
-        motorRightBack.     zeroPowerBehavior = BRAKE
-        motorSlideLeft?.    zeroPowerBehavior = BRAKE
-        motorSlideRight?.   zeroPowerBehavior = BRAKE
+//        // Directions
+//        motorIntakeSpin?.   direction =         REVERSE
+//        motorSlideLeft?.    direction =         REVERSE
+//        motorSlideRight?.   direction =         REVERSE
+//        // Modes
+//        motorTrussPull?.    mode =              RUN_WITHOUT_ENCODER
+//        motorIntakeSpin?.   mode =              RUN_WITHOUT_ENCODER
+//
+//        motorSlideLeft?.    zeroPowerBehavior = BRAKE
+//        motorSlideRight?.   zeroPowerBehavior = BRAKE
     }
 
     /**
@@ -88,7 +70,7 @@ class BotShared(opMode: OpMode) {
      * Place any reusable update functions here (i.e. for MecanumDrive)
      */
     fun update() {
-//        drive?.updatePoseEstimate()
+        rr?.updatePoseEstimate()
     }
 
     companion object {

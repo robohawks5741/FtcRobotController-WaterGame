@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.Servo
-import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.*
 
-class Claw(opMode: OpMode, private val servoLeft: Servo, private val servoRight: Servo) : BotModule(opMode) {
-
+class Claw(config: ModuleConfig) : BotModule(config) {
+    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo        ::class.java,   "clawl"     ] }
+    private val servoRight: Servo?   =   idc {   hardwareMap[Servo        ::class.java,   "clawr"     ] }
     private var position: Double = 0.0
+
+    private var status: Status = Status(StatusEnum.OK)
 
     companion object {
         /**
@@ -29,13 +31,23 @@ class Claw(opMode: OpMode, private val servoLeft: Servo, private val servoRight:
             position = y
             val interpLeftPos = (((1.0 - position) * CLAW_LEFT_OPEN) + (position * CLAW_LEFT_CLOSED))
             val interpRightPos = (((1.0 - position) * CLAW_RIGHT_OPEN) + (position * CLAW_RIGHT_CLOSED))
-            servoLeft.position = interpLeftPos
-            servoRight.position = interpRightPos
+            servoLeft?.position = interpLeftPos
+            servoRight?.position = interpRightPos
         }
 
-    override fun modInit() {
-        servoLeft.direction = Servo.Direction.FORWARD
-        servoRight.direction = Servo.Direction.FORWARD
+    override fun getStatus(): Status = status
+
+    init {
+        if (servoLeft == null || servoRight == null) {
+            val missing = mutableSetOf<String>()
+            if (servoLeft != null) missing.add("clawl")
+            if (servoRight != null) missing.add("clawr")
+
+            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = missing)
+        } else {
+            servoLeft.direction = Servo.Direction.FORWARD
+            servoRight.direction = Servo.Direction.FORWARD
+        }
     }
 
 //    override fun <T : Enum<T>> bindTeleOp(gamepadyn: Gamepadyn<T>) {
