@@ -103,10 +103,10 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
 
         // Configuration
         gamepadyn.players[0].configuration = Configuration(
-            ActionBind(STICK_LEFT,      MOVEMENT),
-            ActionBind(FACE_X,          TOGGLE_DRIVER_RELATIVITY),
+            ActionBind(MOVEMENT,                            STICK_LEFT),
+            ActionBind(TOGGLE_DRIVER_RELATIVITY,            FACE_X),
             // TODO: Replace with BindSingleAxis
-            object : ActionBind<ActionAnalog1>(STICK_RIGHT,     ROTATION) {
+            object : ActionBind<ActionAnalog1>(ROTATION,    STICK_RIGHT) {
                 override fun transform(
                     inputState: InputData,
                     targetActionState: InputData
@@ -115,8 +115,8 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
                     return InputDataAnalog1(inputState.x)
                 }
             },
-            ActionBind(FACE_A,          TOGGLE_INTAKE_HEIGHT),
-            ActionBind(FACE_Y,          TRUSS_HANG),
+            ActionBind(TOGGLE_INTAKE_HEIGHT,                FACE_A),
+            ActionBind(TRUSS_HANG,                          FACE_Y),
         )
 
         moduleHandler.init()
