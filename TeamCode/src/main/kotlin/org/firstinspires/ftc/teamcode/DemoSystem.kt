@@ -103,7 +103,7 @@ object DemoSystem {
             val gson = Gson()
             val jsonAllFrames: Array<Array<String?>> = gson.fromJson(lines.toString(), Array<Array<String?>>::class.java)
 
-            var totalSize = 0
+//            var totalSize = 0
             val jsonFrames1 = jsonAllFrames[0]
             val jsonFrames2 = jsonAllFrames[1]
             for ((i, e) in jsonFrames1.withIndex()) frames1[i] = if (e is String) Base64.decode(e, Base64.DEFAULT or Base64.NO_WRAP) else null
@@ -213,7 +213,7 @@ object DemoSystem {
             val jsonFrames1 = JsonArray()
             val jsonFrames2 = JsonArray()
             val writer = FileWriter(file)
-            var totalSize = 0
+//            var totalSize = 0
             for (e in frames1) if (e == null) jsonFrames1.add(JsonNull.INSTANCE); else jsonFrames1.add(e.toBase64())
             for (e in frames2) if (e == null) jsonFrames2.add(JsonNull.INSTANCE); else jsonFrames2.add(e.toBase64())
             jsonAllFrames.add(jsonFrames1)

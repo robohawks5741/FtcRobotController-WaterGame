@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import android.util.Size
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import computer.living.gamepadyn.Gamepadyn
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
@@ -35,26 +36,27 @@ class March(cfg: ModuleConfig) : BotModule(cfg) {
     /**
      * The variable to store our instance of the vision portal.
      */
-    private var visionPortal: VisionPortal
+    private val visionPortal: VisionPortal
 
     val detections: ArrayList<AprilTagDetection>
-        get() = aprilTag.detections;
+        get() = aprilTag.detections
 
     // Step through the list of detections and display info for each one.
 
     init {
         // or AprilTagProcessor.easyCreateWithDefaults()
 
-        val builder = VisionPortal.Builder();
+
+        val builder = VisionPortal.Builder()
 
         // We only use a webcam in practice, so we don't have any code for builtin cameras.
-        builder.setCamera(camera);
+        builder.setCamera(camera)
 
         // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(Size(640, 480));
+        builder.setCameraResolution(Size(640, 480))
 
         // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableLiveView(true);
+        builder.enableLiveView(true)
 
         // Set the stream format; MJPEG uses less bandwidth than default YUY2.
         // builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);

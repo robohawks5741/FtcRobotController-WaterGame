@@ -54,6 +54,7 @@ class Intake(config: ModuleConfig) : BotModule(config) {
             gamepadyn.players[0].getEvent(INTAKE_SPIN)!! {
                 val d = it.x.toDouble()
                 motorSpin?.power = if (d > 1.0) 1.0 else if (d < -1.0) -1.0 else d
+                opMode.telemetry.addLine("Intake Spin = $active")
             }
         }
     }

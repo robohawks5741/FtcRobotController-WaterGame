@@ -42,7 +42,19 @@ class BotShared(opMode: OpMode) {
 //    @JvmField val claw                = if (servoClawLeft   != null && servoClawRight  != null) Claw(opMode, servoClawLeft, servoClawRight     )   else null
 //    @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin)   else null
 //    @JvmField var drive               = Drive(this)
-
+//    class SoftwareMap {
+//
+//        @JvmField val motorSlideLeft:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftLeft"  ] }
+//        @JvmField val motorSlideRight:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftRight" ] }
+//        @JvmField val motorIntakeSpin:  DcMotorEx?  =
+//        @JvmField val motorIntakeLift:  DcMotorEx?  =
+//        @JvmField val motorTrussPull:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "hang"      ] }
+//        @JvmField val servoTrussLeft:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussl"    ] }
+//        @JvmField val servoTrussRight:  Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussr"    ] }
+//        @JvmField val servoArmLeft:     Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armLeft"   ] }
+//        @JvmField val servoArmRight:    Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armRight"  ] }
+//
+//    }
     @JvmField var rr: MecanumDrive? = null
 
     init {

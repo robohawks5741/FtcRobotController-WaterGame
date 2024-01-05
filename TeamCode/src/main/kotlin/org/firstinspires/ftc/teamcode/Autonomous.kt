@@ -11,8 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import java.lang.Thread.sleep
 
 @Autonomous(name = "# Auto (Blue Left)", group = "# Sub-Mode")
@@ -48,6 +48,9 @@ open class AutoSuper(
         shared.rr = MecanumDrive(hardwareMap, initialPose)
 
         moduleHandler.init()
+//        shared = BotShared(this, false, null)
+////        shared.drive = MecanumDrive(hardwareMap, initialPose)
+
     }
 
     var targetDetection: AprilTagDetection? = null
