@@ -9,6 +9,8 @@ import com.acmerobotics.roadrunner.Vector2d
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.util.Range
+import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
+import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 import java.lang.Thread.sleep
@@ -39,10 +41,13 @@ open class AutoSuper(
     }
 
     private lateinit var shared: BotShared
+    private val moduleHandler = ModuleHandler(ModuleConfig(this, shared, false, null))
 
     override fun init() {
         shared = BotShared(this)
         shared.rr = MecanumDrive(hardwareMap, initialPose)
+
+        moduleHandler.init()
     }
 
     var targetDetection: AprilTagDetection? = null
@@ -83,23 +88,26 @@ open class AutoSuper(
                 turn
             )
 
-            val wheelVels = MecanumKinematics(1.0).inverse<Time>(PoseVelocity2dDual.constant(pv, 1));
+            shared.rr?.setDrivePowers(pv)
 
-            shared.motorLeftFront.power = wheelVels.leftFront[0]
-            shared.motorLeftBack.power = wheelVels.leftBack[0]
-            shared.motorRightBack.power = wheelVels.rightBack[0]
-            shared.motorRightFront.power = wheelVels.rightFront[0]
+//            val wheelVels = MecanumKinematics(1.0).inverse<Time>(PoseVelocity2dDual.constant(pv, 1));
+//
+//            shared.motorLeftFront.power = wheelVels.leftFront[0]
+//            shared.motorLeftBack.power = wheelVels.leftBack[0]
+//            shared.motorRightBack.power = wheelVels.rightBack[0]
+//            shared.motorRightFront.power = wheelVels.rightFront[0]
         }
     }
 
     override fun start() {
+        moduleHandler.start()
         // Game Plan:
         // - Place a purple pixel on the spike mark
         // - Do other stuff (we're working on it!)
 
         // alias using JVM references
         var drive = shared.rr!!
-        val march = shared.march!!
+        val march = moduleHandler.march
 
         while (march.detections.isEmpty()) try {
             sleep(20)
@@ -178,7 +186,7 @@ open class AutoSuper(
     }
 
     override fun stop() {
-        BotShared.storedPose = shared.drive?.pose!!
+        BotShared.storedPose = shared.rr?.pose!!
     }
 
 }

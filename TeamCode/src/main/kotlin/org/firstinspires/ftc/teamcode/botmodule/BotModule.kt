@@ -35,7 +35,9 @@ abstract class BotModule protected constructor(private val config: ModuleConfig)
         val hardwareMissing: Set<String>? = null
     )
 
-    abstract fun getStatus(): Status
+    var status: Status = Status(StatusEnum.OK)
+        protected set
+
     open fun modStart() { }
     open fun modUpdate() { }
 

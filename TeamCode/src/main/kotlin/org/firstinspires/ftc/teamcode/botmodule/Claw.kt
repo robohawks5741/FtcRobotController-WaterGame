@@ -4,11 +4,9 @@ import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.*
 
 class Claw(config: ModuleConfig) : BotModule(config) {
-    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo        ::class.java,   "clawl"     ] }
-    private val servoRight: Servo?   =   idc {   hardwareMap[Servo        ::class.java,   "clawr"     ] }
+    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawl"     ] }
+    private val servoRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawr"     ] }
     private var position: Double = 0.0
-
-    private var status: Status = Status(StatusEnum.OK)
 
     companion object {
         /**
@@ -35,8 +33,6 @@ class Claw(config: ModuleConfig) : BotModule(config) {
             servoRight?.position = interpRightPos
         }
 
-    override fun getStatus(): Status = status
-
     init {
         if (servoLeft == null || servoRight == null) {
             val missing = mutableSetOf<String>()
@@ -49,6 +45,19 @@ class Claw(config: ModuleConfig) : BotModule(config) {
             servoRight.direction = Servo.Direction.FORWARD
         }
     }
+
+//    override fun modStart() {
+//        if (isTeleOp) {
+//            if (gamepadyn == null) {
+//                telemetry.addLine("(Claw Module) TeleOp was enabled but Gamepadyn was null!")
+//                return
+//            }
+//
+//            gamepadyn.players[0].getEvent(ActionAnalog1.CLAW)!! {
+//                if (it()) useBotRelative = !useBotRelative
+//            }
+//        }
+//    }
 
 //    override fun <T : Enum<T>> bindTeleOp(gamepadyn: Gamepadyn<T>) {
 //        super.bindTeleOp(gamepadyn)

@@ -10,7 +10,8 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 /**
  * AprilTag detection class
  */
-class March<T : CameraName>(opMode: OpMode, private val camera: T) : BotModule(opMode) {
+class March(cfg: ModuleConfig) : BotModule(cfg) {
+
     /**
      * The variable to store our instance of the AprilTag processor.
      */

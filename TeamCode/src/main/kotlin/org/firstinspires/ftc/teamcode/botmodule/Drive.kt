@@ -31,8 +31,6 @@ class Drive(config: ModuleConfig) : BotModule(config) {
     @JvmField val motorRightBack: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "br"    ]
     @JvmField val motorLeftBack: DcMotorEx      = hardwareMap[DcMotorEx::class.java,  "bl"    ]
 
-    private var status: Status = Status(StatusEnum.OK)
-
     private var wheelVels: WheelVelocities<Time> = WheelVelocities(
         DualNum.constant(0.0, 0),
         DualNum.constant(0.0, 0),
@@ -41,9 +39,8 @@ class Drive(config: ModuleConfig) : BotModule(config) {
     )
     var powerModifier = 1.0
     private var useBotRelative = true
-    override fun getStatus() = status
 
-    override fun modInit() {
+    init {
         // Drive motor directions **(DO NOT CHANGE THESE!!!)**
         motorRightFront.direction = DcMotorSimple.Direction.FORWARD
         motorLeftFront. direction = DcMotorSimple.Direction.REVERSE
@@ -55,14 +52,6 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         motorLeftBack.      zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         motorRightFront.    zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         motorRightBack.     zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-
-        if (isTeleOp) {
-            if (gamepadyn == null) {
-                telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
-                return
-            }
-            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY)!! { if (it()) useBotRelative = !useBotRelative }
-        }
     }
 
     override fun modUpdate() {
@@ -73,7 +62,16 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             motorRightBack.power = wheelVels.rightBack[0] / powerModifier
             motorRightFront.power = wheelVels.rightFront[0] / powerModifier
         }
+    }
 
+    override fun modStart() {
+        if (isTeleOp) {
+            if (gamepadyn == null) {
+                telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
+                return
+            }
+            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY)!! { if (it()) useBotRelative = !useBotRelative }
+        }
     }
 
     private fun updateTeleOp() {

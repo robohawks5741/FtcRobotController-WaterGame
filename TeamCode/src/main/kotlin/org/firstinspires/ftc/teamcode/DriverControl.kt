@@ -15,22 +15,22 @@ import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
+import computer.living.gamepadyn.ActionMap
 import computer.living.gamepadyn.Configuration
-import computer.living.gamepadyn.GDesc
 import computer.living.gamepadyn.Gamepadyn
-import computer.living.gamepadyn.InputType.ANALOG
+import computer.living.gamepadyn.InputType.ANALOG1
+import computer.living.gamepadyn.InputType.ANALOG2
 import computer.living.gamepadyn.InputType.DIGITAL
 import computer.living.gamepadyn.RawInput
+import computer.living.gamepadyn.RawInputDigital
 import computer.living.gamepadyn.ftc.InputBackendFtc
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
-import org.firstinspires.ftc.teamcode.Action.CLAW
-import org.firstinspires.ftc.teamcode.Action.MOVEMENT
-import org.firstinspires.ftc.teamcode.Action.ROTATION
-import org.firstinspires.ftc.teamcode.Action.SPIN_INTAKE
-import org.firstinspires.ftc.teamcode.Action.TOGGLE_DRIVER_RELATIVITY
-import org.firstinspires.ftc.teamcode.Action.TOGGLE_INTAKE_HEIGHT
-import org.firstinspires.ftc.teamcode.Action.TRUSS_HANG
+import org.firstinspires.ftc.teamcode.ActionDigital.*
+import org.firstinspires.ftc.teamcode.ActionAnalog1.*
+import org.firstinspires.ftc.teamcode.ActionAnalog2.*
+import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
+import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive
 import kotlin.math.PI
 import kotlin.math.abs
@@ -85,7 +85,17 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     private var lastIntakeStatus = false
     private var isIntakeLiftRaised = true
 
-    private lateinit var gamepadyn: Gamepadyn<Action>
+    private val moduleHandler = ModuleHandler(ModuleConfig(this, shared, false, null))
+
+    private val gamepadyn = Gamepadyn(
+        InputBackendFtc(this),
+        true, ActionMap(
+        ActionDigital.entries,
+            ActionAnalog1.entries,
+            ActionAnalog2.entries,
+        )
+    )
+
 
     /**
      * Set up the robot
@@ -93,19 +103,18 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     override fun init() {
 //        val setter = DriverControl::tagCamera.setter
         shared = BotShared(this)
-        shared.drive = MecanumDrive(hardwareMap, initialPose)
-        gamepadyn = Gamepadyn(InputBackendFtc(this), true, Action.actionMap)
+        shared.rr = MecanumDrive(hardwareMap, initialPose)
 
         // Configuration
         gamepadyn.players[0].configuration = Configuration(
-            ActionBind(RawInput.FACE_X, TOGGLE_DRIVER_RELATIVITY),
-            ActionBind(RawInput.FACE_A, TOGGLE_INTAKE_HEIGHT),
-            ActionBind(RawInput.FACE_Y, TRUSS_HANG),
+            ActionBind(RawInputDigital.FACE_X, TOGGLE_DRIVER_RELATIVITY),
+            ActionBind(RawInputDigital.FACE_A, TOGGLE_INTAKE_HEIGHT),
+            ActionBind(RawInputDigital.FACE_Y, TRUSS_HANG),
         )
 
         // toggle driver-relative controls
-        gamepadyn.players[0].getEventDigital(TRUSS_HANG)!!.addListener {
-            if (it.digitalData) {
+        gamepadyn.players[0].getEvent(TRUSS_HANG)!!.addListener {
+            if (it()) {
                 shared.servoTrussLeft?.position = 0.5
                 shared.servoTrussRight?.position = 0.5
                 shared.servoTrussLeft?.position = 0.0
@@ -136,14 +145,8 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         deltaTime = (time - lastLoopTime)
         lastLoopTime = time
 
+        moduleHandler.update()
 
-        /**
-         * Run the various update functions
-         */
-        updateDrive()
-        updateSlide()
-        updateIntake()
-        updateTrussHang()
 
         shared.motorTrussPull?.power = 1.0 * ((if (gamepad1.b) 1.0 else 0.0) + (if (gamepad1.a) -1.0 else 0.0))
 ////        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER

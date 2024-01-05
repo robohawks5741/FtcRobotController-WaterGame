@@ -18,8 +18,6 @@ class Intake(config: ModuleConfig) : BotModule(config) {
     private val motorSpin: DcMotorEx? = idc {   hardwareMap[DcMotorEx    ::class.java,   motorSpinName    ] }
     private val motorLift: DcMotorEx? = idc {   hardwareMap[DcMotorEx    ::class.java,   motorLiftName    ] }
 
-    private var status = Status(StatusEnum.OK)
-
     init {
         if (motorSpin == null && motorLift == null) {
 
@@ -47,8 +45,6 @@ class Intake(config: ModuleConfig) : BotModule(config) {
             motorLift?.targetPosition = if (height) 0 else 10
             field = height
         }
-
-    override fun getStatus(): Status = status
 
     override fun modStart() {
         if (isTeleOp) {
