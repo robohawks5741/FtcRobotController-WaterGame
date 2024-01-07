@@ -4,18 +4,18 @@ import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.*
 
 class Claw(config: ModuleConfig) : BotModule(config) {
-    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawl"     ] }
-    private val servoRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawr"     ] }
+    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawL"     ] }
+    private val servoRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawR"     ] }
     private var position: Double = 0.0
 
     companion object {
         /**
          * minimums and maximums
          */
-        @JvmStatic private val CLAW_LEFT_OPEN: Double = 0.0
-        @JvmStatic private val CLAW_LEFT_CLOSED: Double = 0.3
-        @JvmStatic private val CLAW_RIGHT_OPEN: Double = 0.0
-        @JvmStatic private val CLAW_RIGHT_CLOSED: Double = 0.3
+        @JvmStatic private val CLAW_LEFT_OPEN: Double       = 0.29
+        @JvmStatic private val CLAW_LEFT_CLOSED: Double     = 0.0
+        @JvmStatic private val CLAW_RIGHT_OPEN: Double      = 0.07
+        @JvmStatic private val CLAW_RIGHT_CLOSED: Double    = 0.36
     }
 
     /**

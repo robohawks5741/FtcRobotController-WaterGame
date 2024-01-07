@@ -59,7 +59,7 @@ class BotShared(opMode: OpMode) {
 
     init {
         // IMU orientation/calibration
-        val logo = LogoFacingDirection.RIGHT
+        val logo = LogoFacingDirection.LEFT
         val usb = UsbFacingDirection.FORWARD
         val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
         imu.initialize(IMU.Parameters(orientationOnRobot))

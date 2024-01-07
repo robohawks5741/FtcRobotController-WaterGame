@@ -7,7 +7,8 @@ import computer.living.gamepadyn.ActionEnumAnalog2
 enum class ActionDigital : ActionEnumDigital {
     TOGGLE_DRIVER_RELATIVITY,   // toggle
     TOGGLE_INTAKE_HEIGHT,       // toggle
-    TRUSS_HANG                  // one-shot
+    TRUSS_MOVE,                 // one-shot
+    TRUSS_PULL                  // hold it down
 }
 enum class ActionAnalog1 : ActionEnumAnalog1 {
     INTAKE_SPIN,                // X = spin power (+inwards, -outwards)

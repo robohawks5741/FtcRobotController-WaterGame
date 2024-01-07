@@ -90,8 +90,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         )
     )
 
-    private val moduleHandler = ModuleHandler(ModuleConfig(this, shared, false, gamepadyn))
-
+    private lateinit var moduleHandler: ModuleHandler
 
     /**
      * Set up the robot
@@ -99,6 +98,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     override fun init() {
 //        val setter = DriverControl::tagCamera.setter
         shared = BotShared(this)
+        moduleHandler = ModuleHandler(ModuleConfig(this, shared, true, gamepadyn))
         shared.rr = MecanumDrive(hardwareMap, initialPose)
 
         // Configuration
@@ -116,7 +116,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
                 }
             },
             ActionBind(TOGGLE_INTAKE_HEIGHT,                FACE_A),
-            ActionBind(TRUSS_HANG,                          FACE_Y),
+//            ActionBind(TRUSS_,                          FACE_Y),
         )
 
         moduleHandler.init()
@@ -172,12 +172,14 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
 
         // Most input values are [-1.0, 1.0]
 
-        telemetry.addLine("Left Stick X: ${gamepad1.left_stick_x}")
-        telemetry.addLine("Left Stick Y: ${gamepad1.left_stick_y}")
-//        telemetry.addLine("Delta Time: $deltaTime")
-        telemetry.update()
-
         gamepadyn.update()
         shared.update()
+
+        moduleHandler.update()
+
+        telemetry.addLine("Left Stick X: ${gamepad1.left_stick_x}")
+        telemetry.addLine("Left Stick Y: ${-gamepad1.left_stick_y}")
+//        telemetry.addLine("Delta Time: $deltaTime")
+        telemetry.update()
     }
 }

@@ -33,6 +33,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
@@ -170,10 +171,10 @@ public final class MecanumDrive {
     public MecanumDrive(HardwareMap hardwareMap, Pose2d pose) {
         this(
                 hardwareMap, pose,
-                hardwareMap.get(DcMotorEx.class, "fl"),
-                hardwareMap.get(DcMotorEx.class, "bl"),
-                hardwareMap.get(DcMotorEx.class, "br"),
-                hardwareMap.get(DcMotorEx.class, "fr")
+                hardwareMap.get(DcMotorEx.class, "frontL"),
+                hardwareMap.get(DcMotorEx.class, "backL"),
+                hardwareMap.get(DcMotorEx.class, "backR"),
+                hardwareMap.get(DcMotorEx.class, "frontR")
         );
     }
 
@@ -191,9 +192,14 @@ public final class MecanumDrive {
         this.rightBack  = rightBack;
         this.rightFront = rightFront;
 
-        this.leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        this.leftBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        this.rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        this.leftFront.setDirection (DcMotorSimple.Direction.REVERSE);
+        this.leftBack.setDirection  (DcMotorSimple.Direction.REVERSE);
+        this.rightBack.setDirection (DcMotorSimple.Direction.FORWARD);
+        this.rightFront.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        this.leftFront.setZeroPowerBehavior (DcMotor.ZeroPowerBehavior.BRAKE);
+        this.leftBack.setZeroPowerBehavior  (DcMotor.ZeroPowerBehavior.BRAKE);
+        this.rightBack.setZeroPowerBehavior (DcMotor.ZeroPowerBehavior.BRAKE);
         this.rightFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         imu = hardwareMap.get(IMU.class, "imu");

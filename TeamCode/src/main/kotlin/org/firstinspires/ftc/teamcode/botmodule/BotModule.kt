@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import computer.living.gamepadyn.Gamepadyn
@@ -23,6 +24,10 @@ abstract class BotModule protected constructor(private val config: ModuleConfig)
     protected val shared = config.shared
     protected val imu = shared.imu
     protected val camera = shared.camera
+    protected val gamepad1: Gamepad
+        get() = opMode.gamepad1
+    protected val gamepad2: Gamepad
+        get() = opMode.gamepad2
 
     enum class StatusEnum {
         OK,

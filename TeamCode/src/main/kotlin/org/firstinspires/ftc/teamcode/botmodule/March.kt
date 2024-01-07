@@ -36,7 +36,8 @@ class March(cfg: ModuleConfig) : BotModule(cfg) {
     /**
      * The variable to store our instance of the vision portal.
      */
-    private val visionPortal: VisionPortal
+    private val visionPortal: VisionPortal?
+
 
     val detections: ArrayList<AprilTagDetection>
         get() = aprilTag.detections
@@ -44,37 +45,40 @@ class March(cfg: ModuleConfig) : BotModule(cfg) {
     // Step through the list of detections and display info for each one.
 
     init {
-        // or AprilTagProcessor.easyCreateWithDefaults()
+        if (camera == null) {
+            visionPortal = null
+            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = setOf("Webcam 1"))
+        } else {
+            // or AprilTagProcessor.easyCreateWithDefaults()
+            val builder = VisionPortal.Builder()
 
+            // We only use a webcam in practice, so we don't have any code for builtin cameras.
+            builder.setCamera(camera)
 
-        val builder = VisionPortal.Builder()
+            // Choose a camera resolution. Not all cameras support all resolutions.
+            builder.setCameraResolution(Size(640, 480))
 
-        // We only use a webcam in practice, so we don't have any code for builtin cameras.
-        builder.setCamera(camera)
+            // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+            builder.enableLiveView(true)
 
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(Size(640, 480))
+            // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+            // builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
 
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableLiveView(true)
+            // Choose whether or not LiveView stops if no processors are enabled.
+            // If set "true", monitor shows solid orange screen if no processors enabled.
+            // If set "false", monitor shows camera view without annotations.
+            //builder.setAutoStopLiveView(false);
 
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        // builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+            // Set and enable the processor.
 
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //builder.setAutoStopLiveView(false);
+            // Set and enable the processor.
+            builder.addProcessor(aprilTag)
 
-        // Set and enable the processor.
+            // Build the Vision Portal, using the above settings.
+            visionPortal = builder.build()
 
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag)
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build()
-
-        // Disable or re-enable the aprilTag processor at any time.
-        //visionPortal.setProcessorEnabled(aprilTag, true);
+            // Disable or re-enable the aprilTag processor at any time.
+            //visionPortal.setProcessorEnabled(aprilTag, true);
+        }
     }
 }

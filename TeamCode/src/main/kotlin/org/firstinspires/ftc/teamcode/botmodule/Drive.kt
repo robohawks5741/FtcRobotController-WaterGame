@@ -8,17 +8,20 @@ import com.acmerobotics.roadrunner.PoseVelocity2dDual
 import com.acmerobotics.roadrunner.Time
 import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.clamp
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.IMU
 import computer.living.gamepadyn.Gamepadyn
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.BotShared
+import java.lang.Math.toDegrees
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -26,10 +29,10 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Drive(config: ModuleConfig) : BotModule(config) {
-    @JvmField val motorRightFront: DcMotorEx    = hardwareMap[DcMotorEx::class.java,  "fr"    ]
-    @JvmField val motorLeftFront: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "fl"    ]
-    @JvmField val motorRightBack: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "br"    ]
-    @JvmField val motorLeftBack: DcMotorEx      = hardwareMap[DcMotorEx::class.java,  "bl"    ]
+    @JvmField val motorRightFront: DcMotorEx    = hardwareMap[DcMotorEx::class.java,  "frontR"    ]
+    @JvmField val motorLeftFront: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "frontL"    ]
+    @JvmField val motorRightBack: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "backR"    ]
+    @JvmField val motorLeftBack: DcMotorEx      = hardwareMap[DcMotorEx::class.java,  "backL"    ]
 
     private var wheelVels: WheelVelocities<Time> = WheelVelocities(
         DualNum.constant(0.0, 0),
@@ -37,7 +40,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         DualNum.constant(0.0, 0),
         DualNum.constant(0.0, 0)
     )
-    var powerModifier = 1.0
+    private var powerModifier = 1.0
     private var useBotRelative = true
 
     init {
@@ -71,6 +74,12 @@ class Drive(config: ModuleConfig) : BotModule(config) {
                 return
             }
             gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY)!! { if (it()) useBotRelative = !useBotRelative }
+            // IMU orientation/calibration
+            val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
+            val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+            val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
+            imu.initialize(IMU.Parameters(orientationOnRobot))
+            imu.resetYaw()
         }
     }
 
@@ -92,7 +101,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         // +Y = left
         val inputVector = Vector2d(
             movement.y.toDouble(),
-            movement.x.toDouble()
+            -movement.x.toDouble()
         )
 
         // angle of the stick
@@ -117,7 +126,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
                 driveRelativeX,
                 driveRelativeY
             ) else inputVector,
-            rotation.x.toDouble()
+            -rotation.x.toDouble()
         )
         // +X = forward, +Y = left
 //        drive.setDrivePowers(pv)
@@ -125,7 +134,9 @@ class Drive(config: ModuleConfig) : BotModule(config) {
 
 //        Actions.run
 
-        telemetry.addLine("Gyro Yaw: " + shared.imu.robotYawPitchRollAngles.getYaw(AngleUnit.DEGREES))
+        telemetry.addLine("Gyro Yaw: ${toDegrees(gyroYaw)}")
+        telemetry.addLine("Rotation Input: ${rotation.x}")
+        telemetry.addLine("Movement Input: (${movement.x}, ${movement.y})")
         telemetry.addLine("Input Yaw: " + if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0)
 //        telemetry.addLine("Yaw Difference (bot - input): " + )
     }
