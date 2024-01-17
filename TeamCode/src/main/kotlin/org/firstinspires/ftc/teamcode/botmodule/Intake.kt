@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.botmodule
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
+import computer.living.gamepadyn.InputDataAnalog1
+import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
@@ -51,11 +53,13 @@ class Intake(config: ModuleConfig) : BotModule(config) {
             if (gamepadyn == null) {
                 return
             }
-            gamepadyn.players[0].getEvent(INTAKE_SPIN)!! {
+            val spinFunc: (InputDataAnalog1) -> Unit = {
                 val d = it.x.toDouble()
                 motorSpin?.power = if (d > 1.0) 1.0 else if (d < -1.0) -1.0 else d
                 opMode.telemetry.addLine("Intake Spin = $active")
             }
+            gamepadyn.players[0].getEvent(INTAKE_SPIN, spinFunc)
+            gamepadyn.players[1].getEvent(INTAKE_SPIN, spinFunc)
         }
     }
 

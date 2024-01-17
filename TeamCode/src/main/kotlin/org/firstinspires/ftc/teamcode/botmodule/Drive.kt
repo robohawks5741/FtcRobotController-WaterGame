@@ -73,7 +73,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
                 telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
                 return
             }
-            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY)!! { if (it()) useBotRelative = !useBotRelative }
+            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) { if (it()) useBotRelative = !useBotRelative }
             // IMU orientation/calibration
             val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
             val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
@@ -94,8 +94,8 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         // counter-clockwise
         val gyroYaw = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
 
-        val movement = gamepadyn.players[0].getState(MOVEMENT)!!
-        val rotation = gamepadyn.players[0].getState(ROTATION)!!
+        val movement = gamepadyn.players[0].getState(MOVEMENT)
+        val rotation = gamepadyn.players[0].getState(ROTATION)
 
         // +X = forward
         // +Y = left

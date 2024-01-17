@@ -6,7 +6,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
+import computer.living.gamepadyn.ActionBindAnalog2to1
 import computer.living.gamepadyn.ActionMap
+import computer.living.gamepadyn.Axis
+import computer.living.gamepadyn.Axis.Y
 import computer.living.gamepadyn.Configuration
 import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.InputData
@@ -15,6 +18,7 @@ import computer.living.gamepadyn.InputDataAnalog2
 import computer.living.gamepadyn.InputType.ANALOG1
 import computer.living.gamepadyn.InputType.ANALOG2
 import computer.living.gamepadyn.InputType.DIGITAL
+import computer.living.gamepadyn.Player
 import computer.living.gamepadyn.RawInputDigital.*
 import computer.living.gamepadyn.RawInputAnalog1.*
 import computer.living.gamepadyn.RawInputAnalog2.*
@@ -34,31 +38,14 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-/**
- * CURRENT CONTROLS:
- *
- *
- * Gamepad 1: Movement
- *  - Left Stick X/Y: Movement
- *  - Right Stick X: Rotation
- *  - X (face left): Toggle driver-relative controls (ON by default)
- *  - D-Pad Up: Spin intake outwards
- *  - D-Pad Down: Spin intake inwards
- *
- * Gamepad 2: Objective
- *  - Left Stick Y: Manual slide
- *  - Left Trigger: Close(?) claw
- *  - Right Trigger: Open(?) claw
- *  - Right Bumper: Retract truss pulley
- *  - Left Bumper: Extend truss pulley
- *  - A (face down): Toggle intake height
- *  - Y (face up): Truss hang activate
- */
-
 /*
  * TODO:
  *      - Store the orientation at the end of autonomous and reload it for DC
  */
+
+typealias GamepadynRH = Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>
+typealias ConfigurationRH = Configuration<ActionDigital, ActionAnalog1, ActionAnalog2>
+typealias PlayerRH = Player<ActionDigital, ActionAnalog1, ActionAnalog2>
 
 @TeleOp(name = "# Driver Control (Standalone)", group = "# Sub-Mode")
 class StandaloneDriverControl : DriverControlBase(Pose2d(0.0, 0.0, 0.0))
@@ -81,6 +68,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     private var lastIntakeStatus = false
     private var isIntakeLiftRaised = true
 
+    @Suppress("LeakingThis")
     private val gamepadyn = Gamepadyn(
         InputBackendFtc(this),
         true, ActionMap(
@@ -89,6 +77,64 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
             ActionAnalog2.entries,
         )
     )
+
+    object Config {
+        /**
+         * Pixel placement config
+         */
+        val pixelPlacement = ConfigurationRH(
+            ActionBindAnalog2to1(SLIDE_MANUAL,              STICK_LEFT, Y),
+            ActionBind(PIXEL_END,                           FACE_RIGHT),
+            ActionBind(PIXEL_MOVE_UP,                       DPAD_UP),
+            ActionBind(PIXEL_MOVE_DOWN,                     DPAD_DOWN),
+            ActionBind(PIXEL_COMMIT_LEFT,                   BUMPER_LEFT),
+            ActionBind(PIXEL_COMMIT_RIGHT,                  BUMPER_RIGHT),
+        )
+
+        /**
+         * Player 1 (index 0) config
+         */
+        val player0 = ConfigurationRH(
+            ActionBind(PIXEL_START,                         FACE_UP),
+            ActionBind(MOVEMENT,                            STICK_LEFT),
+            ActionBind(TOGGLE_DRIVER_RELATIVITY,            SPECIAL_BACK),
+
+            // TODO: Replace with BindSingleAxis
+            object : ActionBind<ActionAnalog1>(ROTATION,    STICK_RIGHT) {
+                override fun transform(
+                    inputState: InputData,
+                    targetActionState: InputData,
+                    delta: Double
+                ): InputData {
+                    if (inputState !is InputDataAnalog2) throw Exception("exception in the crappy garbage code !1!")
+                    return InputDataAnalog1(inputState.x)
+                }
+            },
+            ActionBind(TOGGLE_INTAKE_HEIGHT,                FACE_DOWN),
+            object : ActionBind<ActionAnalog1>(CLAW,        TRIGGER_RIGHT) {
+                override fun transform(
+                    inputState: InputData,
+                    targetActionState: InputData,
+                    delta: Double
+                ): InputData {
+                    if (inputState !is InputDataAnalog1 || targetActionState !is InputDataAnalog1) throw Exception("claw is not analog 1 ??")
+                    return InputDataAnalog1(targetActionState.x + (delta * 10.0).toFloat())
+                }
+            }
+        )
+
+        /**
+         * Player 2 (index 1) config
+         */
+        val player1 = ConfigurationRH(
+            ActionBindAnalog2to1(SLIDE_MANUAL,              STICK_LEFT, Y),
+            ActionBind(PIXEL_START,                         FACE_UP),
+//            ActionBind(DRONE_LAUNCH,                        FACE_RIGHT),
+//            ActionBind(DRONE_LAUNCH,                        SPECIAL_BACK),
+//            ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
+//            ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
+        )
+    }
 
     private lateinit var moduleHandler: ModuleHandler
 
@@ -102,22 +148,10 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         shared.rr = MecanumDrive(hardwareMap, initialPose)
 
         // Configuration
-        gamepadyn.players[0].configuration = Configuration(
-            ActionBind(MOVEMENT,                            STICK_LEFT),
-            ActionBind(TOGGLE_DRIVER_RELATIVITY,            FACE_X),
-            // TODO: Replace with BindSingleAxis
-            object : ActionBind<ActionAnalog1>(ROTATION,    STICK_RIGHT) {
-                override fun transform(
-                    inputState: InputData,
-                    targetActionState: InputData
-                ): InputData {
-                    if (inputState !is InputDataAnalog2) throw Exception("exception in the crappy garbage code !1!")
-                    return InputDataAnalog1(inputState.x)
-                }
-            },
-            ActionBind(TOGGLE_INTAKE_HEIGHT,                FACE_A),
-//            ActionBind(TRUSS_,                          FACE_Y),
-        )
+        val p0 = gamepadyn.players[0]
+        val p1 = gamepadyn.players[1]
+        p0.configuration = Config.player0
+        p1.configuration = Config.player1
 
         moduleHandler.init()
     }
@@ -125,6 +159,24 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
     override fun start() {
         lastLoopTime = time
         moduleHandler.start()
+
+        val p0 = gamepadyn.players[0]
+        val p1 = gamepadyn.players[1]
+
+        p0.getEvent(PIXEL_START) {
+            if (it()) p0.configuration = Config.pixelPlacement
+        }
+        p1.getEvent(PIXEL_START) {
+            if (it()) p1.configuration = Config.pixelPlacement
+        }
+
+        p0.getEvent(PIXEL_END) {
+            if (it()) p0.configuration = Config.player0
+        }
+        p1.getEvent(PIXEL_END) {
+            if (it()) p1.configuration = Config.player1
+        }
+
     }
 
     /**
@@ -176,6 +228,13 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         shared.update()
 
         moduleHandler.update()
+
+        if (gamepadyn.players[0].configuration == Config.pixelPlacement) {
+            telemetry.addLine("p0 is placing a pixel")
+        }
+        if (gamepadyn.players[1].configuration == Config.pixelPlacement) {
+            telemetry.addLine("p1 is placing a pixel")
+        }
 
         telemetry.addLine("Left Stick X: ${gamepad1.left_stick_x}")
         telemetry.addLine("Left Stick Y: ${-gamepad1.left_stick_y}")

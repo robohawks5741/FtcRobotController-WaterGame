@@ -33,7 +33,7 @@ class GamepadynTest : OpMode() {
 
     override fun init() {
         gamepadyn.players[0].configuration = Configuration(
-            ActionBind(TOGGLE_DRIVER_RELATIVITY,    FACE_A),
+            ActionBind(TOGGLE_DRIVER_RELATIVITY,    FACE_DOWN),
             ActionBind(MOVEMENT,                    STICK_LEFT)
         )
     }
@@ -42,7 +42,7 @@ class GamepadynTest : OpMode() {
 
     override fun start() {
 
-        gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY)!! {
+        gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) {
             if (it()) {
                 driverRelative = !driverRelative
             }
@@ -52,7 +52,7 @@ class GamepadynTest : OpMode() {
 
     override fun loop() {
         gamepadyn.update()
-        val movement = gamepadyn.players[0].getState(MOVEMENT)!!
+        val movement = gamepadyn.players[0].getState(MOVEMENT)
         telemetry.addLine("driver relativity: ${if (driverRelative) "ENABLED" else "DISABLED" }")
         telemetry.addLine("state of movement: (${movement.x}, ${movement.y})")
         telemetry.update()
