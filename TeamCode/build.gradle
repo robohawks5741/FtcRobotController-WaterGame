@@ -66,4 +66,6 @@ dependencies {
 //    implementation "org.nanohttpd:nanohttpd-websocket:2.3.1"
     implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.0"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
+    implementation "com.acmerobotics.roadrunner:ftc:0.1.11"
+    implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
 }
