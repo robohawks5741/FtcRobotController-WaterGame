@@ -17,6 +17,8 @@ enum class ActionDigital : ActionEnumDigital {
     PIXEL_MOVE_DOWN,            // one-shot
     PIXEL_COMMIT_LEFT,          // one-shot
     PIXEL_COMMIT_RIGHT,         // one-shot
+
+
 }
 
 enum class ActionAnalog1 : ActionEnumAnalog1 {

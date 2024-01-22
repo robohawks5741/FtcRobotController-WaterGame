@@ -108,7 +108,8 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
         while (!isStopRequested()) {
             Rotation2d rot = poseEstimate.heading;
-            rot.anl
+//            rot.anl
+//            TODO: clay, fix?
             if (!fieldReletive){
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
@@ -126,9 +127,8 @@ public class AADriverControlsDuplicate extends LinearOpMode {
                 // Pass in the rotated input + right stick value for rotation
                 // Rotation is not part of the rotated input thus must be passed in separately
                 drive.setDrivePowers(
-                        new Pose2d(
-                                input.component1(),
-                                input.component2(),
+                        new PoseVelocity2d(
+                                input,
                                 -gamepad1.right_stick_x
                         )
                 );
@@ -335,7 +335,8 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
             telemetry.addData("x", drive.pose.position.x);
             telemetry.addData("y", drive.pose.position.y);
-            telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
+//            TODO: clay plz fix
+//            telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
             telemetry.addData("right servo", clawR.getPosition());

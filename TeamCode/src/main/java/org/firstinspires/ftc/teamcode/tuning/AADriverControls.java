@@ -33,14 +33,10 @@ public class AADriverControls extends LinearOpMode {
     private int hangMode = 0;
     private boolean  pressed = false;
 
-    public static void wait(int ms)
-    {
-        try
-        {
+    public static void wait(int ms) {
+        try {
             Thread.sleep(ms);
-        }
-        catch(InterruptedException ex)
-        {
+        } catch(InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }
@@ -121,8 +117,8 @@ public class AADriverControls extends LinearOpMode {
 
             //Placement
 
-            if(gamepad1.dpad_up || gamepad2.dpad_up){
-                if (clawOpen = true){
+            if (gamepad1.dpad_up || gamepad2.dpad_up) {
+                if (clawOpen){
                     clawClose();
                     wait(300);
                 }
@@ -156,7 +152,7 @@ public class AADriverControls extends LinearOpMode {
 
 
 
-            } else if (gamepad1.dpad_left&& liftPos > 199 || gamepad2.dpad_left&& liftPos > 99){
+            } else if (gamepad1.dpad_left && liftPos > 199 || gamepad2.dpad_left&& liftPos > 99){
 
                 if (liftPos == 600){
                     if (!armDown){
@@ -166,7 +162,7 @@ public class AADriverControls extends LinearOpMode {
 
                     liftPos = 0;
                 } else {
-                    liftPos-=200;
+                    liftPos -= 200;
 
                 }
                 slideR.setTargetPosition(-liftPos);
@@ -178,12 +174,12 @@ public class AADriverControls extends LinearOpMode {
                 slideR.setPower(1);
                 slideL.setPower(1);
             } else if (gamepad1.dpad_right && liftPos<1501 || gamepad2.dpad_right && liftPos<1501){
-                if (clawOpen = true){
+                if (clawOpen) {
                     clawClose();
-                    wait(300);
+                    sleep(300);
                 }
 
-                if (liftPos == 0){
+                if (liftPos == 0) {
                     liftPos=600;
                     movingUp = true;
 
@@ -307,7 +303,7 @@ public class AADriverControls extends LinearOpMode {
 
             telemetry.addData("x", drive.pose.position.x);
             telemetry.addData("y", drive.pose.position.y);
-            telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
+            telemetry.addData("heading", drive.pose.heading.log());
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
             telemetry.addData("right servo", clawR.getPosition());

@@ -1,20 +1,12 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
-import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_USING_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE
-import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.InputDataDigital
-import org.firstinspires.ftc.teamcode.ActionAnalog1
-import org.firstinspires.ftc.teamcode.ActionAnalog1.*
-import org.firstinspires.ftc.teamcode.ActionDigital
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.idc
 
@@ -32,7 +24,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
          */
         const val SLIDE_HEIGHT_MAX = 1086
         const val SLIDE_HEIGHT_MIN = 0
-        const val POWER_MAX = 0.1
+        const val POWER_MAX = 1.0
     }
 
 //    private val coefficients = PIDFCoefficients(
@@ -88,11 +80,12 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
             val desiredPower = if (height < field) (POWER_MAX / 2.0) else POWER_MAX
             slideLeft?. power = desiredPower
             slideRight?.power = desiredPower
-            val evh = height.coerceIn(SLIDE_HEIGHT_MIN..SLIDE_HEIGHT_MAX)
-            slideLeft?. targetPosition = evh
-            slideRight?.targetPosition = evh
+            // evaluated height
+            val evaluatedHeight = height.coerceIn(SLIDE_HEIGHT_MIN..SLIDE_HEIGHT_MAX)
+            slideLeft?. targetPosition = evaluatedHeight
+            slideRight?.targetPosition = evaluatedHeight
 
-            field = height
+            field = evaluatedHeight
         }
 
     override fun modStart() {
@@ -107,10 +100,10 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
                 return
             }
             val moveUp: (InputDataDigital) -> Unit = {
-                if (it()) targetHeight += 100
+                if (it()) targetHeight += 200
             }
             val moveDown: (InputDataDigital) -> Unit = {
-                if (it()) targetHeight -= 100
+                if (it()) targetHeight -= 200
             }
 
             val p0 = gamepadyn.players[0]
@@ -125,6 +118,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
     override fun modUpdate() {
 
+        telemetry.addData("LSD target height:", targetHeight)
 
 //        targetHeight += 10 * ((if (opMode.gamepad1.left_trigger > 0.5) 1 else 0) + (if (opMode.gamepad1.right_trigger > 0.5) -1 else 0))
 //

@@ -23,8 +23,11 @@ import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.BotShared
 import java.lang.Math.toDegrees
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sign
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -83,6 +86,20 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         }
     }
 
+
+    // n_{i}=1.5
+    // n_{o}=0.5
+    // x\left\{0\le x\le1\right\}
+    // \left(x^{n_{i}}\cdot\left(1-x\right)\right)\ +\ \left(x^{n_{o}}\cdot x\right)\left\{0\le x\le1\right\}
+    private fun Double.stickCurve(): Double {
+        val x = this.absoluteValue
+        val s = this.sign
+        val nI = 1.5
+        val nO = 0.5
+        return (x.pow(nI) * (1 - x)) + (x.pow(nO) * x) * sign
+    }
+
+
     private fun updateTeleOp() {
 
         if (gamepadyn == null) {
@@ -100,8 +117,8 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         // +X = forward
         // +Y = left
         val inputVector = Vector2d(
-            movement.y.toDouble(),
-            -movement.x.toDouble()
+            movement.y.toDouble().stickCurve(),
+            -movement.x.toDouble().stickCurve()
         )
 
         // angle of the stick
@@ -139,6 +156,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         telemetry.addLine("Movement Input: (${movement.x}, ${movement.y})")
         telemetry.addLine("Input Yaw: " + if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0)
 //        telemetry.addLine("Yaw Difference (bot - input): " + )
+
     }
 
 }
