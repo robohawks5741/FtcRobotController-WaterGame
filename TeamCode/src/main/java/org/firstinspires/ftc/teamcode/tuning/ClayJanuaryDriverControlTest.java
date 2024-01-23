@@ -77,7 +77,6 @@ public class ClayJanuaryDriverControlTest extends LinearOpMode {
         clawOpen = false;
     }
 
-
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
@@ -116,8 +115,6 @@ public class ClayJanuaryDriverControlTest extends LinearOpMode {
         while (!isStopRequested()) {
             // counter-clockwise
             double gyroYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-            float rotation = gamepad1.right_stick_x;
 
             // +X = forward
             // +Y = left

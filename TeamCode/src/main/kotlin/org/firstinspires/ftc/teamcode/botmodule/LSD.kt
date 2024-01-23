@@ -27,6 +27,11 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         const val POWER_MAX = 1.0
     }
 
+    enum class SlideStop(@JvmField public val height: Int) {
+        BOTTOM(0),
+        TOP(1565)
+    }
+
 //    private val coefficients = PIDFCoefficients(
 //        0.0,
 //        0.0,
@@ -70,12 +75,8 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
 
     @Suppress("MemberVisibilityCanBePrivate")
-    private var useManual: Boolean = true
-
     var targetHeight: Int = 0
         set(height) {
-            useManual = true
-
             // half the power for downwards movement
             val desiredPower = if (height < field) (POWER_MAX / 2.0) else POWER_MAX
             slideLeft?. power = desiredPower
