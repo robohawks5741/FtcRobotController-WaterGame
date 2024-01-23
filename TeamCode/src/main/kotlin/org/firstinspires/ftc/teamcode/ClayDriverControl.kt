@@ -23,7 +23,7 @@ import kotlin.math.sign
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@TeleOp
+@TeleOp(name = "# Clay Scrimmage Driver Control")
 class ClayDriverControl : OpMode() {
     private lateinit var hang: DcMotorEx
     private lateinit var intake: DcMotorEx
