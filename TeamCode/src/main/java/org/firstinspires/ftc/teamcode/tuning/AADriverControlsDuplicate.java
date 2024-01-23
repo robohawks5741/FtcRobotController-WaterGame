@@ -1,8 +1,9 @@
 package org.firstinspires.ftc.teamcode.tuning;
 
+import static org.firstinspires.ftc.teamcode.MacrosKt.clamp;
+
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
-import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.TrajectoryBuilder;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
@@ -12,9 +13,24 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
-import static java.util.concurrent.TimeUnit.*;
-import com.acmerobotics.roadrunner.Vector2d;
 
+import static java.lang.Math.atan2;
+import static java.lang.Math.cos;
+import static java.lang.Math.sin;
+import static java.lang.Math.sqrt;
+import static java.util.concurrent.TimeUnit.*;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.IMU;
+import com.qualcomm.robotcore.hardware.Servo;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.MecanumDrive;
 
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -28,23 +44,22 @@ public class AADriverControlsDuplicate extends LinearOpMode {
     private DcMotorEx hang, intake, slideR, slideL;
     private Servo trussL, trussR, armR, armL, clawR, clawL, drone, inlift;
 
+    private IMU imu;
+
     private DistanceSensor distance;
+    private boolean useBotRelative = true;
     private boolean armDown = true;
     private boolean clawOpen = true;
     private  boolean movingUp = false;
     private int liftPos = 0;
 
     private int hangMode = 0;
-    private boolean pressed = false;
-    private boolean fieldReletive = false;
-    public static void wait(int ms)
-    {
-        try
-        {
+    private boolean  pressed = false;
+
+    public static void wait(int ms) {
+        try {
             Thread.sleep(ms);
-        }
-        catch(InterruptedException ex)
-        {
+        } catch(InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
     }
@@ -72,6 +87,8 @@ public class AADriverControlsDuplicate extends LinearOpMode {
         clawL.setPosition(0.29);
         clawOpen = false;
     }
+
+
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
@@ -88,6 +105,7 @@ public class AADriverControlsDuplicate extends LinearOpMode {
         clawL = hardwareMap.get(Servo.class, "clawL");
         inlift = hardwareMap.get(Servo.class, "inlift");
         distance = hardwareMap.get(DistanceSensor.class, "distance");
+        imu = hardwareMap.get(IMU.class, "imu");
 
 
         slideR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -107,39 +125,48 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
 
         while (!isStopRequested()) {
-            Rotation2d rot = poseEstimate.heading;
-//            rot.anl
-//            TODO: clay, fix?
-            if (!fieldReletive){
-                drive.setDrivePowers(new PoseVelocity2d(
-                        new Vector2d(
-                                -gamepad1.left_stick_y,
-                                -gamepad1.left_stick_x
-                        ),
-                        -gamepad1.right_stick_x
-                ));
-            } else {
-                Vector2d input = new Vector2d(
-                        -gamepad1.left_stick_y,
-                        -gamepad1.left_stick_x
-                );
+            // counter-clockwise
+            double gyroYaw = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
-                // Pass in the rotated input + right stick value for rotation
-                // Rotation is not part of the rotated input thus must be passed in separately
-                drive.setDrivePowers(
-                        new PoseVelocity2d(
-                                input,
-                                -gamepad1.right_stick_x
-                        )
-                );
-            }
+            float rotation = gamepad1.right_stick_x;
 
+            // +X = forward
+            // +Y = left
+            Vector2d inputVector = new Vector2d(
+                gamepad1.left_stick_y,
+                -gamepad1.left_stick_x
+            );
 
+            // angle of the stick
+            double inputTheta = atan2(inputVector.y, inputVector.x);
+            // evaluated theta
+            double driveTheta = inputTheta - gyroYaw; // + PI
+            // magnitude of inputVector clamped to [0, 1]
+            double inputPower = clamp(
+                sqrt(
+                    (inputVector.x * inputVector.x) +
+                    (inputVector.y * inputVector.y)
+                ),
+                0.0,
+                1.0
+            );
 
+            double driveRelativeX = cos(driveTheta) * inputPower;
+            double driveRelativeY = sin(driveTheta) * inputPower;
 
+            // \frac{1}{1+\sqrt{2\left(1-\frac{\operatorname{abs}\left(\operatorname{mod}\left(a,90\right)-45\right)}{45}\right)\ }}
+//        powerModifier = 1.0 / (1.0 + sqrt(2.0 * (1.0 - abs((gyroYaw % (PI / 2)) - (PI / 4)) / (PI / 4))))
 
+            PoseVelocity2d pv = new PoseVelocity2d(
+                ((useBotRelative) ? new Vector2d(
+                    driveRelativeX,
+                    driveRelativeY
+                ) : inputVector),
+                -gamepad1.right_stick_x
+            );
+            drive.setDrivePowers(pv);
 
-                //Intake
+            //Intake
             if (gamepad1.left_trigger>0.1|| gamepad2.left_trigger>0.1){
                 intake.setPower(0.65);
             } else {
@@ -149,8 +176,8 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
             //Placement
 
-            if(gamepad1.dpad_up || gamepad2.dpad_up){
-                if (clawOpen = true){
+            if (gamepad1.dpad_up || gamepad2.dpad_up) {
+                if (clawOpen){
                     clawClose();
                     wait(300);
                 }
@@ -184,7 +211,7 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
 
 
-            } else if (gamepad1.dpad_left&& liftPos > 199 || gamepad2.dpad_left&& liftPos > 99){
+            } else if (gamepad1.dpad_left && liftPos > 199 || gamepad2.dpad_left&& liftPos > 99){
 
                 if (liftPos == 600){
                     if (!armDown){
@@ -194,7 +221,7 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
                     liftPos = 0;
                 } else {
-                    liftPos-=200;
+                    liftPos -= 200;
 
                 }
                 slideR.setTargetPosition(-liftPos);
@@ -206,12 +233,12 @@ public class AADriverControlsDuplicate extends LinearOpMode {
                 slideR.setPower(1);
                 slideL.setPower(1);
             } else if (gamepad1.dpad_right && liftPos<1501 || gamepad2.dpad_right && liftPos<1501){
-                if (clawOpen = true){
+                if (clawOpen) {
                     clawClose();
-                    wait(300);
+                    sleep(300);
                 }
 
-                if (liftPos == 0){
+                if (liftPos == 0) {
                     liftPos=600;
                     movingUp = true;
 
@@ -335,8 +362,7 @@ public class AADriverControlsDuplicate extends LinearOpMode {
 
             telemetry.addData("x", drive.pose.position.x);
             telemetry.addData("y", drive.pose.position.y);
-//            TODO: clay plz fix
-//            telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
+            telemetry.addData("heading", drive.pose.heading.log());
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
             telemetry.addData("right servo", clawR.getPosition());

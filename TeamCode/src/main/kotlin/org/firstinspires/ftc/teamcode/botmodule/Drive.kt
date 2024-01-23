@@ -91,7 +91,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
     // n_{o}=0.5
     // x\left\{0\le x\le1\right\}
     // \left(x^{n_{i}}\cdot\left(1-x\right)\right)\ +\ \left(x^{n_{o}}\cdot x\right)\left\{0\le x\le1\right\}
-    private fun Double.stickCurve(): Double {
+    public fun Double.stickCurve(): Double {
         val x = this.absoluteValue
         val s = this.sign
         val nI = 1.5
