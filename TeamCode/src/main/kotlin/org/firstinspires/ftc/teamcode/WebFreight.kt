@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerImpl
 import com.qualcomm.robotcore.util.WebHandlerManager
 import com.qualcomm.robotcore.util.WebServer
 import fi.iki.elonen.NanoHTTPD
+import fi.iki.elonen.NanoHTTPD.IHTTPSession
+import fi.iki.elonen.NanoHTTPD.Response
 import org.firstinspires.ftc.ftccommon.external.OnCreateEventLoop
 import org.firstinspires.ftc.ftccommon.external.OnDestroy
 import org.firstinspires.ftc.ftccommon.external.WebHandlerRegistrar
@@ -15,6 +17,7 @@ class WebFreight(private val server: WebServer) {
     private var opModeManager: OpModeManagerImpl? = null
     private var context: Context? = null
     init {
+//        server.webHandlerManager.register("/setdemo", ::setDemo)
         server.webHandlerManager.register("/addie", ::dashResponse)
     }
 
@@ -27,12 +30,23 @@ class WebFreight(private val server: WebServer) {
         @SuppressLint("StaticFieldLeak")
         @JvmStatic public var instance: WebFreight? = null
         @JvmStatic
-        fun dashResponse(session: NanoHTTPD.IHTTPSession): NanoHTTPD.Response {
+        fun dashResponse(session: IHTTPSession): Response {
             return NanoHTTPD.newFixedLengthResponse(
-                NanoHTTPD.Response.Status.OK,
+                Response.Status.OK,
                 NanoHTTPD.MIME_PLAINTEXT, "Hi!"
             )
         }
+
+//        @JvmStatic
+//        fun setDemo(session: IHTTPSession): Response {
+//            val data: String? = session.queryParameterString
+//            DemoSystem.inputFileName = data
+//            DemoSystem.outputFileName = data
+//            return NanoHTTPD.newFixedLengthResponse(
+//                Response.Status.OK,
+//                NanoHTTPD.MIME_PLAINTEXT, "set active demo file to \"${data}\""
+//            )
+//        }
 //        @JvmStatic
 //        val dashResponse = object: WebHandler {
 //            override fun getResponse(session: NanoHTTPD.IHTTPSession?): NanoHTTPD.Response {
@@ -49,7 +63,7 @@ class WebFreight(private val server: WebServer) {
 
         @WebHandlerRegistrar
         @JvmStatic
-        public fun register(context: Context, manager: WebHandlerManager): Unit {
+        fun register(context: Context, manager: WebHandlerManager): Unit {
             if (instance == null) instance = WebFreight(manager.webServer)
         }
 
