@@ -22,14 +22,14 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         /**
          * The maximum position of the slide, in encoder ticks.
          */
-        const val SLIDE_HEIGHT_MAX = 1086
+        const val SLIDE_HEIGHT_MAX = 1585
         const val SLIDE_HEIGHT_MIN = 0
         const val POWER_MAX = 1.0
     }
 
     enum class SlideStop(@JvmField public val height: Int) {
-        BOTTOM(0),
-        TOP(1565)
+        BOTTOM(SLIDE_HEIGHT_MIN),
+        TOP(SLIDE_HEIGHT_MAX)
     }
 
 //    private val coefficients = PIDFCoefficients(

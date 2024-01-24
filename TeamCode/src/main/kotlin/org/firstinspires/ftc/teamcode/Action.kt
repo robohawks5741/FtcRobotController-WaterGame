@@ -18,14 +18,22 @@ enum class ActionDigital : ActionEnumDigital {
     PIXEL_COMMIT_LEFT,          // one-shot
     PIXEL_COMMIT_RIGHT,         // one-shot
 
-
+    CUSTOM_ACTION_DIGITAL_A,
+    CUSTOM_ACTION_DIGITAL_B,
+    CUSTOM_ACTION_DIGITAL_X,
+    CUSTOM_ACTION_DIGITAL_Y,
 }
 
 enum class ActionAnalog1 : ActionEnumAnalog1 {
     INTAKE_SPIN,                // X = spin power (+inwards, -outwards)
     ROTATION,                   // X = clockwise yaw       
     CLAW,                       // X = open..closed
-    SLIDE_MANUAL                // X = move some (-1 down, +1 up)
+    SLIDE_MANUAL,               // X = move some (-1 down, +1 up)
+
+    CUSTOM_ACTION_ANALOG_A,
+    CUSTOM_ACTION_ANALOG_B,
+    CUSTOM_ACTION_ANALOG_X,
+    CUSTOM_ACTION_ANALOG_Y,
 }
 
 enum class ActionAnalog2 : ActionEnumAnalog2 {
