@@ -22,9 +22,14 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         /**
          * The maximum position of the slide, in encoder ticks.
          */
-        const val SLIDE_HEIGHT_MAX = 1086
+        const val SLIDE_HEIGHT_MAX = 1585
         const val SLIDE_HEIGHT_MIN = 0
         const val POWER_MAX = 1.0
+    }
+
+    enum class SlideStop(@JvmField public val height: Int) {
+        BOTTOM(SLIDE_HEIGHT_MIN),
+        TOP(SLIDE_HEIGHT_MAX)
     }
 
 //    private val coefficients = PIDFCoefficients(
@@ -70,12 +75,8 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
 
     @Suppress("MemberVisibilityCanBePrivate")
-    private var useManual: Boolean = true
-
     var targetHeight: Int = 0
         set(height) {
-            useManual = true
-
             // half the power for downwards movement
             val desiredPower = if (height < field) (POWER_MAX / 2.0) else POWER_MAX
             slideLeft?. power = desiredPower
