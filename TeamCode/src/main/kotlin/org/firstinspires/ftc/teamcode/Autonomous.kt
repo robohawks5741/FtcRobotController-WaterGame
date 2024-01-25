@@ -41,6 +41,7 @@ open class AutoSuper(
     }
 
     private lateinit var shared: BotShared
+    @Suppress("LeakingThis")
     private val moduleHandler = ModuleHandler(ModuleConfig(this, shared, false, null))
 
     override fun init() {
@@ -53,7 +54,21 @@ open class AutoSuper(
 
     }
 
-    var targetDetection: AprilTagDetection? = null
+    private var targetDetection: AprilTagDetection? = null
+
+    companion object {
+        //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
+        //  applied to the drive motors to correct the error.
+        //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
+        @JvmStatic private val SPEED_GAIN = 0.02 //  Forward Speed Control "Gain". eg: Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
+        @JvmStatic private val STRAFE_GAIN = 0.015 //  Strafe Speed Control "Gain".  eg: Ramp up to 25% power at a 25 degree Yaw error.   (0.25 / 25.0)
+        @JvmStatic private val TURN_GAIN = 0.01 //  Turn Control "Gain".  eg: Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
+
+        @JvmStatic private val MAX_AUTO_SPEED = 0.5 //  Clip the approach speed to this max value (adjust for your robot)
+        @JvmStatic private val MAX_AUTO_STRAFE = 0.5 //  Clip the approach speed to this max value (adjust for your robot)
+        @JvmStatic private val MAX_AUTO_TURN = 0.3 //  Clip the turn speed to this max value (adjust for your robot)
+
+    }
 
     override fun loop() {
         shared.update()
@@ -66,17 +81,7 @@ open class AutoSuper(
             val yawError: Double = detection.ftcPose.yaw
 
 
-            //  Set the GAIN constants to control the relationship between the measured position error, and how much power is
-            //  applied to the drive motors to correct the error.
-            //  Drive = Error * Gain    Make these values smaller for smoother control, or larger for a more aggressive response.
-            val SPEED_GAIN = 0.02 //  Forward Speed Control "Gain". eg: Ramp up to 50% power at a 25 inch error.   (0.50 / 25.0)
-            val STRAFE_GAIN = 0.015 //  Strafe Speed Control "Gain".  eg: Ramp up to 25% power at a 25 degree Yaw error.   (0.25 / 25.0)
-            val TURN_GAIN = 0.01 //  Turn Control "Gain".  eg: Ramp up to 25% power at a 25 degree error. (0.25 / 25.0)
 
-
-            val MAX_AUTO_SPEED = 0.5 //  Clip the approach speed to this max value (adjust for your robot)
-            val MAX_AUTO_STRAFE = 0.5 //  Clip the approach speed to this max value (adjust for your robot)
-            val MAX_AUTO_TURN = 0.3 //  Clip the turn speed to this max value (adjust for your robot)
 
             // Use the speed and turn "gains" to calculate how we want the robot to move.
             val fwDist: Double = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED)

@@ -1,42 +1,28 @@
 package org.firstinspires.ftc.teamcode
 
+import android.util.Log
 import com.acmerobotics.roadrunner.Pose2d
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
 import computer.living.gamepadyn.ActionBindAnalog2to1
 import computer.living.gamepadyn.ActionMap
-import computer.living.gamepadyn.Axis
 import computer.living.gamepadyn.Axis.Y
 import computer.living.gamepadyn.Configuration
 import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.InputData
 import computer.living.gamepadyn.InputDataAnalog1
 import computer.living.gamepadyn.InputDataAnalog2
-import computer.living.gamepadyn.InputType.ANALOG1
-import computer.living.gamepadyn.InputType.ANALOG2
-import computer.living.gamepadyn.InputType.DIGITAL
 import computer.living.gamepadyn.Player
 import computer.living.gamepadyn.RawInputDigital.*
 import computer.living.gamepadyn.RawInputAnalog1.*
 import computer.living.gamepadyn.RawInputAnalog2.*
 import computer.living.gamepadyn.ftc.InputBackendFtc
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
-import org.firstinspires.ftc.teamcode.MecanumDrive
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 /*
  * TODO:
@@ -78,7 +64,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         )
     )
 
-    object Config {
+    object GamepadConfig {
         /**
          * Pixel placement config
          */
@@ -98,7 +84,7 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
             ActionBind(PIXEL_START,                         FACE_UP),
             ActionBind(MOVEMENT,                            STICK_LEFT),
             ActionBind(TOGGLE_DRIVER_RELATIVITY,            SPECIAL_BACK),
-
+            ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
             // TODO: Replace with BindSingleAxis
             object : ActionBind<ActionAnalog1>(ROTATION,    STICK_RIGHT) {
                 override fun transform(
@@ -106,7 +92,10 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
                     targetActionState: InputData,
                     delta: Double
                 ): InputData {
-                    if (inputState !is InputDataAnalog2) throw Exception("exception in the crappy garbage code !1!")
+                    if (inputState !is InputDataAnalog2) {
+                        Log.e("Gamepadyn", "rotation code broke :(")
+                        return targetActionState
+                    }
                     return InputDataAnalog1(inputState.x)
                 }
             },
@@ -117,7 +106,10 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
                     targetActionState: InputData,
                     delta: Double
                 ): InputData {
-                    if (inputState !is InputDataAnalog1 || targetActionState !is InputDataAnalog1) throw Exception("claw is not analog 1 ??")
+                    if (inputState !is InputDataAnalog1 || targetActionState !is InputDataAnalog1) {
+                        Log.e("Gamepadyn", "claw is not analog 1 ??")
+                        return targetActionState
+                    }
                     return InputDataAnalog1(targetActionState.x + (delta * 10.0).toFloat())
                 }
             }
@@ -129,6 +121,20 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         val player1 = ConfigurationRH(
             ActionBindAnalog2to1(SLIDE_MANUAL,              STICK_LEFT, Y),
             ActionBind(PIXEL_START,                         FACE_UP),
+            ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
+            object : ActionBind<ActionAnalog1>(INTAKE_SPIN, TRIGGER_RIGHT) {
+                override fun transform(
+                    inputState: InputData,
+                    targetActionState: InputData,
+                    delta: Double
+                ): InputData {
+                    if (inputState !is InputDataAnalog1) {
+                        Log.e("Gamepadyn", "exception in the crappy garbage code intake")
+                        return targetActionState
+                    }
+                    return InputDataAnalog1(-inputState.x)
+                }
+            },
 //            ActionBind(DRONE_LAUNCH,                        FACE_RIGHT),
 //            ActionBind(DRONE_LAUNCH,                        SPECIAL_BACK),
 //            ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
@@ -142,7 +148,6 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
      * Set up the robot
      */
     override fun init() {
-//        val setter = DriverControl::tagCamera.setter
         shared = BotShared(this)
         moduleHandler = ModuleHandler(ModuleConfig(this, shared, true, gamepadyn))
         shared.rr = MecanumDrive(hardwareMap, initialPose)
@@ -150,8 +155,8 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         // Configuration
         val p0 = gamepadyn.players[0]
         val p1 = gamepadyn.players[1]
-        p0.configuration = Config.player0
-        p1.configuration = Config.player1
+        p0.configuration = GamepadConfig.player0
+        p1.configuration = GamepadConfig.player1
 
         moduleHandler.init()
     }
@@ -164,75 +169,37 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         val p1 = gamepadyn.players[1]
 
         p0.getEvent(PIXEL_START) {
-            if (it()) p0.configuration = Config.pixelPlacement
+            if (it()) p0.configuration = GamepadConfig.pixelPlacement
         }
         p1.getEvent(PIXEL_START) {
-            if (it()) p1.configuration = Config.pixelPlacement
+            if (it()) p1.configuration = GamepadConfig.pixelPlacement
         }
 
         p0.getEvent(PIXEL_END) {
-            if (it()) p0.configuration = Config.player0
+            if (it()) p0.configuration = GamepadConfig.player0
         }
         p1.getEvent(PIXEL_END) {
-            if (it()) p1.configuration = Config.player1
+            if (it()) p1.configuration = GamepadConfig.player1
         }
 
     }
 
     /**
-     * The robot's game loop. Handles input, updates the motors, basically calls everything.
+     * The robot's game loop. Doesn't do much! Almost everything is delegated to other modules.
      */
     override fun loop() {
         deltaTime = (time - lastLoopTime)
         lastLoopTime = time
-
-// TODO: un-break this code
-
-//        val intake = shared.intake
-//        val armLeft = shared.servoArmLeft
-////        val armRight = shared.servoArmRight
-//        val claw = shared.claw
-//
-//        // Claw
-//        if (claw != null && shared.servoClawLeft != null && shared.servoClawRight != null) {
-//            claw.state += 0.5 * 0.01 * (gamepad2.right_trigger - gamepad2.left_trigger)
-//
-//            //        claw.state +=
-//            //        clawLeft.position +=    Servo.MAX_POSITION * 0.5 * deltaTime * (gamepad2.right_trigger - gamepad2.left_trigger)
-//            //        clawRight.position +=   Servo.MAX_POSITION * 0.5 * deltaTime * (gamepad2.right_trigger - gamepad2.left_trigger)
-//            telemetry.addLine("Claw Positions: L=${shared.servoClawLeft?.position} R=${shared.servoClawRight?.position}")
-//            telemetry.addLine("Claw Module: ${claw.state}")
-//        } else {
-//            telemetry.addLine("WARNING: Safeguard triggered (claw not present)");
-//        }
-//
-//        // Arm
-//        if (armLeft != null /* && armRight != null*/) {
-//            val armPos = (armLeft.position + Servo.MAX_POSITION * /*deltaTime*/ 0.01 * -gamepad2.right_stick_y)
-//            armLeft.position = armPos.clamp(Servo.MIN_POSITION, Servo.MAX_POSITION)
-//
-//            telemetry.addLine("Arm Position: ${armLeft.position}")
-//        } else {
-//            telemetry.addLine("WARNING: Safeguard triggered (arm not present)");
-//        }
-//
-//        val sarml = shared.servoArmLeft
-//        if (sarml != null) {
-//            sarml.position = (sarml.position + (0.01 * ((if (gamepad1.right_bumper) 1.0 else 0.0) + (if (gamepad1.left_bumper) -1.0 else 0.0)))) % 1.0
-//        }
-
-
-        // Most input values are [-1.0, 1.0]
 
         gamepadyn.update()
         shared.update()
 
         moduleHandler.update()
 
-        if (gamepadyn.players[0].configuration == Config.pixelPlacement) {
+        if (gamepadyn.players[0].configuration == GamepadConfig.pixelPlacement) {
             telemetry.addLine("p0 is placing a pixel")
         }
-        if (gamepadyn.players[1].configuration == Config.pixelPlacement) {
+        if (gamepadyn.players[1].configuration == GamepadConfig.pixelPlacement) {
             telemetry.addLine("p1 is placing a pixel")
         }
 

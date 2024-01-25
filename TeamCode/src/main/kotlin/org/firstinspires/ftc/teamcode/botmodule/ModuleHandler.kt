@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 
+@Suppress("MemberVisibilityCanBePrivate")
 class ModuleHandler(
     private val config: ModuleConfig
 ) {

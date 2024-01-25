@@ -9,18 +9,18 @@ import com.acmerobotics.roadrunner.Time
 import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.clamp
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.IMU
-import computer.living.gamepadyn.Gamepadyn
+import com.qualcomm.robotcore.hardware.LED
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
-import org.firstinspires.ftc.teamcode.BotShared
+import org.firstinspires.ftc.teamcode.idc
+import org.firstinspires.ftc.teamcode.stickCurve
 import java.lang.Math.toDegrees
 import kotlin.math.PI
 import kotlin.math.absoluteValue
@@ -32,10 +32,12 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Drive(config: ModuleConfig) : BotModule(config) {
-    @JvmField val motorRightFront: DcMotorEx    = hardwareMap[DcMotorEx::class.java,  "frontR"    ]
-    @JvmField val motorLeftFront: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "frontL"    ]
-    @JvmField val motorRightBack: DcMotorEx     = hardwareMap[DcMotorEx::class.java,  "backR"    ]
-    @JvmField val motorLeftBack: DcMotorEx      = hardwareMap[DcMotorEx::class.java,  "backL"    ]
+    @JvmField val motorRightFront: DcMotorEx        =       hardwareMap[DcMotorEx::class.java,      "frontR"]
+    @JvmField val motorLeftFront: DcMotorEx         =       hardwareMap[DcMotorEx::class.java,      "frontL"]
+    @JvmField val motorRightBack: DcMotorEx         =       hardwareMap[DcMotorEx::class.java,      "backR" ]
+    @JvmField val motorLeftBack: DcMotorEx          =       hardwareMap[DcMotorEx::class.java,      "backL" ]
+    @JvmField val indicatorRed: DigitalChannel?     = idc { hardwareMap[DigitalChannel::class.java, "led1"  ] }
+    @JvmField val indicatorGreen: DigitalChannel?   = idc { hardwareMap[DigitalChannel::class.java, "led0"  ] }
 
     private var wheelVels: WheelVelocities<Time> = WheelVelocities(
         DualNum.constant(0.0, 0),
@@ -44,7 +46,20 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         DualNum.constant(0.0, 0)
     )
     private var powerModifier = 1.0
-    private var useBotRelative = true
+    private var useDriverRelative = true
+        set(status) {
+            indicatorRed?.mode = DigitalChannel.Mode.OUTPUT
+            indicatorGreen?.mode = DigitalChannel.Mode.OUTPUT
+            // redundant logic for readability's sake
+            if (status) {
+                indicatorRed?.state = false
+                indicatorGreen?.state = true
+            } else {
+                indicatorRed?.state = true
+                indicatorGreen?.state = false
+            }
+            field = status
+        }
 
     init {
         // Drive motor directions **(DO NOT CHANGE THESE!!!)**
@@ -58,6 +73,8 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         motorLeftBack.      zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         motorRightFront.    zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
         motorRightBack.     zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+        useDriverRelative = true
     }
 
     override fun modUpdate() {
@@ -76,7 +93,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
                 telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
                 return
             }
-            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) { if (it()) useBotRelative = !useBotRelative }
+            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) { if (it()) useDriverRelative = !useDriverRelative }
             // IMU orientation/calibration
             val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
             val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
@@ -85,20 +102,6 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             imu.resetYaw()
         }
     }
-
-
-    // n_{i}=1.5
-    // n_{o}=0.5
-    // x\left\{0\le x\le1\right\}
-    // \left(x^{n_{i}}\cdot\left(1-x\right)\right)\ +\ \left(x^{n_{o}}\cdot x\right)\left\{0\le x\le1\right\}
-    public fun Double.stickCurve(): Double {
-        val x = this.absoluteValue
-        val s = this.sign
-        val nI = 1.5
-        val nO = 0.5
-        return (x.pow(nI) * (1 - x)) + (x.pow(nO) * x) * sign
-    }
-
 
     private fun updateTeleOp() {
 
@@ -139,11 +142,11 @@ class Drive(config: ModuleConfig) : BotModule(config) {
 //        powerModifier = 1.0 / (1.0 + sqrt(2.0 * (1.0 - abs((gyroYaw % (PI / 2)) - (PI / 4)) / (PI / 4))))
 
         val pv = PoseVelocity2d(
-            if (useBotRelative) Vector2d(
+            if (useDriverRelative) Vector2d(
                 driveRelativeX,
                 driveRelativeY
             ) else inputVector,
-            -rotation.x.toDouble()
+            -rotation.x.toDouble().stickCurve()
         )
         // +X = forward, +Y = left
 //        drive.setDrivePowers(pv)
@@ -151,6 +154,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
 
 //        Actions.run
 
+        telemetry.addLine("Driver Relativity: ${if (useDriverRelative) "en" else "dis" }abled")
         telemetry.addLine("Gyro Yaw: ${toDegrees(gyroYaw)}")
         telemetry.addLine("Rotation Input: ${rotation.x}")
         telemetry.addLine("Movement Input: (${movement.x}, ${movement.y})")

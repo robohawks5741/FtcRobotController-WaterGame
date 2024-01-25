@@ -4,8 +4,8 @@ import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.*
 
 class Claw(config: ModuleConfig) : BotModule(config) {
-    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawL"     ] }
-    private val servoRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawR"     ] }
+    private val clawLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawL"     ] }
+    private val clawRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawR"     ] }
     private var position: Double = 0.0
 
     companion object {
@@ -29,20 +29,20 @@ class Claw(config: ModuleConfig) : BotModule(config) {
             position = y
             val interpLeftPos = (((1.0 - position) * CLAW_LEFT_OPEN) + (position * CLAW_LEFT_CLOSED))
             val interpRightPos = (((1.0 - position) * CLAW_RIGHT_OPEN) + (position * CLAW_RIGHT_CLOSED))
-            servoLeft?.position = interpLeftPos
-            servoRight?.position = interpRightPos
+            clawLeft?.position = interpLeftPos
+            clawRight?.position = interpRightPos
         }
 
     init {
-        if (servoLeft == null || servoRight == null) {
+        if (clawLeft == null || clawRight == null) {
             val missing = mutableSetOf<String>()
-            if (servoLeft != null) missing.add("clawl")
-            if (servoRight != null) missing.add("clawr")
+            if (clawLeft == null) missing.add("clawL")
+            if (clawRight == null) missing.add("clawR")
 
             status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = missing)
         } else {
-            servoLeft.direction = Servo.Direction.FORWARD
-            servoRight.direction = Servo.Direction.FORWARD
+            clawLeft.direction = Servo.Direction.FORWARD
+            clawRight.direction = Servo.Direction.FORWARD
         }
     }
 
@@ -57,10 +57,6 @@ class Claw(config: ModuleConfig) : BotModule(config) {
 //                if (it()) useBotRelative = !useBotRelative
 //            }
 //        }
-//    }
-
-//    override fun <T : Enum<T>> bindTeleOp(gamepadyn: Gamepadyn<T>) {
-//        super.bindTeleOp(gamepadyn)
 //    }
 
 }

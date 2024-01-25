@@ -123,11 +123,7 @@ public class ClayJanuaryDriverControl extends LinearOpMode {
             //Driver Relative Toggle
             if (gamepad1.back && !driveModePressed){
                 driveModePressed= true;
-                if (driverRelative){
-                    driverRelative = false;
-                } else if (!driverRelative){
-                    driverRelative = true;
-                }
+                driverRelative = !driverRelative;
             } else if (!gamepad1.back){
                 driveModePressed = false;
             }

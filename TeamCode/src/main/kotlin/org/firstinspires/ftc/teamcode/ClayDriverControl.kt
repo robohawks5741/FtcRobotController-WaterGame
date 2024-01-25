@@ -84,7 +84,7 @@ class ClayDriverControl : OpMode() {
         val s = this.sign
         val nI = 1.5
         val nO = 0.5
-        return (x.pow(nI) * (1 - x)) + (x.pow(nO) * x) * sign
+        return (x.pow(nI) * (1 - x)) + (x.pow(nO) * x) * s
     }
 
     override fun loop() {

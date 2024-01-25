@@ -36,16 +36,16 @@ class September(cfg: ModuleConfig) : BotModule(cfg) {
                 trussPull?.power = if (it()) 1.0 else 0.0
             }
 
-            gamepadyn.players[0].getEvent(TRUSS_MOVE)!!.addListener(trussHandler)
-            gamepadyn.players[1].getEvent(TRUSS_MOVE)!!.addListener(trussHandler)
+            gamepadyn.players[0].getEvent(TRUSS_MOVE).addListener(trussHandler)
+            gamepadyn.players[1].getEvent(TRUSS_MOVE).addListener(trussHandler)
 
-            gamepadyn.players[0].getEvent(TRUSS_PULL)!!.addListener(hangHandler)
-            gamepadyn.players[1].getEvent(TRUSS_PULL)!!.addListener(hangHandler)
+            gamepadyn.players[0].getEvent(TRUSS_PULL).addListener(hangHandler)
+            gamepadyn.players[1].getEvent(TRUSS_PULL).addListener(hangHandler)
         }
     }
 
-    override fun modUpdate() {
-        if (isTeleOp && gamepadyn != null) {
-        }
-    }
+//    override fun modUpdate() {
+//        if (isTeleOp && gamepadyn != null) {
+//        }
+//    }
 }

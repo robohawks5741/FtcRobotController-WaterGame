@@ -43,8 +43,8 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
     init {
         if (slideLeft == null || slideRight == null) {
             val missing = mutableSetOf<String>()
-            if (slideLeft != null) missing.add("slideL")
-            if (slideRight != null) missing.add("slideR")
+            if (slideLeft == null) missing.add("slideL")
+            if (slideRight == null) missing.add("slideR")
 
             status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = missing)
         } else {

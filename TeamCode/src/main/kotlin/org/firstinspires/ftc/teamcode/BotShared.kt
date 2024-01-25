@@ -36,25 +36,6 @@ class BotShared(opMode: OpMode) {
 
     @JvmField val imu:              IMU         =           hardwareMap[IMU          ::class.java,   "imu"       ]
     @JvmField val camera:           WebcamName? =   idc {   hardwareMap[WebcamName   ::class.java,   "Webcam 1"  ] }
-
-//    @JvmField val march               = camera?.    let {   March(opMode, it)   }
-//    @JvmField val lsd                 = if (motorSlideLeft  != null && motorSlideRight != null) LSD(opMode, motorSlideLeft, motorSlideRight    )   else null
-//    @JvmField val claw                = if (servoClawLeft   != null && servoClawRight  != null) Claw(opMode, servoClawLeft, servoClawRight     )   else null
-//    @JvmField val intake              = if (motorIntakeLift != null || motorIntakeSpin != null) Intake(opMode, motorIntakeLift, motorIntakeSpin)   else null
-//    @JvmField var drive               = Drive(this)
-//    class SoftwareMap {
-//
-//        @JvmField val motorSlideLeft:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftLeft"  ] }
-//        @JvmField val motorSlideRight:  DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "liftRight" ] }
-//        @JvmField val motorIntakeSpin:  DcMotorEx?  =
-//        @JvmField val motorIntakeLift:  DcMotorEx?  =
-//        @JvmField val motorTrussPull:   DcMotorEx?  =   idc {   hardwareMap[DcMotorEx    ::class.java,   "hang"      ] }
-//        @JvmField val servoTrussLeft:   Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussl"    ] }
-//        @JvmField val servoTrussRight:  Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "trussr"    ] }
-//        @JvmField val servoArmLeft:     Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armLeft"   ] }
-//        @JvmField val servoArmRight:    Servo?      =   idc {   hardwareMap[Servo        ::class.java,   "armRight"  ] }
-//
-//    }
     @JvmField var rr: MecanumDrive? = null
 
     init {

@@ -15,7 +15,7 @@ data class ModuleConfig(
     val gamepadyn: Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>? = null
 )
 
-abstract class BotModule protected constructor(private val config: ModuleConfig) {
+abstract class BotModule protected constructor(config: ModuleConfig) {
     protected val opMode: OpMode = config.opMode
     protected val hardwareMap: HardwareMap = config.opMode.hardwareMap
     protected val telemetry: Telemetry = config.opMode.telemetry
@@ -24,6 +24,7 @@ abstract class BotModule protected constructor(private val config: ModuleConfig)
     protected val shared = config.shared
     protected val imu = shared.imu
     protected val camera = shared.camera
+
     protected val gamepad1: Gamepad
         get() = opMode.gamepad1
     protected val gamepad2: Gamepad
