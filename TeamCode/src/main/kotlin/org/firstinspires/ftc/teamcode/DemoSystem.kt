@@ -52,6 +52,7 @@ import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonNull
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
@@ -60,15 +61,18 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import java.lang.reflect.Method
+import kotlin.concurrent.thread
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
+
 @Suppress("unused")
 object DemoSystem {
 
-    /** Replace this with your own Driver Control. It must be a Kotlin class. */
+    /** Replace this with your own Driver Control. */
     val PLAYBACK_OPMODE: KClass<*> = ClayDriverControl::class
     const val TICK_RATE: Double = 30.0
     const val DEMO_DIRECTORY: String = "demos"
@@ -85,6 +89,11 @@ object DemoSystem {
 
         private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
+        private var hackedInternalRunOpMode: Method? = null
+        private var hackedInternalOnStart: Method? = null
+        private var hackedInternalOnEventLoopIteration: Method? = null
+        private var hackedInternalOnStopRequested: Method? = null
+        private var opThread: Thread? = null
 
         final override fun init() {
             val context = hardwareMap.appContext
@@ -117,12 +126,36 @@ object DemoSystem {
             emulatedOpMode.hardwareMap = this.hardwareMap
 //            emulatedOpMode.internalOpModeServices = this.internalOpModeServices
             emulatedOpMode.time = this.time
+
+            try {
+                hackedInternalRunOpMode             = emulatedOpMode::class.java.getMethod("internalRunOpMode")
+                hackedInternalOnStart               = emulatedOpMode::class.java.getMethod("internalOnStart")
+                hackedInternalOnEventLoopIteration  = emulatedOpMode::class.java.getMethod("internalOnEventLoopIteration")
+                hackedInternalOnStopRequested       = emulatedOpMode::class.java.getMethod("internalOnStopRequested")
+                // we don't need newGamepadDataAvailable because we do that manually
+            } catch (e: Exception) {
+                telemetry.addLine("error getting \"hacked\" method: ${e.localizedMessage}")
+            }
+
+            if (emulatedOpMode is LinearOpMode) {
+                opThread = thread(
+                    start = true,
+                    isDaemon = false,
+                    contextClassLoader = null,
+                    name = "Addie's Emulated OpMode Thread",
+                    priority = -1
+                ) {
+                    hackedInternalRunOpMode?.invoke(emulatedOpMode)
+                }
+            }
             emulatedOpMode.init()
         }
 
         final override fun start() {
             this.timeOffset = this.time
             emulatedOpMode.time = this.time - timeOffset
+
+            if (emulatedOpMode is LinearOpMode) hackedInternalOnStart?.invoke(emulatedOpMode)
             emulatedOpMode.start()
         }
 
@@ -140,7 +173,16 @@ object DemoSystem {
                 Log.i("DemoSystem", "skipping frame read #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
             }
 
+            if (emulatedOpMode is LinearOpMode) hackedInternalOnEventLoopIteration?.invoke(emulatedOpMode)
             emulatedOpMode.loop()
+        }
+
+        final override fun stop() {
+            if (emulatedOpMode is LinearOpMode) hackedInternalOnStopRequested?.invoke(emulatedOpMode)
+            emulatedOpMode.stop()
+
+            Thread.sleep(50)
+            opThread?.interrupt()
         }
     }
 
@@ -149,6 +191,11 @@ object DemoSystem {
 
         private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
+        private var hackedInternalRunOpMode: Method? = null
+        private var hackedInternalOnStart: Method? = null
+        private var hackedInternalOnEventLoopIteration: Method? = null
+        private var hackedInternalOnStopRequested: Method? = null
+        private var opThread: Thread? = null
 
         override fun init() {
             frames1 = arrayOfNulls<ByteArray?>(ceil(TICK_RATE * 30.0).toInt()).toCollection(ArrayList())
@@ -165,6 +212,28 @@ object DemoSystem {
             emulatedOpMode.hardwareMap = this.hardwareMap
 //            emulatedOpMode.internalOpModeServices = this.internalOpModeServices
             emulatedOpMode.time = this.time
+
+            try {
+                hackedInternalRunOpMode             = emulatedOpMode::class.java.getMethod("internalRunOpMode")
+                hackedInternalOnStart               = emulatedOpMode::class.java.getMethod("internalOnStart")
+                hackedInternalOnEventLoopIteration  = emulatedOpMode::class.java.getMethod("internalOnEventLoopIteration")
+                hackedInternalOnStopRequested       = emulatedOpMode::class.java.getMethod("internalOnStopRequested")
+                // we don't need newGamepadDataAvailable because we do that manually
+            } catch (e: Exception) {
+                telemetry.addLine("error getting \"hacked\" method: ${e.localizedMessage}")
+            }
+
+            if (emulatedOpMode is LinearOpMode) {
+                opThread = thread(
+                    start = true,
+                    isDaemon = false,
+                    contextClassLoader = null,
+                    name = "Addie's Emulated OpMode Thread",
+                    priority = -1
+                ) {
+                    hackedInternalRunOpMode?.invoke(emulatedOpMode)
+                }
+            }
             emulatedOpMode.init()
         }
 
@@ -173,8 +242,10 @@ object DemoSystem {
             emulatedOpMode.time = this.time - timeOffset
             emulatedOpMode.gamepad1.copy(this.gamepad1)
             emulatedOpMode.gamepad2.copy(this.gamepad2)
-            emulatedOpMode.start()
             Log.i("DemoSystem", "Started recording.")
+
+            if (emulatedOpMode is LinearOpMode) hackedInternalOnStart?.invoke(emulatedOpMode)
+            emulatedOpMode.start()
         }
 
         override fun loop() {
@@ -192,10 +263,17 @@ object DemoSystem {
                 Log.i("DemoSystem", "skipping frame write #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
             }
 
+            if (emulatedOpMode is LinearOpMode) hackedInternalOnEventLoopIteration?.invoke(emulatedOpMode)
             emulatedOpMode.loop()
         }
 
         override fun stop() {
+            if (emulatedOpMode is LinearOpMode) hackedInternalOnStopRequested?.invoke(emulatedOpMode)
+            emulatedOpMode.stop()
+
+            Thread.sleep(50)
+            opThread?.interrupt()
+
             Log.i("DemoSystem", "Demo recorded, frames:")
             for ((i, e) in frames1.withIndex()) {
                 if (e == null) continue
