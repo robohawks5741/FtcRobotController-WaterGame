@@ -1,28 +1,25 @@
 package org.firstinspires.ftc.teamcode
 
-import com.acmerobotics.roadrunner.MecanumKinematics
 import com.acmerobotics.roadrunner.Pose2d
 import com.acmerobotics.roadrunner.PoseVelocity2d
-import com.acmerobotics.roadrunner.PoseVelocity2dDual
-import com.acmerobotics.roadrunner.Time
 import com.acmerobotics.roadrunner.Vector2d
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.util.Range
 import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
-import org.firstinspires.ftc.teamcode.MecanumDrive
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import java.lang.Thread.sleep
 
-@Autonomous(name = "# Auto (Blue Left)", group = "# Sub-Mode")
-class AutoBlueLeft : AutoSuper( Alliance.BLUE,    AllianceSide.LEFT,    Pose2d(0.0, 0.0, 0.0))
-@Autonomous(name = "# Auto (Blue Right)", group = "# Sub-Mode")
-class AutoBlueRight : AutoSuper(Alliance.BLUE,    AllianceSide.RIGHT,   Pose2d(0.0, 0.0, 0.0))
-@Autonomous(name = "# Auto (Red Left)", group = "# Sub-Mode")
-class AutoRedLeft : AutoSuper(  Alliance.RED,     AllianceSide.LEFT,    Pose2d(0.0, 0.0, 0.0))
-@Autonomous(name = "# Auto (Red Right)", group = "# Sub-Mode")
-class AutoRedRight : AutoSuper( Alliance.RED,     AllianceSide.RIGHT,   Pose2d(0.0, 0.0, 0.0))
+@Autonomous(name = "# Auto (Blue Backdrop-Most)", group = "# Sub-Mode")
+class AutoBlueBackdrop :    AutoSuper(Alliance.BLUE,    AllianceSide.BACKDROP_SIDE, Pose2d(0.0, 0.0, 0.0))
+@Autonomous(name = "# Auto (Blue Audience-Most)", group = "# Sub-Mode")
+class AutoBlueAudience :    AutoSuper(Alliance.BLUE,    AllianceSide.AUDIENCE_SIDE, Pose2d(0.0, 0.0, 0.0))
+@Autonomous(name = "# Auto (Red Backdrop-Most)", group = "# Sub-Mode")
+class AutoRedBackdrop :     AutoSuper(Alliance.RED,     AllianceSide.BACKDROP_SIDE, Pose2d(0.0, 0.0, 0.0))
+@Autonomous(name = "# Auto (Red Audience-Most)", group = "# Sub-Mode")
+class AutoRedAudience :     AutoSuper(Alliance.RED,     AllianceSide.AUDIENCE_SIDE, Pose2d(0.0, 0.0, 0.0))
+
 
 //@Disabled
 // TODO: can replace super constructor with open and override
@@ -31,14 +28,6 @@ open class AutoSuper(
     private val side: AllianceSide? = null,
     private val initialPose: Pose2d
 ) : OpMode() {
-    enum class Alliance {
-        RED,
-        BLUE
-    }
-    enum class AllianceSide {
-        LEFT,
-        RIGHT
-    }
 
     private lateinit var shared: BotShared
     @Suppress("LeakingThis")
