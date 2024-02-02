@@ -45,6 +45,10 @@ abstract class BotModule protected constructor(config: ModuleConfig) {
         protected set
 
     open fun modStart() { }
-    open fun modUpdate() { }
+    open fun modStartTeleOp() { }
 
+    open fun modUpdate() { }
+    open fun modUpdateTeleOp() { }
+
+    open fun modStop() { }
 }

@@ -8,7 +8,7 @@ package org.firstinspires.ftc.teamcode
  * REQUIREMENTS:
  * - A project with Kotlin support (root buildscript dependency `org.jetbrains.kotlin:kotlin-gradle-plugin` and plugin `org.jetbrains.kotlin.android`)
  * - Kotlin's reflection library (org.jetbrains.kotlin:kotlin-reflect)
- * - A TeleOp OpMode written in Kotlin (you can convert Java to Kotlin in Android Studio/IntelliJ IDEA)
+ * - A TeleOp OpMode that **DOESN'T INHERIT FROM LinearOpMode**
  */
 
 /*

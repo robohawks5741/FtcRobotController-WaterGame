@@ -184,6 +184,10 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
 
     }
 
+    override fun stop() {
+        moduleHandler.stop()
+    }
+
     /**
      * The robot's game loop. Doesn't do much! Almost everything is delegated to other modules.
      */

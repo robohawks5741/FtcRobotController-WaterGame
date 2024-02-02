@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
-
 @Suppress("MemberVisibilityCanBePrivate")
 class ModuleHandler(
     private val config: ModuleConfig
@@ -14,7 +12,7 @@ class ModuleHandler(
             drive,
             lsd,
             claw,
-            march,
+            opticon,
             intake,
             droneLauncher
         )
@@ -41,7 +39,7 @@ class ModuleHandler(
      * STATUS: NOT WORKING
      * TODO:
      */
-    lateinit var march: March private set
+    lateinit var opticon: Opticon private set
 
     /**
      * STATUS: UNKNOWN
@@ -59,7 +57,7 @@ class ModuleHandler(
         drive = Drive(config)
         lsd = LSD(config)
         claw = Claw(config)
-        march = March(config)
+        opticon = Opticon(config)
         intake = Intake(config)
         droneLauncher = DroneLauncher(config)
     }
@@ -77,5 +75,9 @@ class ModuleHandler(
                 config.opMode.telemetry.addLine("MODULE NOT OK: \"${module::class.simpleName}\" is missing hardware: $hmissing")
             }
         }
+    }
+
+    fun stop() {
+        for (module in modules) module.modStop()
     }
 }

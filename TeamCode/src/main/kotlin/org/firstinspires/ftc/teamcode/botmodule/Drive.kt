@@ -77,38 +77,31 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         useDriverRelative = true
     }
 
-    override fun modUpdate() {
-        if (isTeleOp) {
-            updateTeleOp()
-            motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
-            motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
-            motorRightBack.power = wheelVels.rightBack[0] / powerModifier
-            motorRightFront.power = wheelVels.rightFront[0] / powerModifier
-        }
-    }
-
-    override fun modStart() {
-        if (isTeleOp) {
-            if (gamepadyn == null) {
-                telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
-                return
-            }
-            gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) { if (it()) useDriverRelative = !useDriverRelative }
-            // IMU orientation/calibration
-            val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
-            val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-            val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
-            imu.initialize(IMU.Parameters(orientationOnRobot))
-            imu.resetYaw()
-        }
-    }
-
-    private fun updateTeleOp() {
-
+    override fun modStartTeleOp() {
         if (gamepadyn == null) {
             telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
             return
         }
+        gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) { if (it()) useDriverRelative = !useDriverRelative }
+        // IMU orientation/calibration
+        val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
+        val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+        val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
+        imu.initialize(IMU.Parameters(orientationOnRobot))
+        imu.resetYaw()
+    }
+
+    override fun modUpdateTeleOp() {
+        if (gamepadyn == null) {
+            telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
+            return
+        }
+
+        motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
+        motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
+        motorRightBack.power = wheelVels.rightBack[0] / powerModifier
+        motorRightFront.power = wheelVels.rightFront[0] / powerModifier
+
         //        val drive = shared.drive!!
 
         // counter-clockwise

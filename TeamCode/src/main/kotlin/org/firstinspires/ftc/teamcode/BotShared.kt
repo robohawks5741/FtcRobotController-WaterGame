@@ -5,21 +5,8 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
-import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_WITHOUT_ENCODER
-import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
-import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE
 import com.qualcomm.robotcore.hardware.IMU
-import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.firstinspires.ftc.teamcode.botmodule.Claw
-import org.firstinspires.ftc.teamcode.botmodule.Drive
-import org.firstinspires.ftc.teamcode.botmodule.Intake
-import org.firstinspires.ftc.teamcode.botmodule.LSD
-import org.firstinspires.ftc.teamcode.botmodule.March
-import org.firstinspires.ftc.teamcode.MecanumDrive
 
 // TODO: should this be a superclass? our codebase has grown so much, and we might want to reconsider
 /**
