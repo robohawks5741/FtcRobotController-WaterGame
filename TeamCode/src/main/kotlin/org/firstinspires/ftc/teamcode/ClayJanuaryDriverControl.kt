@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.tuning
+package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.roadrunner.Pose2d
 import com.acmerobotics.roadrunner.PoseVelocity2d
@@ -12,8 +12,6 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
-import org.firstinspires.ftc.teamcode.MecanumDrive
-import org.firstinspires.ftc.teamcode.clamp
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -22,7 +20,7 @@ import kotlin.math.sqrt
 
 @TeleOp(name = "# Clay January Driver Control")
 class ClayJanuaryDriverControl : LinearOpMode() {
-    var poseEstimate = Pose2d(0.0, 0.0, 0.0)
+    private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
     private lateinit var hang: DcMotorEx
     private lateinit var intake: DcMotorEx
     private lateinit var slideR: DcMotorEx
@@ -50,8 +48,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
     private data class Timeout(val calltime: Long, val callback: () -> Unit)
     private val waitList: MutableSet<Timeout> = mutableSetOf()
-
-    private fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout(calltime, callback))
+    private fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
 
     private fun armDown() {
         armR.position = 0.05
@@ -271,10 +268,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     rightClawOpen()
                     leftClawOpen()
                     // sleep is probably justified here
-                    wait(200){
-
-                    }
-
+                    sleep(200)
                 }
                 if (!armDown) {
                     armDown()
