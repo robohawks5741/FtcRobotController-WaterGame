@@ -184,7 +184,7 @@ public class ClayJanuaryDriverControlTesting extends LinearOpMode {
 
             //Intake
             if (gamepad1.left_trigger>0.1|| gamepad2.left_trigger>0.1){
-                intake.setPower(0.65);
+                intake.setPower(0.8);
             } else {
                 intake.setPower(0);
             }
@@ -322,17 +322,12 @@ public class ClayJanuaryDriverControlTesting extends LinearOpMode {
 
 
             //Truss hang
-            if (hangMode % 3 == 0){
-                trussL.setPosition(0.32);
+            if (hangMode % 2 == 0) {
+                trussL.setPosition( 0.083);
                 trussR.setPosition(0.3);
-            } else if (hangMode%3 == 1){
-                trussL.setPosition(0.16);
-                trussR.setPosition(0.45);
-            }
-            else if (hangMode%3 == 2){
-
+            } else if (hangMode % 2 == 1) {
                 trussR.setPosition(0.65);
-                trussL.setPosition(0);
+                trussL.setPosition(0.03);
             }
 
             //Truss Hang

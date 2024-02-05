@@ -180,7 +180,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
             //Intake
             if (gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
-                intake.power = 0.65
+                intake.power = 0.8
             } else {
                 intake.power = 0.0
             }
@@ -290,15 +290,12 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
 
             //Truss hang
-            if (hangMode % 3 == 0) {
-                trussL.position = 0.32
+            if (hangMode % 2 == 0) {
+                trussL.position = 0.083
                 trussR.position = 0.3
-            } else if (hangMode % 3 == 1) {
-                trussL.position = 0.16
-                trussR.position = 0.45
-            } else if (hangMode % 3 == 2) {
+            } else if (hangMode % 2 == 1) {
                 trussR.position = 0.65
-                trussL.position = 0.0
+                trussL.position = 0.03
             }
 
             //Truss Hang

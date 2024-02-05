@@ -72,23 +72,23 @@ public class ServoTest1 extends LinearOpMode {
 
 
             if (gamepad1.dpad_left) {
-                armL.setPosition(armL.getPosition() + 0.01);
+                trussL.setPosition(trussL.getPosition() + 0.01);
 
 
             } else if (gamepad1.dpad_right) {
-                armL.setPosition(armL.getPosition() - 0.01);
+                trussL.setPosition(trussL.getPosition() - 0.01);
             } else if (gamepad1.dpad_down) {
-                armL.setPosition(0);
+                trussL.setPosition(0);
             }
 //0.36
             if (gamepad1.x) {
-                armR.setPosition(armR.getPosition() + 0.01);
+                trussR.setPosition(trussR.getPosition() + 0.01);
 
             } else if (gamepad1.b) {
-                armR.setPosition(armR.getPosition() - 0.01);
+                trussR.setPosition(trussR.getPosition() - 0.01);
 
             } else if (gamepad1.a) {
-                armR.setPosition(0);
+                trussR.setPosition(0);
             }
 
             drive.updatePoseEstimate();
@@ -98,8 +98,8 @@ public class ServoTest1 extends LinearOpMode {
             telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
-            telemetry.addData("left servo", armL .getPosition());
-            telemetry.addData("right servo", armR .getPosition());
+            telemetry.addData("left servo", trussL .getPosition());
+            telemetry.addData("right servo", trussR .getPosition());
 
             telemetry.update();
         }
