@@ -12,18 +12,18 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
 import java.lang.Thread.sleep
 
 @Autonomous(name = "# Auto (Blue Backdrop-Most)", group = "# Sub-Mode")
-class AutoBlueBackdrop :    AutoSuper(Alliance.BLUE,    AllianceSide.BACKDROP_SIDE, Pose2d(0.0, 0.0, 0.0))
+class AutoBlueBackdrop :    AddieAutoSuper(Alliance.BLUE,    AllianceSide.BACKDROP_SIDE, Pose2d(0.0, 0.0, 0.0))
 @Autonomous(name = "# Auto (Blue Audience-Most)", group = "# Sub-Mode")
-class AutoBlueAudience :    AutoSuper(Alliance.BLUE,    AllianceSide.AUDIENCE_SIDE, Pose2d(0.0, 0.0, 0.0))
+class AutoBlueAudience :    AddieAutoSuper(Alliance.BLUE,    AllianceSide.AUDIENCE_SIDE, Pose2d(0.0, 0.0, 0.0))
 @Autonomous(name = "# Auto (Red Backdrop-Most)", group = "# Sub-Mode")
-class AutoRedBackdrop :     AutoSuper(Alliance.RED,     AllianceSide.BACKDROP_SIDE, Pose2d(0.0, 0.0, 0.0))
+class AutoRedBackdrop :     AddieAutoSuper(Alliance.RED,     AllianceSide.BACKDROP_SIDE, Pose2d(0.0, 0.0, 0.0))
 @Autonomous(name = "# Auto (Red Audience-Most)", group = "# Sub-Mode")
-class AutoRedAudience :     AutoSuper(Alliance.RED,     AllianceSide.AUDIENCE_SIDE, Pose2d(0.0, 0.0, 0.0))
+class AutoRedAudience :     AddieAutoSuper(Alliance.RED,     AllianceSide.AUDIENCE_SIDE, Pose2d(0.0, 0.0, 0.0))
 
 
 //@Disabled
 // TODO: can replace super constructor with open and override
-open class AutoSuper(
+open class AddieAutoSuper(
     private val alliance: Alliance? = null,
     private val side: AllianceSide? = null,
     private val initialPose: Pose2d
