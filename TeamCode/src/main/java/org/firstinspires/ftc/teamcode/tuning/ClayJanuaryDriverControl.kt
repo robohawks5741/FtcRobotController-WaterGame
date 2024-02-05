@@ -195,7 +195,12 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                         liftPos = 1565
                         updateSlide()
                     }
+                } else {
+                    movingUp = true
+                    liftPos = 1565
+                    updateSlide()
                 }
+
             } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
                 if (!armDown) {
                     armDown()
@@ -266,7 +271,10 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     rightClawOpen()
                     leftClawOpen()
                     // sleep is probably justified here
-                    sleep(200)
+                    wait(200){
+
+                    }
+
                 }
                 if (!armDown) {
                     armDown()
@@ -274,7 +282,10 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                         liftPos = 0
                         updateSlide()
                     }
-                } else updateSlide()
+                } else {
+                    liftPos = 0
+                    updateSlide()
+                }
             }
 
 

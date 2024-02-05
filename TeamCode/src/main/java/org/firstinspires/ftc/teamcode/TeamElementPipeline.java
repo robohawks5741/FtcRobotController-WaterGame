@@ -12,7 +12,7 @@ import java.util.List;
 
 
 public class TeamElementPipeline extends OpenCvPipeline {
-    List<Integer> ELEMENT_COLOR = Arrays.asList(255, 0, 0); //(red, green, blue)
+    List<Integer> ELEMENT_COLOR = Arrays.asList(0, 0, 255); //(red, green, blue)
 
     /**
      * TODO: document
