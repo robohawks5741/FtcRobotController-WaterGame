@@ -20,7 +20,7 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 @TeleOp(name = "# Clay January Driver Control")
-class ClayJanuaryDriverControl : LinearOpMode() {
+class AddieFebruaryDriverControl : LinearOpMode() {
     private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
     private lateinit var hang: DcMotorEx
     private lateinit var intake: DcMotorEx
@@ -44,7 +44,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var driveModePressed = false
 
     private data class Timeout(val calltime: Long, val callback: () -> Unit)
-    private lateinit var waitList: ArrayList<Timeout>
+    private val waitList: ArrayList<Timeout> = arrayListOf()
     private fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
 
     // automatically updates the truss servos when the value is changed
@@ -148,8 +148,6 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         distance = hardwareMap.get(DistanceSensor::class.java, "distance")
         imu = hardwareMap.get(IMU::class.java, "imu")
 
-        waitList = arrayListOf();
-
         imu.resetYaw()
         slideR.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideR.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
@@ -183,18 +181,14 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             }
 
             // Placement
-            movingUp = true
-            if ((gamepad1.dpad_up || gamepad2.dpad_up)/* && !movingUp*/) {
+            if (gamepad1.dpad_up || gamepad2.dpad_up) {
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
-                    movingUp = true
-                    sleep(300)
-                    liftPos = 1565
-//                    wait(300) {
-//                        liftPos = 1565
-//                        movingUp = false
-//                    }
+                    wait(300) {
+                        movingUp = true
+                        liftPos = 1565
+                    }
                 } else {
                     movingUp = true
                     liftPos = 1565

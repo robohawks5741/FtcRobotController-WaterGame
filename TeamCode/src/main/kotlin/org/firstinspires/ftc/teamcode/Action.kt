@@ -9,6 +9,7 @@ enum class ActionDigital : ActionEnumDigital {
     TOGGLE_INTAKE_HEIGHT,       // toggle
     DRONE_LAUNCH,               // one-shot
     TRUSS_MOVE,                 // one-shot
+
     TRUSS_PULL,                 // hold it down,
 
     PIXEL_START,                // one-shot
