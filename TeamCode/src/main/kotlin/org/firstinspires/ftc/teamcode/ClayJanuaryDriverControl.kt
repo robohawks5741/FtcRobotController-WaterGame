@@ -37,11 +37,12 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private lateinit var imu: IMU
     private lateinit var distance: DistanceSensor
     private lateinit var drive: MecanumDrive
-    private var movingUp = false
+    private var isSlideMovingUp = false
+    private var hasMovedSlide = false
 
-    private var pressed = false
+    private var hasCycledTrussHang = false
     private var driverRelative = true
-    private var driveModePressed = false
+    private var hasToggledDriverRelativity = false
 
     // automatically updates the truss servos when the value is changed
     private var trussPos = TrussPosition.DOWN
@@ -70,14 +71,13 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         }
 
     private fun updateDrive() {
-        //Driver Relative Toggle
-        if (gamepad1.back && !driveModePressed) {
-            driveModePressed = true
+        // Driver Relative Toggle
+        if (gamepad1.back) if (!hasToggledDriverRelativity) {
+            hasToggledDriverRelativity = true
             driverRelative = !driverRelative
             imu.resetYaw()
-        } else if (!gamepad1.back) {
-            driveModePressed = false
-        }
+        } else hasToggledDriverRelativity = false
+
         if (driverRelative) {
             val gyroYaw = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
 
@@ -111,11 +111,11 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         }
     }
 
-    private var liftPos = 0
+    private var slidePos = 0
         set(pos) {
             field = pos
-            slideR.targetPosition = -liftPos
-            slideL.targetPosition = liftPos
+            slideR.targetPosition = -slidePos
+            slideL.targetPosition = slidePos
             slideR.mode = DcMotor.RunMode.RUN_TO_POSITION
             slideL.mode = DcMotor.RunMode.RUN_TO_POSITION
             slideR.power = 1.0
@@ -125,24 +125,25 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
     override fun runOpMode() {
         drive = MecanumDrive(hardwareMap, poseEstimate)
-        hang = hardwareMap.get(DcMotorEx::class.java, "hang")
-        intake = hardwareMap.get(DcMotorEx::class.java, "intake")
-        slideR = hardwareMap.get(DcMotorEx::class.java, "slideR")
-        slideL = hardwareMap.get(DcMotorEx::class.java, "slideL")
-        drone = hardwareMap.get(Servo::class.java, "drone")
-        trussR = hardwareMap.get(Servo::class.java, "trussR")
-        trussL = hardwareMap.get(Servo::class.java, "trussL")
-        armR = hardwareMap.get(Servo::class.java, "armR")
-        armL = hardwareMap.get(Servo::class.java, "armL")
-        clawR = hardwareMap.get(Servo::class.java, "clawR")
-        clawL = hardwareMap.get(Servo::class.java, "clawL")
-        inlift = hardwareMap.get(Servo::class.java, "inlift")
-        distance = hardwareMap.get(DistanceSensor::class.java, "distance")
-        imu = hardwareMap.get(IMU::class.java, "imu")
 
-        data class Timeout(val calltime: Long, val callback: () -> Unit)
-        val waitList: ArrayList<Timeout> = arrayListOf();
-        fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
+        hang = hardwareMap[DcMotorEx::class.java, "hang"]
+        intake = hardwareMap[DcMotorEx::class.java, "intake"]
+        slideR = hardwareMap[DcMotorEx::class.java, "slideR"]
+        slideL = hardwareMap[DcMotorEx::class.java, "slideL"]
+        drone = hardwareMap[Servo::class.java, "drone"]
+        trussR = hardwareMap[Servo::class.java, "trussR"]
+        trussL = hardwareMap[Servo::class.java, "trussL"]
+        armR = hardwareMap[Servo::class.java, "armR"]
+        armL = hardwareMap[Servo::class.java, "armL"]
+        clawR = hardwareMap[Servo::class.java, "clawR"]
+        clawL = hardwareMap[Servo::class.java, "clawL"]
+        inlift = hardwareMap[Servo::class.java, "inlift"]
+        distance = hardwareMap[DistanceSensor::class.java, "distance"]
+        imu = hardwareMap[IMU::class.java, "imu"]
+
+//        data class Timeout(val calltime: Long, val callback: () -> Unit)
+//        val waitList: ArrayList<Timeout> = arrayListOf();
+//        fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
 
         imu.resetYaw()
         slideR.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -162,152 +163,130 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
         while (opModeIsActive()) {
 
-            for (timeout in waitList) if (time * 1000 >= timeout.calltime) {
-                timeout.callback()
-                waitList.remove(timeout)
-            }
-
             updateDrive()
 
-            //Intake
+            // Intake
             if (gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
                 intake.power = 0.65
             } else {
                 intake.power = 0.0
             }
 
-            // Placement
-            movingUp = true
-            if ((gamepad1.dpad_up || gamepad2.dpad_up)/* && !movingUp*/) {
+            // Move slides up
+            if (gamepad1.dpad_up || gamepad2.dpad_up) {
+                isSlideMovingUp = true
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
-                    movingUp = true
-                    sleep(300)
-                    liftPos = 1565
-                    wait(300) {
-                        liftPos = 1565
-                        movingUp = false
-                    }
-                } else {
-                    movingUp = true
-                    liftPos = 1565
                 }
-
-            } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
+                slidePos = 400
+                sleep(200)
+                isArmDown = false
+                sleep(200)
+                slidePos = 1565
+                isSlideMovingUp = false
+            }
+            // Move slides down
+            if (gamepad1.dpad_down || gamepad2.dpad_down) {
                 if (!isArmDown) {
                     isArmDown = true
                     // used to be 100
-                    wait(600) {
-                        liftPos = 0
-                    }
+                    sleep(200)
+                    slidePos = 0
                 } else {
-                    liftPos = 0
-
+                    slidePos = 0
                 }
-                // these numbers should be equal
-            } else if (gamepad1.dpad_left && liftPos > 199 || gamepad2.dpad_left && liftPos > 199) {
-                if (liftPos == 600) {
-                    if (!isArmDown) {
-                        isArmDown = true
-                        // used to be 100
-                        wait(600) {
-                            liftPos = 0
-                        }
-                    }
+            }
+            // TODO:
+            if ((gamepad1.dpad_left || gamepad2.dpad_left) && slidePos > 199) {
+                if (slidePos == 600 && !isArmDown) {
+                    isArmDown = true
+                    // used to be 100
+                    sleep(200)
+                    slidePos = 0
                 } else {
-                    liftPos -= 200
+                    slidePos -= 200
                 }
-            } else if (gamepad1.dpad_right && liftPos < 1501 || gamepad2.dpad_right && liftPos < 1501) {
+            } else if (gamepad1.dpad_right && slidePos < 1501 || gamepad2.dpad_right && slidePos < 1501) {
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
-                    wait(300) {
-                        if (liftPos == 0) {
-                            liftPos = 600
-                            movingUp = true
-                        } else {
-                            liftPos += 200
-                        }
+                    sleep(300)
+                    if (slidePos == 0) {
+                        slidePos = 600
+                        isSlideMovingUp = true
+                    } else {
+                        slidePos += 200
                     }
                 } else {
-                    if (liftPos == 0) {
-                        liftPos = 600
-                        movingUp = true
+                    if (slidePos == 0) {
+                        slidePos = 600
+                        isSlideMovingUp = true
                     } else {
-                        liftPos += 200
+                        slidePos += 200
                     }
                 }
             }
 
-            //Arm Rotation
+            // Arm Rotation
             if (gamepad1.left_bumper || gamepad2.left_bumper) { //place
                 isLeftClawOpen = true
             } else if (gamepad1.right_bumper || gamepad2.right_bumper) { //Pickup
                 isRightClawOpen = true
             }
-            if (slideL.currentPosition > 500 && movingUp) {
+
+            // TODO: what does this code do?? why is it here
+            if (slidePos > 500 && isSlideMovingUp) {
                 isArmDown = false
-                movingUp = false
+                isSlideMovingUp = false
             }
 
-
-            //Claw
-            //Close
+            // Claw
             if (gamepad1.x || gamepad2.x) {
+                // Close
                 isLeftClawOpen = false
                 isRightClawOpen = false
-            } else if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger > 0.1) { //open
+            } else if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger > 0.1) {
+                // Open
                 if (!isRightClawOpen || !isLeftClawOpen) {
                     isLeftClawOpen = true
                     isRightClawOpen = true
-                    Log.i("CJDC", "!rco || !lco about to sleep 200ms")
-                    // sleep is probably justified here
                     sleep(200)
-                    Log.i("CJDC", "!rco || !lco slept 200ms")
                 }
                 if (!isArmDown) {
                     isArmDown = true
-                    Log.i("CJDC", "!armDown about to wait 100ms")
-                    wait(100) {
-                        liftPos = 0
-                        Log.i("CJDC", "!armDown waited 100ms")
-                    }
+                    sleep(200)
+                    slidePos = 0
                 } else {
-                    liftPos = 0
-                    Log.i("CJDC", "armDown updated slide")
+                    slidePos = 0
                 }
             }
 
             // Truss Hang
-            if (gamepad1.y && !pressed || gamepad2.y && !pressed) {
-                pressed = true
+            if (gamepad1.y && !hasCycledTrussHang || gamepad2.y && !hasCycledTrussHang) {
+                hasCycledTrussHang = true
+                // swap (used to cycle, so it's an enum just in case)
                 trussPos = when (trussPos) {
                     TrussPosition.DOWN -> TrussPosition.UP
                     TrussPosition.UP -> TrussPosition.DOWN
                 }
             } else if (!gamepad1.y && !gamepad2.y) {
-                pressed = false
-            }
-            if (gamepad1.a || gamepad2.a) {
-                hang.power = 1.0
-            } else {
-                hang.power = 0.0
+                hasCycledTrussHang = false
             }
 
+            hang.power = if (gamepad1.a || gamepad2.a) 1.0 else 0.0
 
             // Driver 2 Override
             if (abs(gamepad2.left_stick_y) > 0.1) {
                 intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
             }
+            // Gamepad 2 truss controls
             if (abs(gamepad2.right_stick_y) > 0.1) {
                 hang.power = gamepad2.right_stick_y.toDouble().stickCurve()
             }
 
             //Drone Launch
-            if (gamepad1.b || gamepad2.b) {
-                drone.position = 0.8
-            }
+            if (gamepad1.b || gamepad2.b) drone.position = 0.8
 
             drive.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)

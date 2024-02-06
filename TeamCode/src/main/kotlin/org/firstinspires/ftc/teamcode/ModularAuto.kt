@@ -48,28 +48,28 @@ open class AddieAutoSuper(
     override fun loop() {
         shared.update()
 
-        val detection = targetDetection
-        if (detection != null) {
-            // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
-            val rangeError: Double = detection.ftcPose.range - /*DESIRED_DISTANCE*/ 12.0
-            val headingError: Double = detection.ftcPose.bearing
-            val yawError: Double = detection.ftcPose.yaw
-
-            // Use the speed and turn "gains" to calculate how we want the robot to move.
-            val fwDist: Double = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED)
-            val turn: Double = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN)
-            val hzDist: Double = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE)
-
-            val pv = PoseVelocity2d(
-                Vector2d(
-                    fwDist,
-                    hzDist
-                ),
-                turn
-            )
-
-            shared.rr?.setDrivePowers(pv)
-        }
+//        val detection = targetDetection
+//        if (detection != null) {
+//            // Determine heading, range and Yaw (tag image rotation) error so we can use them to control the robot automatically.
+//            val rangeError: Double = detection.ftcPose.range - /*DESIRED_DISTANCE*/ 12.0
+//            val headingError: Double = detection.ftcPose.bearing
+//            val yawError: Double = detection.ftcPose.yaw
+//
+//            // Use the speed and turn "gains" to calculate how we want the robot to move.
+//            val fwDist: Double = Range.clip(rangeError * SPEED_GAIN, -MAX_AUTO_SPEED, MAX_AUTO_SPEED)
+//            val turn: Double = Range.clip(headingError * TURN_GAIN, -MAX_AUTO_TURN, MAX_AUTO_TURN)
+//            val hzDist: Double = Range.clip(-yawError * STRAFE_GAIN, -MAX_AUTO_STRAFE, MAX_AUTO_STRAFE)
+//
+//            val pv = PoseVelocity2d(
+//                Vector2d(
+//                    fwDist,
+//                    hzDist
+//                ),
+//                turn
+//            )
+//
+//            shared.rr?.setDrivePowers(pv)
+//        }
     }
 
     override fun start() {
@@ -82,11 +82,7 @@ open class AddieAutoSuper(
         var drive = shared.rr!!
         val march = moduleHandler.opticon
 
-        while (march.detections.isEmpty()) try {
-            sleep(20)
-        } catch (e: InterruptedException) {
-            Thread.currentThread().interrupt()
-        }
+        while (march.detections.isEmpty()) sleep(20)
         targetDetection = march.detections[0]
 
     }

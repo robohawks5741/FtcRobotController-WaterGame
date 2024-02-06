@@ -73,7 +73,7 @@ import kotlin.reflect.full.createInstance
 object DemoSystem {
 
     /** Replace this with your own Driver Control. */
-    val PLAYBACK_OPMODE: KClass<*> = ClayDriverControl::class
+    val PLAYBACK_OPMODE: KClass<*> = ClayJanuaryDriverControl::class
     const val TICK_RATE: Double = 30.0
     const val DEMO_DIRECTORY: String = "demos"
     var outputFileName: String = "0.replay"
