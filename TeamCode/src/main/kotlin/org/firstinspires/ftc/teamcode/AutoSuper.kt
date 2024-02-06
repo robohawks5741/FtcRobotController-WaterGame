@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 
 abstract class AutoSuper : LinearOpMode() {
-    protected lateinit var hang: DcMotorEx
     protected lateinit var intake: DcMotorEx
     protected lateinit var slideR: DcMotorEx
     protected lateinit var slideL: DcMotorEx
@@ -56,7 +55,6 @@ abstract class AutoSuper : LinearOpMode() {
         slideR.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        hang.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         drive = MecanumDrive(hardwareMap, beginPose)
         waitForStart()
         runTaskA()

@@ -43,10 +43,6 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var driverRelative = true
     private var driveModePressed = false
 
-    private data class Timeout(val calltime: Long, val callback: () -> Unit)
-    private lateinit var waitList: ArrayList<Timeout>
-    private fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
-
     // automatically updates the truss servos when the value is changed
     private var trussPos = TrussPosition.DOWN
         set(pos) {
@@ -84,15 +80,11 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         }
         if (driverRelative) {
             val gyroYaw = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
-            val rotation = gamepad1.right_stick_x
-
 
             // +X = forward
             // +Y = left
-            val (x, y) = Vector2d(
-                gamepad1.left_stick_y.toDouble(),
-                -gamepad1.left_stick_x.toDouble()
-            )
+            val x = -gamepad1.left_stick_y.toDouble().stickCurve()
+            val y = -gamepad1.left_stick_x.toDouble().stickCurve()
 
             // angle of the stick
             val inputTheta = atan2(y, x)
@@ -111,9 +103,9 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             drive.setDrivePowers(
                 PoseVelocity2d(
                     Vector2d(
-                        -gamepad1.left_stick_y.toDouble(),
-                        -gamepad1.left_stick_x.toDouble()
-                    ), -gamepad1.right_stick_x.toDouble()
+                        -gamepad1.left_stick_y.toDouble().stickCurve(),
+                        -gamepad1.left_stick_x.toDouble().stickCurve()
+                    ), -gamepad1.right_stick_x.toDouble().stickCurve()
                 )
             )
         }
@@ -148,7 +140,9 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         distance = hardwareMap.get(DistanceSensor::class.java, "distance")
         imu = hardwareMap.get(IMU::class.java, "imu")
 
-        waitList = arrayListOf();
+        data class Timeout(val calltime: Long, val callback: () -> Unit)
+        val waitList: ArrayList<Timeout> = arrayListOf();
+        fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
 
         imu.resetYaw()
         slideR.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
@@ -191,10 +185,10 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     movingUp = true
                     sleep(300)
                     liftPos = 1565
-//                    wait(300) {
-//                        liftPos = 1565
-//                        movingUp = false
-//                    }
+                    wait(300) {
+                        liftPos = 1565
+                        movingUp = false
+                    }
                 } else {
                     movingUp = true
                     liftPos = 1565
@@ -203,17 +197,21 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             } else if (gamepad1.dpad_down || gamepad2.dpad_down) {
                 if (!isArmDown) {
                     isArmDown = true
-                    wait(100) {
+                    // used to be 100
+                    wait(600) {
                         liftPos = 0
                     }
                 } else {
                     liftPos = 0
+
                 }
-            } else if (gamepad1.dpad_left && liftPos > 199 || gamepad2.dpad_left && liftPos > 99) {
+                // these numbers should be equal
+            } else if (gamepad1.dpad_left && liftPos > 199 || gamepad2.dpad_left && liftPos > 199) {
                 if (liftPos == 600) {
                     if (!isArmDown) {
                         isArmDown = true
-                        wait(100) {
+                        // used to be 100
+                        wait(600) {
                             liftPos = 0
                         }
                     }
@@ -300,10 +298,10 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
             // Driver 2 Override
             if (abs(gamepad2.left_stick_y) > 0.1) {
-                intake.power = gamepad2.left_stick_y.toDouble()
+                intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
             }
             if (abs(gamepad2.right_stick_y) > 0.1) {
-                hang.power = gamepad2.right_stick_y.toDouble()
+                hang.power = gamepad2.right_stick_y.toDouble().stickCurve()
             }
 
             //Drone Launch
