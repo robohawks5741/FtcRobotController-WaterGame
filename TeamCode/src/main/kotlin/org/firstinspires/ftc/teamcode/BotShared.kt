@@ -45,14 +45,6 @@ class BotShared(opMode: OpMode) {
 //        motorSlideRight?.   zeroPowerBehavior = BRAKE
     }
 
-    /**
-     * Should be called every update.
-     * Place any reusable update functions here (i.e. for MecanumDrive)
-     */
-    fun update() {
-        rr?.updatePoseEstimate()
-    }
-
     companion object {
         /**
          * RoadRunner Pose Storage

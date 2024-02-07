@@ -7,16 +7,6 @@ class ModuleHandler(
 //    private lateinit var modules: Set<BotModule>
     private var hasStarted = false
 
-    val modules
-        get() = setOf(
-            drive,
-            lsd,
-            claw,
-            opticon,
-            intake,
-            droneLauncher
-        )
-
     /**
      * STATUS: Working
      * TODO: replace IMU with RoadRunner
@@ -48,10 +38,27 @@ class ModuleHandler(
     lateinit var intake: Intake private set
 
     /**
+     * STATUS: UNKOWN
+     * TODO: test
+     */
+    lateinit var trussel: Trussel private set
+
+    /**
      * STATUS: NOT WORKING
      * TODO:
      */
     lateinit var droneLauncher: DroneLauncher private set
+
+    val modules
+        get() = setOf(
+            drive,
+            lsd,
+            claw,
+            opticon,
+            intake,
+            trussel,
+            droneLauncher
+        )
 
     fun init() {
         drive = Drive(config)
@@ -59,16 +66,24 @@ class ModuleHandler(
         claw = Claw(config)
         opticon = Opticon(config)
         intake = Intake(config)
+        trussel = Trussel(config)
         droneLauncher = DroneLauncher(config)
     }
 
     fun start() {
-        if (!hasStarted) hasStarted = true else return
-        for (module in modules) module.modStart()
+        if (!hasStarted) hasStarted = true
+        else return
+        for (module in modules) {
+            module.modStart()
+            if (config.isTeleOp) module.modStartTeleOp()
+        }
     }
 
     fun update() {
-        for (module in modules) module.modUpdate()
+        for (module in modules) {
+            module.modUpdate()
+            if (config.isTeleOp) module.modUpdateTeleOp()
+        }
         for (module in modules) {
             if (module.status.status != BotModule.StatusEnum.OK) {
                 val hmissing = module.status.hardwareMissing?.joinToString("\", \"", "[ \"", "\" ]")

@@ -11,12 +11,15 @@ import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 
-@Autonomous(name = "# Clay Blue Right")
+@Autonomous(name = "# Clay Red Left")
 class AutoRedLeft : AutoSuper() {
+    override val alliance: Alliance = Alliance.RED
+    override val side: AllianceSide = AllianceSide.AUDIENCE_SIDE
+
     var placementZone: SpikeMark = SpikeMark.CENTER
-    var xmult = 1;
-    var ymult = -1;
-    var dheading = -1;
+    var xmult = 1
+    var ymult = -1
+    var dheading = -1
     override fun runTaskA() {
         runBlocking(when (placementZone) {
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)

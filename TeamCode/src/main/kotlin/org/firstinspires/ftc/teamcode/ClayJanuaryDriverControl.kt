@@ -35,7 +35,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private lateinit var drone: Servo
     private lateinit var inlift: Servo
     private lateinit var imu: IMU
-    private lateinit var distance: DistanceSensor
+//    private lateinit var distance: DistanceSensor
     private lateinit var drive: MecanumDrive
     private var isSlideMovingUp = false
     private var hasMovedSlide = false
@@ -138,7 +138,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         clawR = hardwareMap[Servo::class.java, "clawR"]
         clawL = hardwareMap[Servo::class.java, "clawL"]
         inlift = hardwareMap[Servo::class.java, "inlift"]
-        distance = hardwareMap[DistanceSensor::class.java, "distance"]
+//        distance = hardwareMap[DistanceSensor::class.java, "distance"]
         imu = hardwareMap[IMU::class.java, "imu"]
 
 //        data class Timeout(val calltime: Long, val callback: () -> Unit)
@@ -207,7 +207,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 } else {
                     slidePos -= 200
                 }
-            } else if (gamepad1.dpad_right && slidePos < 1501 || gamepad2.dpad_right && slidePos < 1501) {
+            } else if ((gamepad1.dpad_right || gamepad2.dpad_right) && slidePos < 1501) {
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
@@ -299,7 +299,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("left arm", armL.position)
             telemetry.addData("inlift", inlift.position)
             telemetry.addData("hangMode", trussPos)
-            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
+//            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
             telemetry.update()
         }
     }

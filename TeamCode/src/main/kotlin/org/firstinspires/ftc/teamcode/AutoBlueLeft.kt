@@ -13,7 +13,11 @@ import com.qualcomm.robotcore.hardware.Servo
 
 @Autonomous(name = "# Clay Blue Left")
 class AutoBlueLeft : AutoSuper() {
+
     var placementZone: SpikeMark = SpikeMark.RIGHT
+    override val alliance: Alliance = Alliance.BLUE
+    override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
+
     override fun runTaskA() {
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)

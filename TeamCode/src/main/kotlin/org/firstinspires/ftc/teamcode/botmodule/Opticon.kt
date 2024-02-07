@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import android.util.Size
 import org.firstinspires.ftc.vision.VisionPortal
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.firstinspires.ftc.vision.tfod.TfodProcessor
 
 /**
@@ -11,10 +9,10 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor
  */
 class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
-    /**
-     * The variable to store our instance of the AprilTag processor.
-     */
-    @JvmField val aprilTag: AprilTagProcessor = AprilTagProcessor.Builder()
+//    /**
+//     * The variable to store our instance of the AprilTag processor.
+//     */
+//    @JvmField val aprilTag: AprilTagProcessor = AprilTagProcessor.Builder()
         // The following default settings are available to un-comment and edit as needed.
 
         //.setDrawAxes(false)
@@ -29,7 +27,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
         //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
         // ... these parameters are fx, fy, cx, cy.
 
-        .build()
+//        .build()
 
     /**
      * The variable to store our instance of the TensorFlow Object Detection processor.
@@ -41,8 +39,8 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
      */
     private val visionPortal: VisionPortal?
 
-    val detections: ArrayList<AprilTagDetection>
-        get() = aprilTag.detections
+//    val detections: ArrayList<AprilTagDetection>
+//        get() = aprilTag.detections
 
     override fun modStart() {
         // Wait for the DS start button to be touched.
@@ -53,19 +51,15 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     override fun modUpdate() {
         opticonTelemetry()
 
-        // Push telemetry to the Driver Station.
-        telemetry.update()
+        if (visionPortal != null)
+        if (isStreaming) visionPortal.resumeStreaming()
+        else visionPortal.stopStreaming()
 
         // Share the CPU.
         Thread.sleep(20)
     }
 
-    public fun setStreaming(status: Boolean): Boolean? {
-        if (visionPortal == null) return null
-        if (status) visionPortal.stopStreaming()
-        else visionPortal.resumeStreaming()
-        return status
-    }
+    public var isStreaming: Boolean = true
 
     override fun modStop() {
         // Save more CPU resources when camera is no longer needed.
@@ -134,7 +128,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             //builder.setAutoStopLiveView(false);
 
             // Set and enable the processor.
-            portalBuilder.addProcessor(aprilTag)
+//            portalBuilder.addProcessor(aprilTag)
             portalBuilder.addProcessor(tfod)
 
             // Build the Vision Portal, using the above settings.
@@ -142,6 +136,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
             // Disable or re-enable the aprilTag processor at any time.
             //visionPortal.setProcessorEnabled(aprilTag, true);
+            isStreaming = true
         }
     }
 

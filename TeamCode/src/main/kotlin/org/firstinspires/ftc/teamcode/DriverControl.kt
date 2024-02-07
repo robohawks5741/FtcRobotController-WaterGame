@@ -196,7 +196,6 @@ open class DriverControlBase(private val initialPose: Pose2d) : OpMode() {
         lastLoopTime = time
 
         gamepadyn.update()
-        shared.update()
 
         moduleHandler.update()
 
