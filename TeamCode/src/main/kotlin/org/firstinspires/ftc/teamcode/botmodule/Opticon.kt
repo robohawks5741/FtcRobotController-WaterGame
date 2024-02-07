@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import android.util.Size
 import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.firstinspires.ftc.vision.tfod.TfodProcessor
 
 /**
@@ -32,7 +33,8 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     /**
      * The variable to store our instance of the TensorFlow Object Detection processor.
      */
-    private val tfod: TfodProcessor?
+    @JvmField val tfod: TfodProcessor?
+    @JvmField val aprilTag: AprilTagProcessor?
 
     /**
      * The variable to store our instance of the vision portal.
@@ -68,7 +70,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
     private fun opticonTelemetry() {
         val currentRecognitions = tfod!!.recognitions
-        telemetry.addData("# Objects Detected", currentRecognitions.size)
+        telemetry.addData("TFOD Object Count", currentRecognitions.size)
 
         // Step through the list of recognitions and display info for each one.
         for (recognition in currentRecognitions) {
@@ -83,13 +85,56 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             )
             telemetry.addData("- Position", "%.0f / %.0f", x, y)
             telemetry.addData("- Size", "%.0f x %.0f", recognition.width, recognition.height)
-        } // end for() loop
+        }
+
+        val detections = aprilTag!!.detections
+        telemetry.addData("AprilTag Count", currentRecognitions.size)
+        // Step through the list of recognitions and display info for each one.
+        for (detection in detections) {
+            if (detection.metadata != null) {
+                telemetry.addLine("\n==== (ID ${detection.id}) ${detection.metadata.name}")
+                telemetry.addLine(
+                    String.format(
+                        "XYZ %6.1f %6.1f %6.1f  (inch)",
+                        detection.ftcPose.x,
+                        detection.ftcPose.y,
+                        detection.ftcPose.z
+                    )
+                )
+                telemetry.addLine(
+                    String.format(
+                        "PRY %6.1f %6.1f %6.1f  (deg)",
+                        detection.ftcPose.pitch,
+                        detection.ftcPose.roll,
+                        detection.ftcPose.yaw
+                    )
+                )
+                telemetry.addLine(
+                    String.format(
+                        "RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
+                        detection.ftcPose.range,
+                        detection.ftcPose.bearing,
+                        detection.ftcPose.elevation
+                    )
+                )
+            } else {
+                telemetry.addLine("\n==== (ID ${detection.id}) Unknown")
+                telemetry.addLine(
+                    String.format(
+                        "Center %6.0f %6.0f   (pixels)",
+                        detection.center.x,
+                        detection.center.y
+                    )
+                )
+            }
+        }
     }
 
     init {
         if (camera == null) {
             visionPortal = null
             tfod = null
+            aprilTag = null
             status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = setOf("Webcam 1"))
         } else {
             // Create the TensorFlow processor by using a builder.
@@ -105,6 +150,23 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
                 .setIsModelQuantized(true)
                 .setModelInputSize(300)
                 .setModelAspectRatio(16.0 / 9.0)
+                .build()
+
+            aprilTag = AprilTagProcessor.Builder()
+                // The following default settings are available to un-comment and edit as needed.
+
+                //.setDrawAxes(false)
+                //.setDrawCubeProjection(false)
+                //.setDrawTagOutline(true)
+                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+                // == CAMERA CALIBRATION ==
+                // If you do not manually specify calibration parameters, the SDK will attempt
+                // to load a predefined calibration for your camera.
+                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+                // ... these parameters are fx, fy, cx, cy.
+
                 .build()
 
             // or AprilTagProcessor.easyCreateWithDefaults()
@@ -128,7 +190,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             //builder.setAutoStopLiveView(false);
 
             // Set and enable the processor.
-//            portalBuilder.addProcessor(aprilTag)
+            portalBuilder.addProcessor(aprilTag)
             portalBuilder.addProcessor(tfod)
 
             // Build the Vision Portal, using the above settings.
