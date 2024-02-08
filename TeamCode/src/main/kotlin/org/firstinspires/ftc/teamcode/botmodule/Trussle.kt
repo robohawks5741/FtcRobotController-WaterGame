@@ -9,6 +9,8 @@ import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.TrussPosition
 import org.firstinspires.ftc.teamcode.idc
+import org.firstinspires.ftc.teamcode.stickCurve
+import kotlin.math.abs
 
 /**
  * Truss module.
@@ -25,8 +27,8 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
 
     override fun modStart() {
         trussPull?.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        trussLeft?.position = TrussPosition.DOWN.leftPos
-        trussRight?.position = TrussPosition.DOWN.rightPos
+        trussLeft?.position = position.leftPos
+        trussRight?.position = position.rightPos
     }
 
     override fun modStartTeleOp() {
@@ -57,6 +59,16 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
         gamepadyn.players[0].getEvent(TRUSS_PULL).addListener(hangHandler)
         gamepadyn.players[1].getEvent(TRUSS_PULL).addListener(hangHandler)
     }
+
+    override fun modUpdateTeleOp() {
+        trussPull?.power = if (gamepad1.a || gamepad2.a) 1.0 else 0.0
+
+        // Gamepad 2 truss controls
+        if (abs(gamepad2.right_stick_y) > 0.1) {
+            trussPull?.power = gamepad2.right_stick_y.toDouble().stickCurve()
+        }
+    }
+
     override fun modUpdate() {
         trussLeft?.position = position.leftPos
         trussRight?.position = position.rightPos

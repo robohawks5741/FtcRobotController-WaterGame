@@ -285,8 +285,8 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 hang.power = gamepad2.right_stick_y.toDouble().stickCurve()
             }
 
-            //Drone Launch
-            if (gamepad1.b || gamepad2.b) drone.position = 0.8
+            // Drone Launch ( !!! BOTH PLAYERS MUST HOLD B !!! )
+            if (gamepad1.b && gamepad2.b) drone.position = 0.8
 
             drive.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)

@@ -16,7 +16,7 @@ class AutoRedRight : AutoSuper() {
     override val alliance: Alliance = Alliance.RED
     override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
 
-    var placementZone: SpikeMark = SpikeMark.RIGHT
+    private var placementZone: SpikeMark = SpikeMark.RIGHT
     var xmult = 1
     var ymult = -1
     var dheading = -1

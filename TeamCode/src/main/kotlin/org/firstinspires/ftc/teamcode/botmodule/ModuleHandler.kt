@@ -71,15 +71,23 @@ class ModuleHandler(
         if (!hasStarted) hasStarted = true
         else return
         for (module in modules) {
+            config.opMode.telemetry.addLine("start module ${module::class.simpleName}")
             module.modStart()
-            if (config.isTeleOp) module.modStartTeleOp()
+            if (config.isTeleOp) {
+                module.modStartTeleOp()
+                config.opMode.telemetry.addLine("TELEOP start module ${module::class.simpleName}")
+            }
         }
     }
 
     fun update() {
         for (module in modules) {
             module.modUpdate()
-            if (config.isTeleOp) module.modUpdateTeleOp()
+            config.opMode.telemetry.addLine("update module ${module::class.simpleName}")
+            if (config.isTeleOp) {
+                config.opMode.telemetry.addLine("TELEOP update module ${module::class.simpleName}")
+                module.modUpdateTeleOp()
+            }
         }
         for (module in modules) {
             if (module.status.status != BotModule.StatusEnum.OK) {
@@ -90,6 +98,9 @@ class ModuleHandler(
     }
 
     fun stop() {
-        for (module in modules) module.modStop()
+        for (module in modules) {
+            module.modStop()
+//            if (config.isTeleOp) module.modStopTeleOp()
+        }
     }
 }

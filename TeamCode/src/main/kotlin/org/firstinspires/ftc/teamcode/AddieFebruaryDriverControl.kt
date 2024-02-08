@@ -33,7 +33,7 @@ typealias GamepadynRH = Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>
 typealias ConfigurationRH = Configuration<ActionDigital, ActionAnalog1, ActionAnalog2>
 typealias PlayerRH = Player<ActionDigital, ActionAnalog1, ActionAnalog2>
 
-@TeleOp(name = "# Clay January Driver Control")
+@TeleOp(name = "# Addie February Driver Control")
 class AddieFebruaryDriverControl : LinearOpMode() {
 
     private val gamepadyn = GamepadynRH(
@@ -97,7 +97,20 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
             ActionBind(CLAW_LEFT_CLOSE,                     FACE_LEFT),
             ActionBind(CLAW_RIGHT_CLOSE,                    FACE_LEFT),
-
+            // TODO: Replace with BindSingleAxis
+            object : ActionBind<ActionAnalog1>(TRUSS_PULL, FACE_DOWN) {
+                override fun transform(
+                    inputState: InputData,
+                    targetActionState: InputData,
+                    delta: Double
+                ): InputData {
+                    if (inputState !is InputDataDigital) {
+                        Log.e("Gamepadyn", "truss pull code broke :(")
+                        return targetActionState
+                    }
+                    return InputDataAnalog1(if (inputState()) 1.0f else 0.0f)
+                }
+            },
             ActionBind(MACRO_SLIDE_UP,                      DPAD_UP),
             ActionBind(MACRO_SLIDE_DOWN,                    DPAD_DOWN),
             ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
@@ -132,20 +145,25 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         )
     }
 
-
-    private fun updateTruss() {
-        hang.power = if (gamepad1.a || gamepad2.a) 1.0 else 0.0
-
-        // Gamepad 2 truss controls
-        if (abs(gamepad2.right_stick_y) > 0.1) {
-            hang.power = gamepad2.right_stick_y.toDouble().stickCurve()
-        }
-    }
-
     override fun runOpMode() {
-        shared.rr = MecanumDrive(hardwareMap, poseEstimate)
+        hang = hardwareMap[DcMotorEx::class.java, "hang"]
+        intake = hardwareMap[DcMotorEx::class.java, "intake"]
+        slideR = hardwareMap[DcMotorEx::class.java, "slideR"]
+        slideL = hardwareMap[DcMotorEx::class.java, "slideL"]
+        drone = hardwareMap[Servo::class.java, "drone"]
+        trussR = hardwareMap[Servo::class.java, "trussR"]
+        trussL = hardwareMap[Servo::class.java, "trussL"]
+        armR = hardwareMap[Servo::class.java, "armR"]
+        armL = hardwareMap[Servo::class.java, "armL"]
+        clawR = hardwareMap[Servo::class.java, "clawR"]
+        clawL = hardwareMap[Servo::class.java, "clawL"]
+        inlift = hardwareMap[Servo::class.java, "inlift"]
+//        distance = hardwareMap[DistanceSensor::class.java, "distance"]
+        imu = hardwareMap[IMU::class.java, "imu"]
         shared = BotShared(this)
-        moduleHandler = ModuleHandler(ModuleConfig(this, shared, true, gamepadyn))
+
+        shared.rr = MecanumDrive(hardwareMap, poseEstimate)
+        moduleHandler = ModuleHandler(ModuleConfig(this, shared, isTeleOp = true, gamepadyn))
 
         // Configuration
         val p0 = gamepadyn.players[0]
@@ -185,77 +203,81 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 //        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
 
         // MACROS
-        run {
-            val macroSlideUp = { it: InputDataDigital ->
-                if (it()) {
+        val macroSlideUp = { it: InputDataDigital ->
+            if (it()) {
 //                    isSlideMovingUp = true
-                    // TODO: reduce the use of sleep
-                    if (claw.leftOpen || claw.rightOpen) {
-                        claw.leftOpen = false
-                        claw.leftOpen = false
-                        // wait for claws to move
-                        sleep(200)
-                    }
-                    // move up slightly as to move the arm up
-                    lsd.targetHeight = 400
-                    // wait for slide to move
-                    while (lsd.currentHeight < LSD.HEIGHT_CLAW_SAFE) {
-                        sleep(20)
-                    }
-                    isArmDown = false
-                    // move up now
-                    lsd.targetHeight = LSD.HEIGHT_MAX
+                // TODO: reduce the use of sleep
+                if (claw.leftOpen || claw.rightOpen) {
+                    claw.leftOpen = false
+                    claw.leftOpen = false
+                    // wait for claws to move
+                    sleep(200)
+                }
+                // move up slightly as to move the arm up
+                lsd.targetHeight = 400
+                // wait for slide to move
+                sleep(1000)
+//                while (lsd.currentHeight < LSD.HEIGHT_CLAW_SAFE) {
+//                    sleep(20)
+//                }
+                isArmDown = false
+                // move up now
+                lsd.targetHeight = LSD.HEIGHT_MAX
 //                    isSlideMovingUp = false
-                }
             }
-
-            val macroSlideDown = { it: InputDataDigital ->
-                if (it()) {
-                    if (!isArmDown) {
-                        isArmDown = true
-                        sleep(100)
-                    }
-                    lsd.targetHeight = LSD.HEIGHT_MIN
-                }
-            }
-
-            val droneLaunch = { it: InputDataDigital ->
-                if (it()) {
-                    drone.position = 0.8
-                }
-            }
-
-            val macroPlacePixel = { it: InputDataDigital ->
-                if (it()) {
-                    // Open the claws
-                    if (!claw.leftOpen || !claw.leftOpen) {
-                        claw.leftOpen = true
-                        claw.rightOpen = true
-                        sleep(200)
-                    }
-                    if (!isArmDown) {
-                        isArmDown = true
-                        sleep(200)
-                    }
-                    lsd.targetHeight = LSD.HEIGHT_MIN
-                }
-            }
-
-            p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-            p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-
-            p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-            p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-
-            p0.getEvent(DRONE_LAUNCH, droneLaunch)
-            p1.getEvent(DRONE_LAUNCH, droneLaunch)
-
-            p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
-            p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
-
         }
 
+        val macroSlideDown = { it: InputDataDigital ->
+            if (it()) {
+                if (!isArmDown) {
+                    isArmDown = true
+                    sleep(100)
+                }
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
+
+        val droneLaunch = { it: InputDataDigital ->
+            if (it()) {
+                drone.position = 0.8
+            }
+        }
+
+        val macroPlacePixel = { it: InputDataDigital ->
+            if (it()) {
+                // Open the claws
+                if (!claw.leftOpen || !claw.leftOpen) {
+                    claw.leftOpen = true
+                    claw.rightOpen = true
+                    sleep(200)
+                }
+                if (!isArmDown) {
+                    isArmDown = true
+                    sleep(200)
+                }
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
+
+        p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+        p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+
+        p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+        p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+
+        p0.getEvent(DRONE_LAUNCH, droneLaunch)
+        p1.getEvent(DRONE_LAUNCH, droneLaunch)
+
+        p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
+        p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
+
+        telemetry.update()
+
         waitForStart()
+
+        moduleHandler.start()
+
+        telemetry.update()
 
         while (opModeIsActive()) {
             gamepadyn.update()
@@ -289,9 +311,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                 }
             }
 
-            updateTruss()
-
-
             // Driver 2 Override
             if (abs(gamepad2.left_stick_y) > 0.1) {
                 intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
@@ -312,5 +331,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 //            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
             telemetry.update()
         }
+
+        moduleHandler.stop()
     }
 }

@@ -47,7 +47,8 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
             // Directions
             slideLeft.direction =               FORWARD
-            slideRight.direction =              REVERSE
+            slideLeft.direction =               FORWARD
+//            slideRight.direction =              REVERSE
         }
     }
 
@@ -61,7 +62,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
             // evaluated height
             val evaluatedHeight = height.coerceIn(HEIGHT_MIN..HEIGHT_MAX)
             slideLeft?. targetPosition = evaluatedHeight
-            slideRight?.targetPosition = evaluatedHeight
+            slideRight?.targetPosition = -evaluatedHeight
 
             field = evaluatedHeight
         }

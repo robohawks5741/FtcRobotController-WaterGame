@@ -28,6 +28,6 @@ class ActionBindAnalog1Snap(targetAction: ActionAnalog1, input: RawInputAnalog1,
         targetActionState: InputData,
         delta: Double
     ): InputData {
-        return InputDataDigital((inputState as InputDataAnalog1).x > threshold)
+        return InputDataAnalog1(if ((inputState as InputDataAnalog1).x > threshold) activeValue else inactiveValue)
     }
 }

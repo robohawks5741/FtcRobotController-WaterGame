@@ -16,7 +16,7 @@ class AutoBlueRight : AutoSuper() {
     override val alliance: Alliance = Alliance.BLUE
     override val side: AllianceSide = AllianceSide.AUDIENCE_SIDE
 
-    var placementZone: SpikeMark = SpikeMark.CENTER
+    private var placementZone: SpikeMark = SpikeMark.CENTER
     override fun runTaskA() {
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
