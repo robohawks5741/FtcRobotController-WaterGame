@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.hardware.Servo
 
 @Autonomous(name = "# Clay Blue Right")
 class AutoBlueRight : AutoSuper() {
-    var placementZone: SpikeMark = SpikeMark.CENTER
+    var placementZone: SpikeMark = SpikeMark.RIGHT
     override fun runTaskA() {
         runBlocking(when (placementZone) {
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)

@@ -31,7 +31,6 @@ public class ClayJanuaryDriverControlBackup extends LinearOpMode {
 
     private IMU imu;
 
-    private DistanceSensor distance;
     private boolean armDown = true;
     private boolean leftClawOpen = true;
     private boolean rightClawOpen = true;
@@ -99,7 +98,6 @@ public class ClayJanuaryDriverControlBackup extends LinearOpMode {
         clawR = hardwareMap.get(Servo.class, "clawR");
         clawL = hardwareMap.get(Servo.class, "clawL");
         inlift = hardwareMap.get(Servo.class, "inlift");
-        distance = hardwareMap.get(DistanceSensor.class, "distance");
         imu = hardwareMap.get(IMU.class, "imu");
 
 
@@ -116,6 +114,7 @@ public class ClayJanuaryDriverControlBackup extends LinearOpMode {
         trussR.setPosition(0.3);
         drone.setPosition(0.36);
         inlift.setPosition(0);
+        imu.resetYaw();
         waitForStart();
 
 
@@ -142,7 +141,7 @@ public class ClayJanuaryDriverControlBackup extends LinearOpMode {
                 // +X = forward
                 // +Y = left
                 Vector2d inputVector = new Vector2d(
-                        gamepad1.left_stick_y,
+                        -gamepad1.left_stick_y,
                         -gamepad1.left_stick_x
                 );
 
@@ -381,7 +380,6 @@ public class ClayJanuaryDriverControlBackup extends LinearOpMode {
             telemetry.addData("left arm", armL .getPosition());
             telemetry.addData("inlift", inlift.getPosition());
             telemetry.addData("hangMode", hangMode);
-            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM));
             telemetry.update();
         }
     }

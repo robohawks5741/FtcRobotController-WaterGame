@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode
 
-import android.util.Log
 import com.acmerobotics.roadrunner.Pose2d
 import com.acmerobotics.roadrunner.PoseVelocity2d
 import com.acmerobotics.roadrunner.Vector2d
@@ -13,6 +12,7 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
+import org.firstinspires.ftc.teamcode.tuning.ClayJanuaryDriverControlBackup
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -43,6 +43,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var hasCycledTrussHang = false
     private var driverRelative = true
     private var hasToggledDriverRelativity = false
+    private var runToHeight = 0;
 
     // automatically updates the truss servos when the value is changed
     private var trussPos = TrussPosition.DOWN
@@ -138,7 +139,6 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         clawR = hardwareMap[Servo::class.java, "clawR"]
         clawL = hardwareMap[Servo::class.java, "clawL"]
         inlift = hardwareMap[Servo::class.java, "inlift"]
-        distance = hardwareMap[DistanceSensor::class.java, "distance"]
         imu = hardwareMap[IMU::class.java, "imu"]
 
 //        data class Timeout(val calltime: Long, val callback: () -> Unit)
@@ -174,57 +174,43 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
             // Move slides up
             if (gamepad1.dpad_up || gamepad2.dpad_up) {
-                isSlideMovingUp = true
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
+                    sleep(300)
                 }
-                slidePos = 400
-                sleep(200)
-                isArmDown = false
-                sleep(200)
-                slidePos = 1565
-                isSlideMovingUp = false
+                isSlideMovingUp = true
+                if (runToHeight == 0){
+                    slidePos = 1565
+                } else {
+                    slidePos = runToHeight*200
+                }
+
             }
             // Move slides down
             if (gamepad1.dpad_down || gamepad2.dpad_down) {
+                runToHeight = 0
                 if (!isArmDown) {
                     isArmDown = true
                     // used to be 100
-                    sleep(200)
                     slidePos = 0
                 } else {
                     slidePos = 0
                 }
             }
             // TODO:
-            if ((gamepad1.dpad_left || gamepad2.dpad_left) && slidePos > 199) {
-                if (slidePos == 600 && !isArmDown) {
-                    isArmDown = true
-                    // used to be 100
-                    sleep(200)
-                    slidePos = 0
-                } else {
-                    slidePos -= 200
+            if ((gamepad1.dpad_left && runToHeight < 7|| gamepad2.dpad_left && runToHeight < 7)) {
+                runToHeight++;
+
+                if (slidePos > 0 ){
+                    slidePos = slidePos+200;
+
                 }
-            } else if (gamepad1.dpad_right && slidePos < 1501 || gamepad2.dpad_right && slidePos < 1501) {
-                if (isRightClawOpen || isLeftClawOpen) {
-                    isRightClawOpen = false
-                    isLeftClawOpen = false
-                    sleep(300)
-                    if (slidePos == 0) {
-                        slidePos = 600
-                        isSlideMovingUp = true
-                    } else {
-                        slidePos += 200
-                    }
-                } else {
-                    if (slidePos == 0) {
-                        slidePos = 600
-                        isSlideMovingUp = true
-                    } else {
-                        slidePos += 200
-                    }
+            } else if (gamepad1.dpad_right && runToHeight > 0|| gamepad2.dpad_right && runToHeight > 0) {
+                runToHeight--
+                if (slidePos > 0 ){
+                    slidePos = slidePos-200;
+
                 }
             }
 
@@ -235,8 +221,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 isRightClawOpen = true
             }
 
-            // TODO: what does this code do?? why is it here
-            if (slidePos > 500 && isSlideMovingUp) {
+            if (slideL.currentPosition > 500 && isSlideMovingUp) {
                 isArmDown = false
                 isSlideMovingUp = false
             }
@@ -247,6 +232,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 isLeftClawOpen = false
                 isRightClawOpen = false
             } else if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger > 0.1) {
+                runToHeight = 0
                 // Open
                 if (!isRightClawOpen || !isLeftClawOpen) {
                     isLeftClawOpen = true
@@ -255,11 +241,8 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
                 if (!isArmDown) {
                     isArmDown = true
-                    sleep(200)
-                    slidePos = 0
-                } else {
-                    slidePos = 0
                 }
+                slidePos = 0
             }
 
             // Truss Hang
@@ -299,7 +282,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("left arm", armL.position)
             telemetry.addData("inlift", inlift.position)
             telemetry.addData("hangMode", trussPos)
-            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
+            telemetry.addData("RunToHeight", runToHeight)
             telemetry.update()
         }
     }

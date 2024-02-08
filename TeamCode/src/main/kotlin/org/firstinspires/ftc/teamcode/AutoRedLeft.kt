@@ -11,9 +11,10 @@ import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 
-@Autonomous(name = "# Clay Blue Right")
+@Autonomous(name = "# Clay Red Left")
 class AutoRedLeft : AutoSuper() {
-    var placementZone: SpikeMark = SpikeMark.CENTER
+    //Start 0, 7.32, 0
+    var placementZone: SpikeMark = SpikeMark.RIGHT
     var xmult = 1;
     var ymult = -1;
     var dheading = -1;
