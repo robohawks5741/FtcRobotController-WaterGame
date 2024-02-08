@@ -57,6 +57,7 @@ class Claw(config: ModuleConfig) : BotModule(config) {
         val closeLeftClaw =     { it: InputDataDigital -> if (it()) leftOpen = false }
         val openRightClaw =     { it: InputDataDigital -> if (it()) rightOpen = true }
         val closeRightClaw =    { it: InputDataDigital -> if (it()) rightOpen = false }
+        
         // TODO: add an API in Gamepadyn to do this more easily
         gamepadyn.players[0].getEvent(ActionDigital.CLAW_LEFT_OPEN,     openLeftClaw)
         gamepadyn.players[1].getEvent(ActionDigital.CLAW_LEFT_OPEN,     openLeftClaw)

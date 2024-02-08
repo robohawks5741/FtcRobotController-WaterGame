@@ -6,8 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE
-import computer.living.gamepadyn.InputDataDigital
-import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.idc
 
 /**
@@ -22,15 +20,11 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         /**
          * The maximum position of the slide, in encoder ticks.
          */
-        var SLIDE_HEIGHT_MAX = 1565
-        var SLIDE_HEIGHT_MIN = 0
+        const val HEIGHT_MAX = 1565
+        const val HEIGHT_MIN = 0
+        const val HEIGHT_CLAW_SAFE = 500
         var POWER_MAX = 1.0
         var POWER_DOWNWARD_SCALE = 0.75
-    }
-
-    enum class SlideStop(@JvmField public val height: Int) {
-        BOTTOM(SLIDE_HEIGHT_MIN),
-        TOP(SLIDE_HEIGHT_MAX)
     }
 
     init {
@@ -65,12 +59,15 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
             slideLeft?. power = desiredPower
             slideRight?.power = desiredPower
             // evaluated height
-            val evaluatedHeight = height.coerceIn(SLIDE_HEIGHT_MIN..SLIDE_HEIGHT_MAX)
+            val evaluatedHeight = height.coerceIn(HEIGHT_MIN..HEIGHT_MAX)
             slideLeft?. targetPosition = evaluatedHeight
             slideRight?.targetPosition = evaluatedHeight
 
             field = evaluatedHeight
         }
+
+    val currentHeight: Float
+        get() = if (status.status == StatusEnum.OK) (slideLeft!!.currentPosition + slideRight!!.currentPosition).toFloat() / 2f else Float.NaN
 
     override fun modStart() {
         slideLeft?.targetPosition = 0
@@ -79,26 +76,13 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         slideLeft?.mode  = RUN_TO_POSITION
         slideRight?.mode = RUN_TO_POSITION
 
-        if (isTeleOp) {
-            if (gamepadyn == null) {
-                return
-            }
-            val moveUp: (InputDataDigital) -> Unit = {
-                if (it()) targetHeight += 200
-            }
-            val moveDown: (InputDataDigital) -> Unit = {
-                if (it()) targetHeight -= 200
-            }
-
-            val p0 = gamepadyn.players[0]
-            val p1 = gamepadyn.players[1]
-
-            p0.getEvent(PIXEL_MOVE_UP,      moveUp)
-            p1.getEvent(PIXEL_MOVE_UP,      moveUp)
-            p0.getEvent(PIXEL_MOVE_DOWN,    moveDown)
-            p1.getEvent(PIXEL_MOVE_DOWN,    moveDown)
-        }
     }
+
+//    override fun modStartTeleOp() {
+//        if (gamepadyn == null) {
+//            return
+//        }
+//    }
 
     override fun modUpdate() {
         telemetry.addData("LSD target height:", targetHeight)

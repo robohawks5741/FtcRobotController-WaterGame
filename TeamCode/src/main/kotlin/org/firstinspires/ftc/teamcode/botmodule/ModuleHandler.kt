@@ -41,13 +41,12 @@ class ModuleHandler(
      * STATUS: UNKOWN
      * TODO: test
      */
-    lateinit var trussel: Trussel private set
+    lateinit var trussle: Trussle private set
 
     /**
      * STATUS: NOT WORKING
      * TODO:
      */
-    lateinit var droneLauncher: DroneLauncher private set
 
     val modules
         get() = setOf(
@@ -56,8 +55,7 @@ class ModuleHandler(
             claw,
             opticon,
             intake,
-            trussel,
-            droneLauncher
+            trussle
         )
 
     fun init() {
@@ -66,8 +64,7 @@ class ModuleHandler(
         claw = Claw(config)
         opticon = Opticon(config)
         intake = Intake(config)
-        trussel = Trussel(config)
-        droneLauncher = DroneLauncher(config)
+        trussle = Trussle(config)
     }
 
     fun start() {

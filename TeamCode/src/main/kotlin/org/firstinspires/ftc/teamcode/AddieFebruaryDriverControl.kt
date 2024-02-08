@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode
 
 import android.util.Log
 import com.acmerobotics.roadrunner.Pose2d
-import com.acmerobotics.roadrunner.PoseVelocity2d
-import com.acmerobotics.roadrunner.Vector2d
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.DcMotor
@@ -17,22 +15,19 @@ import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.InputData
 import computer.living.gamepadyn.InputDataAnalog1
 import computer.living.gamepadyn.InputDataAnalog2
+import computer.living.gamepadyn.InputDataDigital
 import computer.living.gamepadyn.Player
 import computer.living.gamepadyn.RawInputAnalog1.*
 import computer.living.gamepadyn.RawInputAnalog2.*
 import computer.living.gamepadyn.RawInputDigital.*
 import computer.living.gamepadyn.ftc.InputBackendFtc
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
+import org.firstinspires.ftc.teamcode.botmodule.LSD
 import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
 import kotlin.math.abs
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 typealias GamepadynRH = Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>
 typealias ConfigurationRH = Configuration<ActionDigital, ActionAnalog1, ActionAnalog2>
@@ -79,6 +74,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             trussR.position = trussPos.rightPos
         }
 
+    // THE ARM HAS NO MODULE !!
     private var isArmDown = true
         set(status) {
             armR.position = if (status) 0.05 else 0.35
@@ -94,9 +90,18 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             ActionBind(TOGGLE_DRIVER_RELATIVITY,            SPECIAL_BACK),
             ActionBind(MOVEMENT,                            STICK_LEFT),
             ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
+            ActionBind(TRUSS_CYCLE,                         FACE_UP),
+
             ActionBind(CLAW_LEFT_OPEN,                      BUMPER_LEFT),
             ActionBind(CLAW_RIGHT_OPEN,                     BUMPER_RIGHT),
-            ActionBind(TRUSS_CYCLE,                         FACE_UP),
+
+            ActionBind(CLAW_LEFT_CLOSE,                     FACE_LEFT),
+            ActionBind(CLAW_RIGHT_CLOSE,                    FACE_LEFT),
+
+            ActionBind(MACRO_SLIDE_UP,                      DPAD_UP),
+            ActionBind(MACRO_SLIDE_DOWN,                    DPAD_DOWN),
+            ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
+            ActionBindAnalog1Snap(INTAKE_SPIN,              TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
             // TODO: Replace with BindSingleAxis
             object : ActionBind<ActionAnalog1>(ROTATION, STICK_RIGHT) {
                 override fun transform(
@@ -119,7 +124,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         val player1 = ConfigurationRH(
             ActionBind(CLAW_LEFT_OPEN,                      BUMPER_LEFT),
             ActionBind(CLAW_RIGHT_OPEN,                     BUMPER_RIGHT),
-            ActionBind(CLAW_LEFT_OPEN,                      BUMPER_LEFT),
+            ActionBind(CLAW_LEFT_CLOSE,                     FACE_LEFT),
+            ActionBind(CLAW_RIGHT_CLOSE,                    FACE_LEFT),
+            ActionBind(DRONE_LAUNCH,                        FACE_RIGHT),
+            ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
+            ActionBindAnalog1Snap(INTAKE_SPIN,              TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
         )
     }
 
@@ -133,23 +142,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         }
     }
 
-    private var slidePos = 0
-        set(pos) {
-            field = pos
-            slideR.targetPosition = -slidePos
-            slideL.targetPosition = slidePos
-            slideR.mode = DcMotor.RunMode.RUN_TO_POSITION
-            slideL.mode = DcMotor.RunMode.RUN_TO_POSITION
-            slideR.power = 1.0
-            slideL.power = 1.0
-        }
-
-
     override fun runOpMode() {
         shared.rr = MecanumDrive(hardwareMap, poseEstimate)
         shared = BotShared(this)
         moduleHandler = ModuleHandler(ModuleConfig(this, shared, true, gamepadyn))
-s
+
         // Configuration
         val p0 = gamepadyn.players[0]
         val p1 = gamepadyn.players[1]
@@ -160,11 +157,10 @@ s
 
         val claw = moduleHandler.claw
         val drive = moduleHandler.drive
-        val droneLauncher = moduleHandler.droneLauncher
         val intake = moduleHandler.intake
         val lsd = moduleHandler.lsd
         val opticon = moduleHandler.opticon
-        val trussel = moduleHandler.trussel
+        val trussel = moduleHandler.trussle
         val rr = shared.rr!!
 
 //        data class Timeout(val calltime: Long, val callback: () -> Unit)
@@ -186,91 +182,110 @@ s
         drone.position = 0.36
         inlift.position = 0.0
 
+//        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
+
+        // MACROS
+        run {
+            val macroSlideUp = { it: InputDataDigital ->
+                if (it()) {
+//                    isSlideMovingUp = true
+                    // TODO: reduce the use of sleep
+                    if (claw.leftOpen || claw.rightOpen) {
+                        claw.leftOpen = false
+                        claw.leftOpen = false
+                        // wait for claws to move
+                        sleep(200)
+                    }
+                    // move up slightly as to move the arm up
+                    lsd.targetHeight = 400
+                    // wait for slide to move
+                    while (lsd.currentHeight < LSD.HEIGHT_CLAW_SAFE) {
+                        sleep(20)
+                    }
+                    isArmDown = false
+                    // move up now
+                    lsd.targetHeight = LSD.HEIGHT_MAX
+//                    isSlideMovingUp = false
+                }
+            }
+
+            val macroSlideDown = { it: InputDataDigital ->
+                if (it()) {
+                    if (!isArmDown) {
+                        isArmDown = true
+                        sleep(100)
+                    }
+                    lsd.targetHeight = LSD.HEIGHT_MIN
+                }
+            }
+
+            val droneLaunch = { it: InputDataDigital ->
+                if (it()) {
+                    drone.position = 0.8
+                }
+            }
+
+            val macroPlacePixel = { it: InputDataDigital ->
+                if (it()) {
+                    // Open the claws
+                    if (!claw.leftOpen || !claw.leftOpen) {
+                        claw.leftOpen = true
+                        claw.rightOpen = true
+                        sleep(200)
+                    }
+                    if (!isArmDown) {
+                        isArmDown = true
+                        sleep(200)
+                    }
+                    lsd.targetHeight = LSD.HEIGHT_MIN
+                }
+            }
+
+            p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+            p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+
+            p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+            p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+
+            p0.getEvent(DRONE_LAUNCH, droneLaunch)
+            p1.getEvent(DRONE_LAUNCH, droneLaunch)
+
+            p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
+            p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
+
+        }
+
         waitForStart()
 
         while (opModeIsActive()) {
-            // Intake
-            // TODO: replace w/ gamepadyn (delay reason: I don't want to write another analog->digital transformer)
-            if (gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
-                intake.power = 0.65
-            } else {
-                intake.power = 0.0
-            }
+            gamepadyn.update()
 
-            // Move slides up
-            if (gamepad1.dpad_up || gamepad2.dpad_up) {
-                isSlideMovingUp = true
-                if (isRightClawOpen || isLeftClawOpen) {
-                    isRightClawOpen = false
-                    isLeftClawOpen = false
-                }
-                sleep(300)
-                slidePos = 400
-                sleep(200)
-                isArmDown = false
-                slidePos = 1565
-                isSlideMovingUp = false
-            }
-            // Move slides down
-            if (gamepad1.dpad_down || gamepad2.dpad_down) {
-                if (!isArmDown) {
+            // TODO: port to gamepadyn
+            // if dpad left is pressed (and the slide is up, mostly
+            if ((gamepad1.dpad_left || gamepad2.dpad_left) && lsd.currentHeight > LSD.HEIGHT_CLAW_SAFE) {
+                if (lsd.targetHeight == 600 && !isArmDown) {
                     isArmDown = true
                     // used to be 100
                     sleep(200)
-                    slidePos = 0
+                    lsd.targetHeight = 0
                 } else {
-                    slidePos = 0
-                }
-            }
-            // TODO:
-            if ((gamepad1.dpad_left || gamepad2.dpad_left) && slidePos > 199) {
-                if (slidePos == 600 && !isArmDown) {
-                    isArmDown = true
-                    // used to be 100
-                    sleep(200)
-                    slidePos = 0
-                } else {
-                    slidePos -= 200
-                }
-            }
-            if ((gamepad1.dpad_right || gamepad2.dpad_right) && slidePos < 1501) {
-                if (isRightClawOpen || isLeftClawOpen) {
-                    isRightClawOpen = false
-                    isLeftClawOpen = false
-                    sleep(300)
-                }
-                if (slidePos == 0) {
-                    slidePos = 600
-                    isSlideMovingUp = true
-                } else {
-                    slidePos += 200
+                    lsd.targetHeight -= 200
                 }
             }
 
-            // TODO: what does this code do?? why is it here
-            if (slidePos > 500 && isSlideMovingUp) {
-                isArmDown = false
-                isSlideMovingUp = false
-            }
-
-            // Claw
-            if (gamepad1.x || gamepad2.x) {
-                // Close
-                isLeftClawOpen = false
-                isRightClawOpen = false
-            } else if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger > 0.1) {
-                // Open
-                if (!isRightClawOpen || !isLeftClawOpen) {
-                    isLeftClawOpen = true
-                    isRightClawOpen = true
+            // TODO: port to gamepadyn
+            // TODO: why 1501 and not MAX (1565)?
+            if ((gamepad1.dpad_right || gamepad2.dpad_right) && lsd.currentHeight < 1501) {
+                if (claw.leftOpen || claw.rightOpen) {
+                    claw.rightOpen = false
+                    claw.leftOpen = false
                     sleep(200)
                 }
-                if (!isArmDown) {
-                    isArmDown = true
-                    sleep(200)
-                    slidePos = 0
+                if (lsd.targetHeight == 0) {
+                    lsd.targetHeight = 600
+//                    isSlideMovingUp = true
                 } else {
-                    slidePos = 0
+                    lsd.targetHeight += 200
                 }
             }
 
@@ -282,8 +297,6 @@ s
                 intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
             }
 
-            //Drone Launch
-            if (gamepad1.b || gamepad2.b) drone.position = 0.8
 
             rr.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)

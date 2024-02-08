@@ -13,9 +13,9 @@ import org.firstinspires.ftc.teamcode.idc
 /**
  * Truss module.
  *
- * Used to be called "September."
+ * Used to be called "September," then spelled with an EL instead of LE
  */
-class Trussel(cfg: ModuleConfig) : BotModule(cfg) {
+class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
 
     private val trussPull: DcMotorEx?   = idc {   hardwareMap[DcMotorEx    ::class.java,   "hang"      ] }
     private val trussLeft: Servo?       = idc {   hardwareMap[Servo        ::class.java,   "trussL"    ] }
@@ -31,8 +31,8 @@ class Trussel(cfg: ModuleConfig) : BotModule(cfg) {
 
     override fun modStartTeleOp() {
         if (gamepadyn == null) {
-            telemetry.addLine("(Claw Module) TeleOp was enabled but Gamepadyn was null!")
-            return;
+            telemetry.addLine("(Trussle Module) TeleOp was enabled but Gamepadyn was null!")
+            return
         }
         // cycle the truss hanger positions when the button is pressed
         val cycleHandler: (InputDataDigital) -> Unit = {

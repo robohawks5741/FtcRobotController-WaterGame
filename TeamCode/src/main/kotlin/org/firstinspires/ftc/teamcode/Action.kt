@@ -5,17 +5,25 @@ import computer.living.gamepadyn.ActionEnumAnalog1
 import computer.living.gamepadyn.ActionEnumAnalog2
 
 enum class ActionDigital : ActionEnumDigital {
-    TOGGLE_DRIVER_RELATIVITY,   // toggle
-    TOGGLE_INTAKE_HEIGHT,       // toggle
+    // toggle
+    TOGGLE_DRIVER_RELATIVITY,
+    // toggle
+    TOGGLE_INTAKE_HEIGHT,
 
     TRUSS_CYCLE,
-    DRONE_LAUNCH,               // one-shot
-    SLIDE_UP,
+    // one-shot
+    DRONE_LAUNCH,
     CLAW_LEFT_OPEN,
     CLAW_LEFT_CLOSE,
     CLAW_RIGHT_OPEN,
     CLAW_RIGHT_CLOSE,
 
+    // MACRO NAMES ARE MISLEADING BECAUSE THEY DO MULTIPLE THINGS!!! SEE THE DRIVER CONTROL FILE FOR MORE
+
+    // one-shot
+    MACRO_SLIDE_UP,
+    MACRO_SLIDE_DOWN,
+    MACRO_PLACE_PIXEL,
 
     CUSTOM_ACTION_DIGITAL_A,
     CUSTOM_ACTION_DIGITAL_B,
@@ -24,12 +32,16 @@ enum class ActionDigital : ActionEnumDigital {
 }
 
 enum class ActionAnalog1 : ActionEnumAnalog1 {
-    INTAKE_SPIN,                // X = spin power (+inwards, -outwards)
-    ROTATION,                   // X = clockwise yaw       
-    CLAW,                       // X = open..closed
+    // X = spin power (+inwards, -outwards)
+    INTAKE_SPIN,
+    // X = clockwise yaw
+    ROTATION,
+    // X = open..closed
+    CLAW,
+    // hold it down (+1 = pull, -1 = release)
+    TRUSS_PULL,
 
-    TRUSS_PULL,                 // hold it down (+1 = pull, -1 = release)
-
+    // testing
     CUSTOM_ACTION_ANALOG_A,
     CUSTOM_ACTION_ANALOG_B,
     CUSTOM_ACTION_ANALOG_X,
@@ -37,5 +49,6 @@ enum class ActionAnalog1 : ActionEnumAnalog1 {
 }
 
 enum class ActionAnalog2 : ActionEnumAnalog2 {
-    MOVEMENT                    // Y = run, X = strafe
+    // Y = run, X = strafe
+    MOVEMENT,
 }
