@@ -7,17 +7,15 @@ import computer.living.gamepadyn.ActionEnumAnalog2
 enum class ActionDigital : ActionEnumDigital {
     TOGGLE_DRIVER_RELATIVITY,   // toggle
     TOGGLE_INTAKE_HEIGHT,       // toggle
+
+    TRUSS_CYCLE,
     DRONE_LAUNCH,               // one-shot
-    TRUSS_MOVE,                 // one-shot
+    SLIDE_UP,
+    CLAW_LEFT_OPEN,
+    CLAW_LEFT_CLOSE,
+    CLAW_RIGHT_OPEN,
+    CLAW_RIGHT_CLOSE,
 
-    TRUSS_PULL,                 // hold it down,
-
-    PIXEL_START,                // one-shot
-    PIXEL_END,                  // one-shot
-    PIXEL_MOVE_UP,              // one-shot
-    PIXEL_MOVE_DOWN,            // one-shot
-    PIXEL_COMMIT_LEFT,          // one-shot
-    PIXEL_COMMIT_RIGHT,         // one-shot
 
     CUSTOM_ACTION_DIGITAL_A,
     CUSTOM_ACTION_DIGITAL_B,
@@ -29,7 +27,8 @@ enum class ActionAnalog1 : ActionEnumAnalog1 {
     INTAKE_SPIN,                // X = spin power (+inwards, -outwards)
     ROTATION,                   // X = clockwise yaw       
     CLAW,                       // X = open..closed
-    SLIDE_MANUAL,               // X = move some (-1 down, +1 up)
+
+    TRUSS_PULL,                 // hold it down (+1 = pull, -1 = release)
 
     CUSTOM_ACTION_ANALOG_A,
     CUSTOM_ACTION_ANALOG_B,

@@ -1,14 +1,10 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
-import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.InputDataAnalog1
-import org.firstinspires.ftc.robotcore.external.Telemetry
-import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
-import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.idc
 
 /**
@@ -35,7 +31,7 @@ class Intake(config: ModuleConfig) : BotModule(config) {
 
     // 0.0 is off, 1.0 is inwards, -1.0 is outwards
     @Suppress("MemberVisibilityCanBePrivate")
-    var active: Double = 0.0
+    var power: Double = 0.0
         set(status) {
             if (motorSpin == null) field = 0.0
             else {
@@ -64,6 +60,6 @@ class Intake(config: ModuleConfig) : BotModule(config) {
     }
 
     override fun modUpdate() {
-        telemetry.addLine("Intake Spin = $active")
+        telemetry.addLine("Intake Spin = $power")
     }
 }
