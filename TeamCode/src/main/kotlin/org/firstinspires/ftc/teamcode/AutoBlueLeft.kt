@@ -13,12 +13,16 @@ import com.qualcomm.robotcore.hardware.Servo
 
 @Autonomous(name = "# Clay Blue Left")
 class AutoBlueLeft : AutoSuper() {
+    var beginPose = Pose2d(0.0, 0.0, 0.0)
+    protected lateinit var drive: MecanumDrive
 
     var placementZone: SpikeMark = SpikeMark.RIGHT
     override val alliance: Alliance = Alliance.BLUE
     override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
 
     override fun runTaskA() {
+        drive = MecanumDrive(hardwareMap, beginPose)
+
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(20.49, 7.18), Math.toRadians(37.30))

@@ -19,7 +19,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@TeleOp(name = "# Clay January Driver Control")
+@TeleOp(name = "## Clay January Driver Control")
 class ClayJanuaryDriverControl : LinearOpMode() {
     private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
     private lateinit var hang: DcMotorEx
@@ -39,6 +39,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private lateinit var drive: MecanumDrive
     private var isSlideMovingUp = false
     private var hasMovedSlide = false
+    private var slideAdjustmentPressed = false
 
     private var hasCycledTrussHang = false
     private var driverRelative = true
@@ -167,7 +168,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
             // Intake
             if (gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
-                intake.power = 0.65
+                intake.power = 0.8
             } else {
                 intake.power = 0.0
             }
@@ -180,7 +181,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     sleep(300)
                 }
                 isSlideMovingUp = true
-                if (runToHeight == 0){
+                if (runToHeight == 0 || slidePos > 0){
                     slidePos = 1565
                 } else {
                     slidePos = runToHeight*200
@@ -199,19 +200,23 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
             }
             // TODO:
-            if ((gamepad1.dpad_left && runToHeight < 7|| gamepad2.dpad_left && runToHeight < 7)) {
+            if ((gamepad1.dpad_left && runToHeight < 7 && !slideAdjustmentPressed|| gamepad2.dpad_left && runToHeight < 7 && !slideAdjustmentPressed)) {
+                slideAdjustmentPressed = true
                 runToHeight++;
 
                 if (slidePos > 0 ){
                     slidePos = slidePos+200;
 
                 }
-            } else if (gamepad1.dpad_right && runToHeight > 0|| gamepad2.dpad_right && runToHeight > 0) {
+            } else if (gamepad1.dpad_right && runToHeight > 0 && !slideAdjustmentPressed|| gamepad2.dpad_right && runToHeight > 0 && !slideAdjustmentPressed) {
+                slideAdjustmentPressed = true
                 runToHeight--
                 if (slidePos > 0 ){
                     slidePos = slidePos-200;
 
                 }
+            } else if (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left){
+                slideAdjustmentPressed = false
             }
 
             // Arm Rotation

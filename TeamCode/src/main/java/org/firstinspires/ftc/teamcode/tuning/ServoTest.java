@@ -21,10 +21,31 @@ public class ServoTest extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+        hang = hardwareMap.get(DcMotorEx.class, "hang");
+        intake = hardwareMap.get(DcMotorEx.class, "intake");
+        slideR = hardwareMap.get(DcMotorEx.class, "slideR");
+        slideL = hardwareMap.get(DcMotorEx.class, "slideL");
         inLift = hardwareMap.get(Servo.class, "inlift");
 
 
+        trussR = hardwareMap.get(Servo.class, "trussR");
+        trussL = hardwareMap.get(Servo.class, "trussL");
+        armR = hardwareMap.get(Servo.class, "armR");
+        armL = hardwareMap.get(Servo.class, "armL");
+        clawR = hardwareMap.get(Servo.class, "clawR");
+        clawL = hardwareMap.get(Servo.class, "clawL");
 
+
+
+        slideR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        slideL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        slideL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+
+        trussR.setPosition(0.32);
+        trussL.setPosition(0.3);
 
         waitForStart();
 
@@ -38,7 +59,14 @@ public class ServoTest extends LinearOpMode {
             ));
 
             //Intake
+            if (gamepad1.left_trigger>0.1){
+                intake.setPower(0.5);
+            } else if (gamepad1.right_trigger>0.1){
+                intake.setPower(-0.5);
 
+            } else {
+                intake.setPower(0);
+            }
 
 
             //Placement
@@ -46,24 +74,34 @@ public class ServoTest extends LinearOpMode {
 
 
             if (gamepad1.dpad_left) {
-                inLift.setPosition(inLift.getPosition() + 0.001);
+                armL.setPosition(armL.getPosition() + 0.01);
 
 
             } else if (gamepad1.dpad_right) {
-                inLift.setPosition(inLift.getPosition() - 0.001);
+                armL.setPosition(armL.getPosition() - 0.01);
             } else if (gamepad1.dpad_down) {
-                inLift.setPosition(0);
+                armL.setPosition(0);
             }
 //0.36
+            if (gamepad1.x) {
+                armR.setPosition(armR.getPosition() + 0.01);
 
+            } else if (gamepad1.b) {
+                armR.setPosition(armR.getPosition() - 0.01);
+
+            } else if (gamepad1.a) {
+                armR.setPosition(0);
+            }
 
             drive.updatePoseEstimate();
 
             telemetry.addData("x", drive.pose.position.x);
             telemetry.addData("y", drive.pose.position.y);
             telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
-            telemetry.addData("inLift", inLift.getPosition());
-
+            telemetry.addData("rightSlide", slideR.getCurrentPosition());
+            telemetry.addData("leftSlide", slideL.getCurrentPosition());
+            telemetry.addData("left servo", armL .getPosition());
+            telemetry.addData("right servo", armR .getPosition());
 
             telemetry.update();
         }
