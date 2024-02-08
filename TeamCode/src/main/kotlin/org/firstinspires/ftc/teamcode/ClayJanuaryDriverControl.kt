@@ -186,6 +186,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     runToHeight = 6
                 } else {
                     slidePos = runToHeight*200 + 400
+
                 }
 
             }
