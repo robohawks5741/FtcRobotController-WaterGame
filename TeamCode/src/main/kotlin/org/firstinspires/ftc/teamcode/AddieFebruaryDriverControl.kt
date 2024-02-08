@@ -67,7 +67,8 @@ class AddieFebruaryDriverControl : LinearOpMode() {
     private lateinit var drone: Servo
     private lateinit var inlift: Servo
     private lateinit var imu: IMU
-//    private lateinit var distance: DistanceSensor
+    private var isSlideMovingUp = false;
+    //    private lateinit var distance: DistanceSensor
 
     private var driverRelative = true
 
@@ -145,11 +146,22 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         }
 
 
+    private var isLeftClawOpen: Boolean = true
+        set(status) {
+            clawL.position = if (status) 0.0 else 0.29
+            field = status
+        }
+    private var isRightClawOpen: Boolean = true
+        set(status) {
+            clawR.position = if (status) 0.36 else 0.07
+            field = status
+        }
+
     override fun runOpMode() {
         shared.rr = MecanumDrive(hardwareMap, poseEstimate)
         shared = BotShared(this)
         moduleHandler = ModuleHandler(ModuleConfig(this, shared, true, gamepadyn))
-s
+
         // Configuration
         val p0 = gamepadyn.players[0]
         val p1 = gamepadyn.players[1]

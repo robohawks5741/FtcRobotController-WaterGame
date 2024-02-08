@@ -19,7 +19,7 @@ public final class ClayAuto extends LinearOpMode {
 
         AutoSubsystem autoSub = new AutoSubsystem(this);
 
-        Alliance teamAlliance = Alliance.BLUE;
+        Alliance teamAlliance = Alliance.RED;
 
         while (opModeIsActive()) {
             elementSpikeMark = autoSub.elementDetection();

@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.hardware.Servo
 class AutoRedRight : AutoSuper() {
     //Start 0,-7.18, 0
     var placementZone: SpikeMark = SpikeMark.RIGHT
-    var beginPose = Pose2d(0.0, 7.18, 0.0)
+    var beginPose = Pose2d(0.0, 0.0, 0.0)
     override val alliance: Alliance = Alliance.BLUE
     override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
     protected lateinit var drive: MecanumDrive
@@ -41,10 +41,10 @@ class AutoRedRight : AutoSuper() {
                 .splineToConstantHeading(Vector2d(25.682*xmult, 30.831*ymult), Math.toRadians(dheading*270.0))
                 .build()
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(21.83*xmult, -5.68), Math.toRadians(dheading* -25.0))
-                .splineToConstantHeading(Vector2d(25.96*xmult, 4.070*ymult), Math.toRadians(dheading*157.81))
-                .turnTo(Math.toRadians(dheading*270.0))
-                .splineToConstantHeading(Vector2d(31.3*xmult, 31.0*ymult), Math.toRadians(dheading*270.0))
+                .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
+                .splineToConstantHeading(Vector2d(5.49, 4.21), Math.toRadians(0.0))
+                .turnTo(Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(20.95, -33.32), Math.toRadians(90.0))
                 .build()
         })
         liftPos = 600

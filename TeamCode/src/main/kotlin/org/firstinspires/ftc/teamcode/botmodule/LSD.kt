@@ -93,10 +93,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
             val p0 = gamepadyn.players[0]
             val p1 = gamepadyn.players[1]
 
-            p0.getEvent(PIXEL_MOVE_UP,      moveUp)
-            p1.getEvent(PIXEL_MOVE_UP,      moveUp)
-            p0.getEvent(PIXEL_MOVE_DOWN,    moveDown)
-            p1.getEvent(PIXEL_MOVE_DOWN,    moveDown)
+
         }
     }
 

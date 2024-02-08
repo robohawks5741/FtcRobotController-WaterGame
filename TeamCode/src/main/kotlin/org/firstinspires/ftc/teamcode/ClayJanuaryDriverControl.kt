@@ -182,25 +182,29 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
                 isSlideMovingUp = true
                 if (runToHeight == 0 || slidePos > 0){
-                    slidePos = 1565
+                    slidePos = 1600
+                    runToHeight = 6
                 } else {
-                    slidePos = runToHeight*200
+                    slidePos = runToHeight*200 + 400
                 }
 
             }
+
             // Move slides down
-            if (gamepad1.dpad_down || gamepad2.dpad_down) {
-                runToHeight = 0
-                if (!isArmDown) {
+            if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
+                if (runToHeight == 0 && slidePos > 0){
                     isArmDown = true
-                    // used to be 100
+                    sleep(200)
                     slidePos = 0
                 } else {
+                    runToHeight = 0
+                    isArmDown = true
                     slidePos = 0
                 }
+
             }
             // TODO:
-            if ((gamepad1.dpad_left && runToHeight < 7 && !slideAdjustmentPressed|| gamepad2.dpad_left && runToHeight < 7 && !slideAdjustmentPressed)) {
+            if ((gamepad1.dpad_left && runToHeight < 6 && !slideAdjustmentPressed|| gamepad2.dpad_left && runToHeight < 6 && !slideAdjustmentPressed)) {
                 slideAdjustmentPressed = true
                 runToHeight++;
 
@@ -288,6 +292,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("inlift", inlift.position)
             telemetry.addData("hangMode", trussPos)
             telemetry.addData("RunToHeight", runToHeight)
+            telemetry.addData("Slide Pos", slidePos)
             telemetry.update()
         }
     }
