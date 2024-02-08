@@ -22,8 +22,6 @@ abstract class AutoSuper : LinearOpMode() {
     protected lateinit var inlift: Servo
     protected lateinit var imu: IMU
     protected lateinit var distance: DistanceSensor
-    protected lateinit var drive: MecanumDrive
-    protected open val beginPose = Pose2d(0.0, 0.0, 0.0)
     protected var liftPos = 0
     abstract val alliance: Alliance
     abstract val side: AllianceSide
@@ -57,7 +55,6 @@ abstract class AutoSuper : LinearOpMode() {
         slideR.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        drive = MecanumDrive(hardwareMap, beginPose)
         waitForStart()
         runTaskA()
         runTaskB()

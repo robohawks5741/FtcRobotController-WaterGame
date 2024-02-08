@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 @TeleOp
 public class ServoTest1 extends LinearOpMode {
 
-    private DcMotorEx hang, intake, slideR, slideL;
+    private DcMotorEx hang, intake, slideR, slideL, leftFront, leftBack, rightBack, rightFront;
     private Servo trussL, trussR, armR, armL, clawR, clawL, drone;
 
     private int liftPos = 0;
@@ -25,6 +25,11 @@ public class ServoTest1 extends LinearOpMode {
         intake = hardwareMap.get(DcMotorEx.class, "intake");
         slideR = hardwareMap.get(DcMotorEx.class, "slideR");
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
+
+        leftFront = hardwareMap.get(DcMotorEx.class, "frontL");
+        leftBack = hardwareMap.get(DcMotorEx.class, "backL");
+        rightBack = hardwareMap.get(DcMotorEx.class, "backR");
+        rightFront = hardwareMap.get(DcMotorEx.class, "frontR");
 
         trussR = hardwareMap.get(Servo.class, "trussR");
         trussL = hardwareMap.get(Servo.class, "trussL");
@@ -70,15 +75,17 @@ public class ServoTest1 extends LinearOpMode {
             //Placement
 
 
-
+ 
             if (gamepad1.dpad_left) {
-                trussL.setPosition(trussL.getPosition() + 0.01);
+                rightFront.setPower(1);
 
 
             } else if (gamepad1.dpad_right) {
-                trussL.setPosition(trussL.getPosition() - 0.01);
+                rightBack.setPower(1);
             } else if (gamepad1.dpad_down) {
-                trussL.setPosition(0);
+                leftFront.setPower(1);
+            } else if (gamepad1.dpad_up){
+                leftBack.setPower(1);
             }
 //0.36
             if (gamepad1.x) {

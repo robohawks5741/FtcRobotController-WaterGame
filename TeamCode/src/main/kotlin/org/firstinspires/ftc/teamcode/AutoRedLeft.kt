@@ -13,24 +13,26 @@ import com.qualcomm.robotcore.hardware.Servo
 
 @Autonomous(name = "# Clay Red Left")
 class AutoRedLeft : AutoSuper() {
-    override val alliance: Alliance = Alliance.RED
-    override val side: AllianceSide = AllianceSide.AUDIENCE_SIDE
+    //Start 0, 7.32, 0
+    var placementZone: SpikeMark = SpikeMark.RIGHT
+    var beginPose = Pose2d(0.0, 0.0, 0.0)
+    override val alliance: Alliance = Alliance.BLUE
+    override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
 
-    private var placementZone: SpikeMark = SpikeMark.CENTER
-    var xmult = 1
-    var ymult = -1
-    var dheading = -1
+    protected lateinit var drive: MecanumDrive
+
+    var xmult = 1;
+    var ymult = -1;
+    var dheading = -1;
     override fun runTaskA() {
+        drive = MecanumDrive(hardwareMap, beginPose)
+
         runBlocking(when (placementZone) {
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(19.81*xmult, -6.57*ymult), Math.toRadians(dheading*-27.82))
-                .splineToConstantHeading(Vector2d(3.83*xmult, 1.91*ymult), Math.toRadians(dheading* -27.82))
-                .turnTo(Math.toRadians(dheading*0.0))
-                .splineToConstantHeading(Vector2d(49.55*xmult, 6.43*ymult), Math.toRadians(dheading*0.0))
-                .turnTo(Math.toRadians(dheading*90.0))
-                .splineToConstantHeading(Vector2d(49.55*xmult, 73.64*ymult), Math.toRadians(dheading*90.0))
-                .turnTo(Math.toRadians(dheading*270.0))
-                .splineToConstantHeading(Vector2d(30.44*xmult, 88.65*ymult), Math.toRadians(dheading*270.0))
+                .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
+                .splineToConstantHeading(Vector2d(5.49, 4.21), Math.toRadians(0.0))
+                .turnTo(Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(20.95, -33.32), Math.toRadians(90.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(26.50*xmult, -1.24*ymult), dheading*0.0)
@@ -68,7 +70,7 @@ class AutoRedLeft : AutoSuper() {
         sleep(300)
         runBlocking(
             drive.actionBuilder(drive.pose)
-                .lineToY(83.0*ymult)
+                .lineToY(-27.45)
                 .build()
         )
         armR.position = 0.05
@@ -85,8 +87,8 @@ class AutoRedLeft : AutoSuper() {
         sleep(200)
         runBlocking(
             drive.actionBuilder(drive.pose)
-                .strafeToConstantHeading(Vector2d(50.0*xmult, 84.72*ymult))
-                .splineToConstantHeading(Vector2d(50.0*xmult, 101.92*ymult), Math.toRadians(dheading*270.0))
+                .strafeToConstantHeading(Vector2d(3.92, -27.45))
+                .splineToConstantHeading(Vector2d(3.16, -45.42), Math.toRadians(90.0))
                 .build()
         )
     }
