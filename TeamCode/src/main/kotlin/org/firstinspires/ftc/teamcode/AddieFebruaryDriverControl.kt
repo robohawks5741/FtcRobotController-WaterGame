@@ -200,7 +200,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         drone.position = 0.36
         inlift.position = 0.0
 
-//        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
+        telemetry.update()
+
+        waitForStart()
+
+        //        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
 
         // MACROS
         val macroSlideUp = { it: InputDataDigital ->
@@ -271,10 +275,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
         p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
 
-        telemetry.update()
-
-        waitForStart()
-
         moduleHandler.start()
 
         telemetry.update()
@@ -296,8 +296,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             }
 
             // TODO: port to gamepadyn
-            // TODO: why 1501 and not MAX (1565)?
-            if ((gamepad1.dpad_right || gamepad2.dpad_right) && lsd.currentHeight < 1501) {
+            if ((gamepad1.dpad_right || gamepad2.dpad_right) && lsd.currentHeight < LSD.HEIGHT_MAX - 64) {
                 if (claw.leftOpen || claw.rightOpen) {
                     claw.rightOpen = false
                     claw.leftOpen = false
