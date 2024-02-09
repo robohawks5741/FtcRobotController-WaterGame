@@ -45,18 +45,17 @@ class Intake(config: ModuleConfig) : BotModule(config) {
             field = height
         }
 
-    override fun modStart() {
-        if (isTeleOp) {
-            if (gamepadyn == null) {
-                return
-            }
-            val spinFunc: (InputDataAnalog1) -> Unit = {
-                val d = it.x.toDouble()
-                motorSpin?.power = if (d > 1.0) 1.0 else if (d < -1.0) -1.0 else d
-            }
-            gamepadyn.players[0].getEvent(INTAKE_SPIN, spinFunc)
-            gamepadyn.players[1].getEvent(INTAKE_SPIN, spinFunc)
+    override fun modStartTeleOp() {
+        if (gamepadyn == null) {
+            telemetry.addLine("(Intake Module) TeleOp was enabled but Gamepadyn was null!")
+            return
         }
+        val spinFunc: (InputDataAnalog1) -> Unit = {
+            val d = it.x.toDouble()
+            motorSpin?.power = if (d > 1.0) 1.0 else if (d < -1.0) -1.0 else d
+        }
+        gamepadyn.players[0].getEvent(INTAKE_SPIN, spinFunc)
+        gamepadyn.players[1].getEvent(INTAKE_SPIN, spinFunc)
     }
 
     override fun modUpdate() {

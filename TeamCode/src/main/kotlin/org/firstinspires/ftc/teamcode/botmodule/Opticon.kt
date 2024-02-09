@@ -45,6 +45,9 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 //        get() = aprilTag.detections
 
     override fun modStart() {
+        if (camera == null) {
+            status = Status(StatusEnum.MISSING_HARDWARE, null, hardwareMissing = setOf("Webcam 1"))
+        }
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
         telemetry.addData(">", "Touch Play to start OpMode")

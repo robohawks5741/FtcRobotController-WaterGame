@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.roadrunner.Vector2d
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
@@ -19,5 +20,10 @@ inline infix fun <T, I> I.idc(f: () -> T): T? = try { f() } catch (_: Exception)
     val s = this.sign
     return (x.pow(nI) * (1 - x)) + (x.pow(nO) * x) * sign
 }
+
+/**
+ * Naive multiplication (x1 * x2, y1 * y2)
+ */
+operator fun Vector2d.times(other: Vector2d) = Vector2d(this.x * other.x, this.y * other.y)
 
 fun Double.clamp(min: Double, max: Double) = if (this < min) min; else if (this > max) max; else this

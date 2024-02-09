@@ -41,13 +41,12 @@ class ModuleHandler(
      * STATUS: UNKOWN
      * TODO: test
      */
-    lateinit var trussel: Trussel private set
+    lateinit var trussle: Trussle private set
 
     /**
      * STATUS: NOT WORKING
      * TODO:
      */
-    lateinit var droneLauncher: DroneLauncher private set
 
     val modules
         get() = setOf(
@@ -56,8 +55,7 @@ class ModuleHandler(
             claw,
             opticon,
             intake,
-            trussel,
-            droneLauncher
+            trussle
         )
 
     fun init() {
@@ -66,23 +64,30 @@ class ModuleHandler(
         claw = Claw(config)
         opticon = Opticon(config)
         intake = Intake(config)
-        trussel = Trussel(config)
-        droneLauncher = DroneLauncher(config)
+        trussle = Trussle(config)
     }
 
     fun start() {
         if (!hasStarted) hasStarted = true
         else return
         for (module in modules) {
+            config.opMode.telemetry.addLine("start module ${module::class.simpleName}")
             module.modStart()
-            if (config.isTeleOp) module.modStartTeleOp()
+            if (config.isTeleOp) {
+                module.modStartTeleOp()
+                config.opMode.telemetry.addLine("TELEOP start module ${module::class.simpleName}")
+            }
         }
     }
 
     fun update() {
         for (module in modules) {
             module.modUpdate()
-            if (config.isTeleOp) module.modUpdateTeleOp()
+            config.opMode.telemetry.addLine("update module ${module::class.simpleName}")
+            if (config.isTeleOp) {
+                config.opMode.telemetry.addLine("TELEOP update module ${module::class.simpleName}")
+                module.modUpdateTeleOp()
+            }
         }
         for (module in modules) {
             if (module.status.status != BotModule.StatusEnum.OK) {
@@ -93,6 +98,9 @@ class ModuleHandler(
     }
 
     fun stop() {
-        for (module in modules) module.modStop()
+        for (module in modules) {
+            module.modStop()
+//            if (config.isTeleOp) module.modStopTeleOp()
+        }
     }
 }
