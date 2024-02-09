@@ -43,6 +43,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var driverRelative = true
     private var hasToggledDriverRelativity = false
     private var runToHeight = 0;
+    private var dpadUpPressed = false;
 
     // automatically updates the truss servos when the value is changed
     private var trussPos = TrussPosition.DOWN
@@ -172,7 +173,8 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             }
 
             // Move slides up
-            if (gamepad1.dpad_up || gamepad2.dpad_up) {
+            if (gamepad1.dpad_up && !dpadUpPressed|| gamepad2.dpad_up && !dpadUpPressed) {
+                dpadUpPressed = true
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
@@ -180,20 +182,24 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
                 isSlideMovingUp = true
                 if (runToHeight == 0 || slidePos > 0){
-                    slidePos = 1600
+                    slidePos = 1500
                     runToHeight = 6
                 } else {
-                    slidePos = runToHeight*200 + 400
+                    slidePos = runToHeight*200 + 300
 
                 }
 
+            }
+
+            if (!gamepad1.dpad_up && !gamepad2.dpad_up){
+                dpadUpPressed = false;
             }
 
             // Move slides down
             if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
                 if (runToHeight == 0 && slidePos > 0){
                     isArmDown = true
-                    sleep(200)
+                    sleep(350)
                     slidePos = 0
                 } else {
                     runToHeight = 0

@@ -40,15 +40,13 @@ public class ServoTest1 extends LinearOpMode {
 
 
 
+
         slideR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slideL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
-        trussR.setPosition(0.32);
-        trussL.setPosition(0.3);
 
         waitForStart();
 
@@ -75,7 +73,7 @@ public class ServoTest1 extends LinearOpMode {
             //Placement
 
 
- 
+
             if (gamepad1.dpad_left) {
                 rightFront.setPower(1);
 

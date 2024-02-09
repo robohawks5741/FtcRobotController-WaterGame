@@ -13,29 +13,32 @@ import com.qualcomm.robotcore.hardware.Servo
 
 @Autonomous(name = "# Clay Blue Left")
 class AutoBlueLeft : AutoSuper() {
-    var placementZone: SpikeMark = SpikeMark.RIGHT
+    var beginPose = Pose2d(0.0, 0.0, 0.0)
+    protected lateinit var drive: MecanumDrive
 
-    override val beginPose = Pose2d(0.0, 0.0, 0.0)
+    var placementZone: SpikeMark = SpikeMark.LEFT
     override val alliance: Alliance = Alliance.BLUE
     override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
 
     override fun runTaskA() {
+        drive = MecanumDrive(hardwareMap, beginPose)
+
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(20.49, 7.18), Math.toRadians(37.30))
-                .splineToConstantHeading(Vector2d(16.307, -0.1312), Math.toRadians(270.0))
+                .splineTo(Vector2d(19.75, 2.07), Math.toRadians(0.0))
+                .splineToConstantHeading(Vector2d(4.29, -18.15), Math.toRadians(0.0))
                 .turnTo(Math.toRadians(270.0))
-                .splineToConstantHeading(Vector2d(19.36, 32.8), Math.toRadians(270.0))
+                .splineToConstantHeading(Vector2d(20.18, 32.56), Math.toRadians(270.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(26.386, 0.0), 0.0)
+                .splineTo(Vector2d(25.22, -3.60), 0.0)
                 .splineToConstantHeading(Vector2d(23.386, 0.0), 0.0)
                 .turnTo(Math.toRadians(270.0))
                 .splineToConstantHeading(Vector2d(25.682, 30.831), Math.toRadians(270.0))
                 .build()
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(21.83, -5.68), Math.toRadians(-25.0))
-                .splineToConstantHeading(Vector2d(25.96, 4.070), Math.toRadians(157.81))
+                .splineTo(Vector2d(22.56, -8.72), Math.toRadians(-40.26))
+                .splineToConstantHeading(Vector2d(11.85, 5.24), Math.toRadians(-40.26))
                 .turnTo(Math.toRadians(270.0))
                 .splineToConstantHeading(Vector2d(31.3, 31.0), Math.toRadians(270.0))
                 .build()
