@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.Opticon
+import kotlin.math.roundToInt
 
 abstract class AutoSuper : LinearOpMode() {
     protected lateinit var intake: DcMotorEx
@@ -23,7 +24,7 @@ abstract class AutoSuper : LinearOpMode() {
     protected lateinit var drone: Servo
     protected lateinit var inlift: Servo
     protected lateinit var imu: IMU
-    protected lateinit var distance: DistanceSensor
+//    protected lateinit var distance: DistanceSensor
 
     protected lateinit var shared: BotShared
     protected lateinit var opticon: Opticon
@@ -46,7 +47,7 @@ abstract class AutoSuper : LinearOpMode() {
         clawR =     hardwareMap[Servo::class.java,          "clawR"     ]
         clawL =     hardwareMap[Servo::class.java,          "clawL"     ]
         inlift =    hardwareMap[Servo::class.java,          "inlift"    ]
-        distance =  hardwareMap[DistanceSensor::class.java, "distance"  ]
+//        distance =  hardwareMap[DistanceSensor::class.java, "distance"  ]
         imu =       hardwareMap[IMU::class.java,            "imu"       ]
 
         shared = BotShared(this)
@@ -69,10 +70,26 @@ abstract class AutoSuper : LinearOpMode() {
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
         waitForStart()
+
         opticon.modStart()
-        runTaskA()
-        runTaskB()
-        runTaskC()
+
+        val tfod = opticon.tfod!!
+
+        while (opModeIsActive()) {
+            telemetry.addLine("recognition count: ${tfod.recognitions.size}")
+            for (element in tfod.recognitions) {
+                telemetry.addLine("element \"${element.label}\" (confidence ${element.confidence * 100.0}%")
+            }
+            Thread.yield()
+            telemetry.addLine("searching for recognition (${runtime.roundToInt()} seconds elapsed)")
+            telemetry.update()
+        }
+
+        telemetry.update()
+
+//        runTaskA()
+//        runTaskB()
+//        runTaskC()
     }
 
     abstract fun runTaskA()
