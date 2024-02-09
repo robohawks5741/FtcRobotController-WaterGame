@@ -274,8 +274,8 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         p0.getEvent(DRONE_LAUNCH, droneLaunch)
         p1.getEvent(DRONE_LAUNCH, droneLaunch)
 
-        p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
-        p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
+        p0.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
+        p1.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
 
         // MOD START
         moduleHandler.start()
