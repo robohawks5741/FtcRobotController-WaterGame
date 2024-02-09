@@ -200,7 +200,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         drone.position = 0.36
         inlift.position = 0.0
 
-//        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
+        telemetry.update()
+
+        waitForStart()
+
+        //        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
 
         // MACROS
         val macroSlideUp = { it: InputDataDigital ->
@@ -270,10 +274,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
         p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
         p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
-
-        telemetry.update()
-
-        waitForStart()
 
         moduleHandler.start()
 
