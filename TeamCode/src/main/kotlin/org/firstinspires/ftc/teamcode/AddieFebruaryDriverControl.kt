@@ -296,8 +296,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             }
 
             // TODO: port to gamepadyn
-            // TODO: why 1501 and not MAX (1565)?
-            if ((gamepad1.dpad_right || gamepad2.dpad_right) && lsd.currentHeight < 1501) {
+            if ((gamepad1.dpad_right || gamepad2.dpad_right) && lsd.currentHeight < LSD.HEIGHT_MAX - 64) {
                 if (claw.leftOpen || claw.rightOpen) {
                     claw.rightOpen = false
                     claw.leftOpen = false
