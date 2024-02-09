@@ -171,6 +171,8 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         p0.configuration = GamepadConfig.player0
         p1.configuration = GamepadConfig.player1
 
+
+        // MOD INIT
         moduleHandler.init()
 
         val claw = moduleHandler.claw
@@ -275,6 +277,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         p0.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
         p1.getEvent(MACRO_PLACE_PIXEL, droneLaunch)
 
+        // MOD START
         moduleHandler.start()
 
         telemetry.update()
@@ -282,7 +285,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         while (opModeIsActive()) {
             gamepadyn.update()
 
-            // for
+            // MOD UPDATE
             moduleHandler.update()
 
             // TODO: port to gamepadyn
