@@ -24,7 +24,8 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         const val HEIGHT_MIN = 0
         const val HEIGHT_CLAW_SAFE = 500
         var POWER_MAX = 1.0
-        var POWER_DOWNWARD_SCALE = 0.75
+        // scale when moving downwards
+        var POWER_DOWNWARD_SCALE = 1.0 // 0.75
     }
 
     init {

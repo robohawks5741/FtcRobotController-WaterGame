@@ -28,7 +28,9 @@ abstract class AutoSuper : LinearOpMode() {
     protected lateinit var shared: BotShared
     protected lateinit var opticon: Opticon
 
+    protected lateinit var drive: MecanumDrive
 
+    open val beginPose = Pose2d(0.0, 0.0, 0.0)
     protected var liftPos = 0
     abstract val alliance: Alliance
     abstract val side: AllianceSide
@@ -49,6 +51,7 @@ abstract class AutoSuper : LinearOpMode() {
 
         shared = BotShared(this)
         opticon = Opticon(ModuleConfig(this, shared, false))
+        drive = MecanumDrive(hardwareMap, beginPose)
 
         // claw
         clawR.position = 0.07

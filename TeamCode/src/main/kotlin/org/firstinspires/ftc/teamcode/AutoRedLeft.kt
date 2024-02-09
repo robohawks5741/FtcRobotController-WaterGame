@@ -15,18 +15,10 @@ import com.qualcomm.robotcore.hardware.Servo
 class AutoRedLeft : AutoSuper() {
     //Start 0, 7.32, 0
     var placementZone: SpikeMark = SpikeMark.LEFT
-    var beginPose = Pose2d(0.0, 0.0, 0.0)
     override val alliance: Alliance = Alliance.BLUE
     override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
 
-    protected lateinit var drive: MecanumDrive
-
-    var xmult = 1;
-    var ymult = -1;
-    var dheading = -1;
     override fun runTaskA() {
-        drive = MecanumDrive(hardwareMap, beginPose)
-
         runBlocking(when (placementZone) {
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(21.87, -7.97), Math.toRadians(-39.75))
