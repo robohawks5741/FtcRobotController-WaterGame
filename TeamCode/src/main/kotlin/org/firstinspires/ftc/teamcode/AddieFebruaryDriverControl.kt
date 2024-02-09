@@ -222,7 +222,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                 // move up slightly as to move the arm up
                 lsd.targetHeight = 400
                 // wait for slide to move
-                sleep(1000)
+                sleep(300)
 //                while (lsd.currentHeight < LSD.HEIGHT_CLAW_SAFE) {
 //                    sleep(20)
 //                }
@@ -255,11 +255,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                 if (!claw.leftOpen || !claw.leftOpen) {
                     claw.leftOpen = true
                     claw.rightOpen = true
-                    sleep(200)
+                    sleep(400)
                 }
                 if (!isArmDown) {
                     isArmDown = true
-                    sleep(200)
+                    sleep(400)
                 }
                 lsd.targetHeight = LSD.HEIGHT_MIN
             }
