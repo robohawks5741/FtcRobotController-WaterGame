@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
+import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
+import org.firstinspires.ftc.teamcode.botmodule.Opticon
 
 abstract class AutoSuper : LinearOpMode() {
     protected lateinit var intake: DcMotorEx
@@ -22,6 +24,10 @@ abstract class AutoSuper : LinearOpMode() {
     protected lateinit var inlift: Servo
     protected lateinit var imu: IMU
     protected lateinit var distance: DistanceSensor
+
+    protected lateinit var shared: BotShared
+    protected lateinit var opticon: Opticon
+
     protected var liftPos = 0
     abstract val alliance: Alliance
     abstract val side: AllianceSide
@@ -41,6 +47,9 @@ abstract class AutoSuper : LinearOpMode() {
         distance =  hardwareMap[DistanceSensor::class.java, "distance"  ]
         imu =       hardwareMap[IMU::class.java,            "imu"       ]
 
+        shared = BotShared(this)
+        opticon = Opticon(ModuleConfig(this, shared, false))
+
         // claw
         clawR.position = 0.07
         clawL.position = 0.29
@@ -55,7 +64,9 @@ abstract class AutoSuper : LinearOpMode() {
         slideR.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
+
         waitForStart()
+        opticon.modStart()
         runTaskA()
         runTaskB()
         runTaskC()

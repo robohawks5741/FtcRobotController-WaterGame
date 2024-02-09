@@ -23,6 +23,8 @@ class AutoBlueLeft : AutoSuper() {
     override fun runTaskA() {
         drive = MecanumDrive(hardwareMap, beginPose)
 
+
+
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(20.49, 7.18), Math.toRadians(37.30))
