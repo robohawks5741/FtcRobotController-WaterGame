@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import android.util.Size
 import org.firstinspires.ftc.vision.VisionPortal
+import org.firstinspires.ftc.vision.VisionPortal.CameraState
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.firstinspires.ftc.vision.tfod.TfodProcessor
 
@@ -56,9 +57,22 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     override fun modUpdate() {
         opticonTelemetry()
 
-        if (visionPortal != null)
-        if (isStreaming) visionPortal.resumeStreaming()
-        else visionPortal.stopStreaming()
+        if (visionPortal != null) {
+            when (val camState = visionPortal.cameraState) {
+                CameraState.CAMERA_DEVICE_CLOSED,
+                CameraState.CLOSING_CAMERA_DEVICE,
+                CameraState.ERROR,
+                CameraState.STARTING_STREAM,
+                CameraState.STOPPING_STREAM,
+                CameraState.OPENING_CAMERA_DEVICE, -> { /* do nothing, these states are all dangerous */ }
+                // this throws an exception if you don't check for state. i love the ftc sdk ;)
+                else -> when (camState) {
+                    CameraState.CAMERA_DEVICE_READY -> if (isStreaming) visionPortal.resumeStreaming()
+                    CameraState.STREAMING -> if (!isStreaming) visionPortal.stopStreaming()
+                    else -> { /* shouldn't ever get here, but whatever */  }
+                }
+            }
+        }
 
         // Share the CPU.
         Thread.sleep(20)

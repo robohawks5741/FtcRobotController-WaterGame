@@ -282,6 +282,9 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         while (opModeIsActive()) {
             gamepadyn.update()
 
+            // for
+            moduleHandler.update()
+
             // TODO: port to gamepadyn
             // if dpad left is pressed (and the slide is up, mostly
             if ((gamepad1.dpad_left || gamepad2.dpad_left) && lsd.currentHeight > LSD.HEIGHT_CLAW_SAFE) {

@@ -12,8 +12,8 @@ class Claw(config: ModuleConfig) : BotModule(config) {
         /**
          * minimums and maximums
          */
-        const val CLAW_LEFT_OPEN: Double       = 0.29
-        const val CLAW_LEFT_CLOSED: Double     = 0.0
+        const val CLAW_LEFT_OPEN: Double       = 0.0
+        const val CLAW_LEFT_CLOSED: Double     = 0.29
         const val CLAW_RIGHT_OPEN: Double      = 0.36
         const val CLAW_RIGHT_CLOSED: Double    = 0.07
     }

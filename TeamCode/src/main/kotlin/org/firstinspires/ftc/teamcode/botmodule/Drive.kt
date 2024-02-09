@@ -39,12 +39,6 @@ class Drive(config: ModuleConfig) : BotModule(config) {
     @JvmField val indicatorRed: DigitalChannel?     = idc { hardwareMap[DigitalChannel::class.java, "led1"  ] }
     @JvmField val indicatorGreen: DigitalChannel?   = idc { hardwareMap[DigitalChannel::class.java, "led0"  ] }
 
-    private var wheelVels: WheelVelocities<Time> = WheelVelocities(
-        DualNum.constant(0.0, 0),
-        DualNum.constant(0.0, 0),
-        DualNum.constant(0.0, 0),
-        DualNum.constant(0.0, 0)
-    )
     private var powerModifier = 1.0
     private var useDriverRelative = true
         set(status) {
@@ -97,11 +91,6 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             return
         }
 
-        motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
-        motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
-        motorRightBack.power = wheelVels.rightBack[0] / powerModifier
-        motorRightFront.power = wheelVels.rightFront[0] / powerModifier
-
         //        val drive = shared.drive!!
 
         // counter-clockwise
@@ -141,9 +130,18 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             ) else inputVector,
             -rotation.x.toDouble().stickCurve()
         )
+
         // +X = forward, +Y = left
-//        drive.setDrivePowers(pv)
-        wheelVels = MecanumKinematics(1.0).inverse(PoseVelocity2dDual.constant(pv, 1))
+        shared.rr?.setDrivePowers(pv)
+//        val wheelVels = MecanumKinematics(1.0).inverse<Time>(PoseVelocity2dDual.constant(pv, 1))
+        val wheelVels: WheelVelocities<Time> = MecanumKinematics(1.0).inverse(
+            PoseVelocity2dDual.constant(pv, 1)
+        )
+
+        motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
+        motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
+        motorRightBack.power = wheelVels.rightBack[0] / powerModifier
+        motorRightFront.power = wheelVels.rightFront[0] / powerModifier
 
 //        Actions.run
 

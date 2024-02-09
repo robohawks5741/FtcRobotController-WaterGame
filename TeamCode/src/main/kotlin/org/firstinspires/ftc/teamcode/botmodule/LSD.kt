@@ -20,7 +20,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         /**
          * The maximum position of the slide, in encoder ticks.
          */
-        const val HEIGHT_MAX = 1565
+        const val HEIGHT_MAX = 1550
         const val HEIGHT_MIN = 0
         const val HEIGHT_CLAW_SAFE = 500
         var POWER_MAX = 1.0

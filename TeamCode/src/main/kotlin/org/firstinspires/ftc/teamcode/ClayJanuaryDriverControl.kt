@@ -11,8 +11,6 @@ import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit
-import org.firstinspires.ftc.teamcode.tuning.ClayJanuaryDriverControlBackup
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -210,14 +208,14 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 runToHeight++;
 
                 if (slidePos > 0 ){
-                    slidePos = slidePos+200;
+                    slidePos += 200;
 
                 }
             } else if (gamepad1.dpad_right && runToHeight > 0 && !slideAdjustmentPressed|| gamepad2.dpad_right && runToHeight > 0 && !slideAdjustmentPressed) {
                 slideAdjustmentPressed = true
                 runToHeight--
                 if (slidePos > 0 ){
-                    slidePos = slidePos-200;
+                    slidePos -= 200;
 
                 }
             } else if (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left){
