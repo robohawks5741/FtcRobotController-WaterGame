@@ -15,18 +15,15 @@ import com.qualcomm.robotcore.hardware.Servo
 class AutoRedLeft : AutoSuper() {
     //Start 0, 7.32, 0
     var placementZone: SpikeMark = SpikeMark.RIGHT
-    var beginPose = Pose2d(0.0, 0.0, 0.0)
+
+    override val beginPose = Pose2d(0.0, 0.0, 0.0)
     override val alliance: Alliance = Alliance.BLUE
     override val side: AllianceSide = AllianceSide.BACKDROP_SIDE
 
-    protected lateinit var drive: MecanumDrive
+    private var splineMultiplier = Vector2d(1.0, -1.0)
+    private var dheading = -1.0
 
-    var xmult = 1;
-    var ymult = -1;
-    var dheading = -1;
     override fun runTaskA() {
-        drive = MecanumDrive(hardwareMap, beginPose)
-
         runBlocking(when (placementZone) {
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
@@ -35,23 +32,23 @@ class AutoRedLeft : AutoSuper() {
                 .splineToConstantHeading(Vector2d(20.95, -33.32), Math.toRadians(90.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(26.50*xmult, -1.24*ymult), dheading*0.0)
-                .splineToConstantHeading(Vector2d(19.16*xmult, -9.99*ymult), dheading*0.0)
-                .splineToConstantHeading(Vector2d(52.87*xmult, -7.67*ymult), dheading*0.0)
+                .splineTo(Vector2d(26.50, -1.24) * splineMultiplier, dheading*0.0)
+                .splineToConstantHeading(Vector2d(19.16, -9.99) * splineMultiplier, dheading*0.0)
+                .splineToConstantHeading(Vector2d(52.87, -7.67) * splineMultiplier, dheading*0.0)
                 .turnTo(Math.toRadians(dheading*90.0))
-                .splineToConstantHeading(Vector2d(50.0*xmult, 74.94*ymult), Math.toRadians(dheading*90.0))
+                .splineToConstantHeading(Vector2d(50.0, 74.94) * splineMultiplier, Math.toRadians(dheading*90.0))
                 .turnTo(Math.toRadians(dheading*270.0))
-                .splineToConstantHeading(Vector2d(25.42*xmult, 90.69*ymult), Math.toRadians(dheading*270.0))
+                .splineToConstantHeading(Vector2d(25.42, 90.69) * splineMultiplier, Math.toRadians(dheading*270.0))
                 .build()
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(19.08*xmult, 6.84*ymult), Math.toRadians(dheading*15.69))
-                .splineToConstantHeading(Vector2d(6.73*xmult, 0.3*ymult), Math.toRadians(dheading*15.69))
+                .splineTo(Vector2d(19.08, 6.84) * splineMultiplier, Math.toRadians(dheading*15.69))
+                .splineToConstantHeading(Vector2d(6.73, 0.3) * splineMultiplier, Math.toRadians(dheading*15.69))
                 .turnTo(Math.toRadians(dheading*0.0))
-                .splineToConstantHeading(Vector2d(50.14*xmult, 2.13*ymult), dheading*0.0)
+                .splineToConstantHeading(Vector2d(50.14, 2.13) * splineMultiplier, dheading*0.0)
                 .turnTo(Math.toRadians(dheading* 90.0))
-                .splineToConstantHeading(Vector2d(49.41*xmult, 73.98*ymult), Math.toRadians(dheading*90.0))
+                .splineToConstantHeading(Vector2d(49.41, 73.98) * splineMultiplier, Math.toRadians(dheading*90.0))
                 .turnTo(Math.toRadians(dheading*270.0))
-                .splineToConstantHeading(Vector2d(19.88*xmult, 88.94*ymult), Math.toRadians(dheading*270.0))
+                .splineToConstantHeading(Vector2d(19.88, 88.94) * splineMultiplier, Math.toRadians(dheading*270.0))
                 .build()
         })
         liftPos = 600
