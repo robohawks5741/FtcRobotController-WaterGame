@@ -42,8 +42,8 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var hasCycledTrussHang = false
     private var driverRelative = false
     private var hasToggledDriverRelativity = false
-    private var runToHeight = 0;
-    private var dpadUpPressed = false;
+    private var runToHeight = 0
+    private var dpadUpPressed = false
 
     // automatically updates the truss servos when the value is changed
     private var trussPos = TrussPosition.DOWN
@@ -192,14 +192,14 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             }
 
             if (!gamepad1.dpad_up && !gamepad2.dpad_up){
-                dpadUpPressed = false;
+                dpadUpPressed = false
             }
 
             // Move slides down
             if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
 
-                runToHeight = 0;
-                if (slidePos > 0 && slidePos < 501){
+                runToHeight = 0
+                if (slidePos in 1..500){
                     isArmDown = true
                     sleep(450)
                     slidePos = 0
@@ -212,17 +212,17 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             // TODO:
             if ((gamepad1.dpad_left && runToHeight < 6 && !slideAdjustmentPressed|| gamepad2.dpad_left && runToHeight < 6 && !slideAdjustmentPressed)) {
                 slideAdjustmentPressed = true
-                runToHeight++;
+                runToHeight++
 
                 if (slidePos > 0 ){
-                    slidePos += 200;
+                    slidePos += 200
 
                 }
             } else if (gamepad1.dpad_right && runToHeight > 0 && !slideAdjustmentPressed|| gamepad2.dpad_right && runToHeight > 0 && !slideAdjustmentPressed) {
                 slideAdjustmentPressed = true
                 runToHeight--
-                if (slidePos > 0 ){
-                    slidePos -= 200;
+                if (slidePos > 0 ) {
+                    slidePos -= 200
 
                 }
             } else if (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left){
