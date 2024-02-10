@@ -104,47 +104,47 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             telemetry.addData("- Size", "%.0f x %.0f", recognition.width, recognition.height)
         }
 
-        val detections = aprilTag!!.detections
-        telemetry.addData("AprilTag Count", currentRecognitions.size)
-        // Step through the list of recognitions and display info for each one.
-        for (detection in detections) {
-            if (detection.metadata != null) {
-                telemetry.addLine("\n==== (ID ${detection.id}) ${detection.metadata.name}")
-                telemetry.addLine(
-                    String.format(
-                        "XYZ %6.1f %6.1f %6.1f  (inch)",
-                        detection.ftcPose.x,
-                        detection.ftcPose.y,
-                        detection.ftcPose.z
-                    )
-                )
-                telemetry.addLine(
-                    String.format(
-                        "PRY %6.1f %6.1f %6.1f  (deg)",
-                        detection.ftcPose.pitch,
-                        detection.ftcPose.roll,
-                        detection.ftcPose.yaw
-                    )
-                )
-                telemetry.addLine(
-                    String.format(
-                        "RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
-                        detection.ftcPose.range,
-                        detection.ftcPose.bearing,
-                        detection.ftcPose.elevation
-                    )
-                )
-            } else {
-                telemetry.addLine("\n==== (ID ${detection.id}) Unknown")
-                telemetry.addLine(
-                    String.format(
-                        "Center %6.0f %6.0f   (pixels)",
-                        detection.center.x,
-                        detection.center.y
-                    )
-                )
-            }
-        }
+//        val detections = aprilTag!!.detections
+//        telemetry.addData("AprilTag Count", currentRecognitions.size)
+//        // Step through the list of recognitions and display info for each one.
+//        for (detection in detections) {
+//            if (detection.metadata != null) {
+//                telemetry.addLine("\n==== (ID ${detection.id}) ${detection.metadata.name}")
+//                telemetry.addLine(
+//                    String.format(
+//                        "XYZ %6.1f %6.1f %6.1f  (inch)",
+//                        detection.ftcPose.x,
+//                        detection.ftcPose.y,
+//                        detection.ftcPose.z
+//                    )
+//                )
+//                telemetry.addLine(
+//                    String.format(
+//                        "PRY %6.1f %6.1f %6.1f  (deg)",
+//                        detection.ftcPose.pitch,
+//                        detection.ftcPose.roll,
+//                        detection.ftcPose.yaw
+//                    )
+//                )
+//                telemetry.addLine(
+//                    String.format(
+//                        "RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
+//                        detection.ftcPose.range,
+//                        detection.ftcPose.bearing,
+//                        detection.ftcPose.elevation
+//                    )
+//                )
+//            } else {
+//                telemetry.addLine("\n==== (ID ${detection.id}) Unknown")
+//                telemetry.addLine(
+//                    String.format(
+//                        "Center %6.0f %6.0f   (pixels)",
+//                        detection.center.x,
+//                        detection.center.y
+//                    )
+//                )
+//            }
+//        }
     }
 
     init {
@@ -159,13 +159,13 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
                 //   Use setModelAssetName() if the custom TF Model is built in as an asset (AS only).
                 //   Use setModelFileName() if you have downloaded a custom team model to the Robot Controller.
                 .setModelAssetName(TFOD_MODEL_ASSET)
-                //.setModelFileName(TFOD_MODEL_FILE)
+//                .setModelFileName(TFOD_MODEL_FILE)
                 // The following default settings are available to un-comment and edit as needed to
                 // set parameters for custom models.
                 .setModelLabels(LABELS)
                 .setIsModelTensorFlow2(true)
-                .setIsModelQuantized(true)
-                .setModelInputSize(300)
+//                .setIsModelQuantized(true)
+                .setModelInputSize(640)
                 .setModelAspectRatio(16.0 / 9.0)
                 .build()
 
@@ -193,7 +193,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             portalBuilder.setCamera(camera)
 
             // Choose a camera resolution. Not all cameras support all resolutions.
-            portalBuilder.setCameraResolution(Size(640, 480))
+            portalBuilder.setCameraResolution(Size(1280, 720))
 
             // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
             portalBuilder.enableLiveView(true)
@@ -207,7 +207,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             //builder.setAutoStopLiveView(false);
 
             // Set and enable the processor.
-            portalBuilder.addProcessor(aprilTag)
+//            portalBuilder.addProcessor(aprilTag)
             portalBuilder.addProcessor(tfod)
 
             // Build the Vision Portal, using the above settings.
@@ -224,12 +224,12 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
         // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
         // this is only used for Android Studio when using models in Assets.
-        private const val TFOD_MODEL_ASSET = "CenterStage.tflite"
+        private const val TFOD_MODEL_ASSET = "TeamElements.tflite"
 
         // Define the labels recognized in the model for TFOD (must be in training order!)
         private val LABELS = arrayOf(
-            "Pixel",
-            "TeamElement"
+            "Red Element",
+            "Blue Element",
         )
     }
 }
