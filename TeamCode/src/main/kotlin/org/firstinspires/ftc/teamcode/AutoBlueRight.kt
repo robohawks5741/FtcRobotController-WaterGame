@@ -84,16 +84,18 @@ class AutoBlueRight : LinearOpMode() {
             telemetry.addLine("Select Alliance (Gamepad1 X = Blue, Gamepad1 B = Red)")
             telemetry.addData("Current Alliance Selected", teamAlliance.toString())
             telemetry.addData("Spike mark", autoSub.spikeMark == SpikeMark.LEFT)
+            if (autoSub.spikeMark == SpikeMark.LEFT){
+                placementZone = SpikeMark.LEFT
+            } else if (autoSub.spikeMark == SpikeMark.CENTER){
+                placementZone = SpikeMark.CENTER
+            } else {
+                placementZone = SpikeMark.RIGHT
+            }
+            telemetry.addData("Spike mark", elementSpikeMark)
             telemetry.update()
         }
 
-        if (autoSub.spikeMark == SpikeMark.LEFT){
-            elementSpikeMark = SpikeMark.LEFT
-        } else if (autoSub.spikeMark == SpikeMark.CENTER){
-            elementSpikeMark = SpikeMark.CENTER
-        } else {
-            elementSpikeMark = SpikeMark.RIGHT
-        }
+
 
 
         runBlocking(when (placementZone) {
@@ -104,7 +106,7 @@ class AutoBlueRight : LinearOpMode() {
                 .turnTo(Math.toRadians(90.0))
                 .splineToConstantHeading(Vector2d(49.55, 73.64), Math.toRadians(90.0))
                 .turnTo(Math.toRadians(270.0))
-                .splineToConstantHeading(Vector2d(30.44, 88.65), Math.toRadians(270.0))
+                .splineToConstantHeading(Vector2d(30.44, 88.65 + 3), Math.toRadians(270.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(18.39, -0.21), 0.0)
@@ -113,7 +115,7 @@ class AutoBlueRight : LinearOpMode() {
                 .turnTo(Math.toRadians(90.0))
                 .splineToConstantHeading(Vector2d(50.0, 74.94), Math.toRadians(90.0))
                 .turnTo(Math.toRadians(270.0))
-                .splineToConstantHeading(Vector2d(25.42, 90.69), Math.toRadians(270.0))
+                .splineToConstantHeading(Vector2d(25.42, 90.69 + 3), Math.toRadians(270.0))
                 .build()
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(20.32, 9.60), Math.toRadians(44.51))
@@ -123,7 +125,7 @@ class AutoBlueRight : LinearOpMode() {
                 .turnTo(Math.toRadians(90.0))
                 .splineToConstantHeading(Vector2d(49.41, 73.98), Math.toRadians(90.0))
                 .turnTo(Math.toRadians(270.0))
-                .splineToConstantHeading(Vector2d(19.88, 88.94), Math.toRadians(270.0))
+                .splineToConstantHeading(Vector2d(19.88, 88.94 + 3), Math.toRadians(270.0))
                 .build()
         })
         liftPos = 600

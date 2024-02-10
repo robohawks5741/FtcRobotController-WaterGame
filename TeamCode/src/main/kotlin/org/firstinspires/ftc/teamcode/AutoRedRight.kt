@@ -84,16 +84,20 @@ class AutoRedRight : LinearOpMode() {
             telemetry.addLine("Select Alliance (Gamepad1 X = Blue, Gamepad1 B = Red)")
             telemetry.addData("Current Alliance Selected", teamAlliance.toString())
             telemetry.addData("Spike mark", autoSub.spikeMark == SpikeMark.LEFT)
+
+            if (autoSub.spikeMark == SpikeMark.LEFT){
+                placementZone = SpikeMark.LEFT
+            } else if (autoSub.spikeMark == SpikeMark.CENTER){
+                placementZone = SpikeMark.CENTER
+            } else {
+                placementZone = SpikeMark.RIGHT
+            }
+            telemetry.addData("Spike mark", elementSpikeMark)
+
             telemetry.update()
         }
 
-        if (autoSub.spikeMark == SpikeMark.LEFT){
-            elementSpikeMark = SpikeMark.LEFT
-        } else if (autoSub.spikeMark == SpikeMark.CENTER){
-            elementSpikeMark = SpikeMark.CENTER
-        } else {
-            elementSpikeMark = SpikeMark.RIGHT
-        }
+
 
 
         runBlocking(when (placementZone) {
@@ -101,20 +105,21 @@ class AutoRedRight : LinearOpMode() {
                 .splineTo(Vector2d(21.34, 9.51), Math.toRadians(46.81))
                 .splineToConstantHeading(Vector2d(3.75, -10.95), Math.toRadians(46.81))
                 .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(32.52, -33.01), Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(32.52, -33.01 -3), Math.toRadians(90.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(24.33, 5.11), Math.toRadians(0.0))
                 .splineToConstantHeading(Vector2d(6.45, -1.47), 0.0)
                 .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(26.56, -31.05), Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(26.56, -31.05 -3), Math.toRadians(90.0))
                 .build()
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
                 .splineToConstantHeading(Vector2d(5.49, 4.21), Math.toRadians(0.0))
                 .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(20.95, -33.32), Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(20.95, -33.32 -3  ), Math.toRadians(90.0))
                 .build()
+
         })
         liftPos = 600
         slideR.targetPosition = -liftPos

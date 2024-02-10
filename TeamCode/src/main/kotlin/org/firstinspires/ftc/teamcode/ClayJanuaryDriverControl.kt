@@ -56,7 +56,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var isArmDown = true
         set(status) {
             armR.position = if (status) 0.05 else 0.35
-            armL.position = if (status) 0.95 else 0.65
+            armL.position = if (status) 0.98 else 0.65
             field = status
         }
 
@@ -104,9 +104,9 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             drive.setDrivePowers(
                 PoseVelocity2d(
                     Vector2d(
-                        -gamepad1.left_stick_y.toDouble().stickCurve(),
-                        -gamepad1.left_stick_x.toDouble().stickCurve()
-                    ), -gamepad1.right_stick_x.toDouble().stickCurve()
+                        -gamepad1.left_stick_y.toDouble(),//.stickCurve(
+                        -gamepad1.left_stick_x.toDouble(), //.stickCurve()
+                    ), -gamepad1.right_stick_x.toDouble().stickCurve(),
                 )
             )
         }
@@ -157,8 +157,10 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         isArmDown = true
 
         trussPos = TrussPosition.DOWN
-        drone.position = 0.0
+        drone.position = 1.0
         inlift.position = 0.0
+
+
         waitForStart()
 
         while (opModeIsActive()) {
@@ -199,7 +201,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
 
                 runToHeight = 0;
-                if (slidePos > 0 && slidePos < 501){
+                if (slidePos > 0 && slidePos < 503){
                     isArmDown = true
                     sleep(450)
                     slidePos = 0
@@ -254,7 +256,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     sleep(200)
                 }
 
-                if (runToHeight == 0 && slidePos > 0 && slidePos < 400){
+                if (runToHeight == 0 && slidePos > 0 && slidePos < 502){
                     isArmDown = true
                     sleep(450)
                     slidePos = 0
@@ -288,7 +290,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             }
 
             // Drone Launch ( !!! BOTH PLAYERS MUST HOLD B !!! )
-            if (gamepad1.b || gamepad2.b) drone.position = 1.0
+            if (gamepad1.b || gamepad2.b) drone.position = 0.0
 
             drive.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)

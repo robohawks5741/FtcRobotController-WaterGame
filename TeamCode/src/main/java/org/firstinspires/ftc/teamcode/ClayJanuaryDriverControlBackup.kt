@@ -17,7 +17,7 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@TeleOp(name = "## Clay January Driver Control")
+@TeleOp(name = "## Clay January Driver Control Backup")
 class ClayJanuaryDriverControlBackup : LinearOpMode() {
 private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
 private lateinit var hang: DcMotorEx
