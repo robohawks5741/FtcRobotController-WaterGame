@@ -20,9 +20,9 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         /**
          * The maximum position of the slide, in encoder ticks.
          */
-        const val HEIGHT_MAX = 1550
+        const val HEIGHT_MAX = 1500
         const val HEIGHT_MIN = 0
-        const val HEIGHT_CLAW_SAFE = 500
+        const val HEIGHT_CLAW_SAFE = 502
         var POWER_MAX = 1.0
         // scale when moving downwards
         var POWER_DOWNWARD_SCALE = 1.0 // 0.75
@@ -38,6 +38,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         } else {
             slideLeft.targetPosition = 0
             slideRight.targetPosition = 0
+
             slideLeft.mode =   STOP_AND_RESET_ENCODER
             slideRight.mode =  STOP_AND_RESET_ENCODER
             slideLeft.mode =   RUN_TO_POSITION
@@ -76,16 +77,11 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
         slideLeft?.mode  = RUN_TO_POSITION
         slideRight?.mode = RUN_TO_POSITION
-
     }
-
-//    override fun modStartTeleOp() {
-//        if (gamepadyn == null) {
-//            return
-//        }
-//    }
 
     override fun modUpdate() {
         telemetry.addData("LSD target height:", targetHeight)
+        telemetry.addData("LSD left slide height", slideLeft?.currentPosition)
+        telemetry.addData("LSD right slide height", slideRight?.currentPosition)
     }
 }

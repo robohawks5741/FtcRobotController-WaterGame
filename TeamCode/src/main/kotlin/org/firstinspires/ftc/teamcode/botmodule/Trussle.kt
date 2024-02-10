@@ -23,7 +23,12 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
     private val trussLeft: Servo?       = idc {   hardwareMap[Servo        ::class.java,   "trussL"    ] }
     private val trussRight: Servo?      = idc {   hardwareMap[Servo        ::class.java,   "trussR"    ] }
 
-    private var position: TrussPosition = TrussPosition.DOWN
+    var position: TrussPosition = TrussPosition.DOWN
+        set(pos) {
+            field = pos
+            trussLeft?.position = position.leftPos
+            trussRight?.position = position.rightPos
+        }
 
     override fun modStart() {
         trussPull?.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
@@ -43,8 +48,6 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
                     TrussPosition.UP -> TrussPosition.DOWN
                     TrussPosition.DOWN -> TrussPosition.UP
                 }
-                trussLeft?.position = position.leftPos
-                trussRight?.position = position.rightPos
             }
         }
 
@@ -72,5 +75,6 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
     override fun modUpdate() {
         trussLeft?.position = position.leftPos
         trussRight?.position = position.rightPos
+        telemetry.addData("Truss position", position)
     }
 }
