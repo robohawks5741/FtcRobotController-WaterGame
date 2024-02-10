@@ -11,26 +11,31 @@ class AutoRedRight : AutoSuper() {
     override val side = AllianceSide.BACKDROP_SIDE
 
     override fun runSpecialized() {
-        runBlocking(when (placementZone) {
-            SpikeMark.LEFT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(21.34, 9.51), Math.toRadians(46.81))
-                .splineToConstantHeading(Vector2d(3.75, -10.95), Math.toRadians(46.81))
-                .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(32.52, -33.01), Math.toRadians(90.0))
-                .build()
-            SpikeMark.CENTER -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(24.33, 5.11), Math.toRadians(0.0))
-                .splineToConstantHeading(Vector2d(6.45, -1.47), 0.0)
-                .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(26.56, -31.05), Math.toRadians(90.0))
-                .build()
-            SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
-                .splineToConstantHeading(Vector2d(5.49, 4.21), Math.toRadians(0.0))
-                .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(20.95, -33.32), Math.toRadians(90.0))
-                .build()
-        })
+        runBlocking(
+            when (placementZone) {
+                SpikeMark.LEFT -> drive.actionBuilder(beginPose)
+                    .splineTo(Vector2d(21.34, 9.51), Math.toRadians(46.81))
+                    .splineToConstantHeading(Vector2d(3.75, -10.95), Math.toRadians(46.81))
+                    .turnTo(Math.toRadians(90.0))
+                    .splineToConstantHeading(Vector2d(32.52, -33.01 - 3), Math.toRadians(90.0))
+                    .build()
+
+                SpikeMark.CENTER -> drive.actionBuilder(beginPose)
+                    .splineTo(Vector2d(24.33, 5.11), Math.toRadians(0.0))
+                    .splineToConstantHeading(Vector2d(6.45, -1.47), 0.0)
+                    .turnTo(Math.toRadians(90.0))
+                    .splineToConstantHeading(Vector2d(26.56, -31.05 - 3), Math.toRadians(90.0))
+                    .build()
+
+                SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
+                    .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
+                    .splineToConstantHeading(Vector2d(5.49, 4.21), Math.toRadians(0.0))
+                    .turnTo(Math.toRadians(90.0))
+                    .splineToConstantHeading(Vector2d(20.95, -33.32 - 3), Math.toRadians(90.0))
+                    .build()
+
+            }
+        )
         liftPos = 600
         slideR.targetPosition = -liftPos
         slideL.targetPosition = liftPos
