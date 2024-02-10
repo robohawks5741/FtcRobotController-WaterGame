@@ -199,7 +199,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
 
                 runToHeight = 0;
-                if (runToHeight == 0 && slidePos > 0 && slidePos < 501){
+                if (slidePos > 0 && slidePos < 501){
                     isArmDown = true
                     sleep(450)
                     slidePos = 0
