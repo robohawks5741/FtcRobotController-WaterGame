@@ -41,6 +41,7 @@ abstract class BotModule protected constructor(config: ModuleConfig) {
         val hardwareMissing: Set<String>? = null
     )
 
+    @Suppress("EmptyMethod")
     var status: Status = Status(StatusEnum.OK)
         protected set
 

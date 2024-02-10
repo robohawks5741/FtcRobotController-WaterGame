@@ -30,7 +30,6 @@ class Intake(config: ModuleConfig) : BotModule(config) {
     }
 
     // 0.0 is off, 1.0 is inwards, -1.0 is outwards
-    @Suppress("MemberVisibilityCanBePrivate")
     var power: Double = 0.0
         set(status) {
             if (motorSpin == null) field = 0.0
@@ -39,6 +38,7 @@ class Intake(config: ModuleConfig) : BotModule(config) {
                 motorSpin.power = if (field > 1.0) 1.0 else if (field < -1.0) -1.0 else field
             }
         }
+    @Suppress("RedundantSetter")
     var raised: Boolean = false
         private set(height) {
 //            motorLift?.position = if (height) 0 else 10

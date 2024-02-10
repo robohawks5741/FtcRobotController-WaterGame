@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.Opticon
-import org.openftc.easyopencv.OpenCvCameraRotation
 
 abstract class AutoSuper : LinearOpMode() {
     protected lateinit var intake: DcMotorEx
@@ -28,12 +27,15 @@ abstract class AutoSuper : LinearOpMode() {
     protected lateinit var opticon: Opticon
 
     protected lateinit var drive: MecanumDrive
+    protected lateinit var autoSub: AutoSubsystem
 
     open val beginPose = Pose2d(0.0, 0.0, 0.0)
+    protected var placementZone: SpikeMark = SpikeMark.RIGHT
     protected var liftPos = 0
     abstract val alliance: Alliance
     abstract val side: AllianceSide
-    override fun runOpMode() {
+
+    final override fun runOpMode() {
         intake =    hardwareMap[DcMotorEx::class.java,      "intake"    ]
         slideR =    hardwareMap[DcMotorEx::class.java,      "slideR"    ]
         slideL =    hardwareMap[DcMotorEx::class.java,      "slideL"    ]
@@ -47,11 +49,6 @@ abstract class AutoSuper : LinearOpMode() {
         inlift =    hardwareMap[Servo::class.java,          "inlift"    ]
         imu =       hardwareMap[IMU::class.java,            "imu"       ]
 
-        shared = BotShared(this)
-        opticon = Opticon(ModuleConfig(this, shared, false))
-        drive = MecanumDrive(hardwareMap, beginPose)
-
-        // claw
         clawR.position = 0.07
         clawL.position = 0.29
         inlift.position = 0.34
@@ -66,15 +63,34 @@ abstract class AutoSuper : LinearOpMode() {
         slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        modInit()
+        autoSub = AutoSubsystem(this)
+        shared = BotShared(this)
+        opticon = Opticon(ModuleConfig(this, shared, false))
+        drive = MecanumDrive(hardwareMap, beginPose)
+        autoSub.setAlliance(alliance)
+
+        /* for (i in 0..100) {
+           Thread.sleep(20)
+           elementSpikeMark = autoSub.elementDetection()
+           telemetry.addData("getMaxDistance", autoSub.pipeline.getMaxDistance())
+           if (isStopRequested){
+               return
+           }
+        } */
+
+        while (!isStarted && !isStopRequested){
+            placementZone = autoSub.elementDetection()
+            telemetry.addData("Current Alliance Selected", alliance.toString())
+            telemetry.addData("Spike mark", autoSub.spikeMark.name)
+            telemetry.update()
+            Thread.yield()
+        }
+
+        placementZone = autoSub.spikeMark
+
         waitForStart()
-        runTaskA()
-        runTaskB()
-        runTaskC()
+        runSpecialized()
     }
 
-    abstract fun modInit()
-    abstract fun runTaskA()
-    open fun runTaskB() { }
-    open fun runTaskC() { }
+    abstract fun runSpecialized()
 }

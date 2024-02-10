@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.test;
+package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -14,16 +14,16 @@ public class AutoBlueLeftFixed extends OpMode {
     public SpikeMark elementSpikeMark = SpikeMark.RIGHT;
     Alliance teamAlliance = Alliance.RED;
 
-
+    Pose2d beginPose = new Pose2d(0, 0, 0);
+    public MecanumDrive drive;
     boolean togglePreview = true;
     public AutoSubsystem autoSub = new AutoSubsystem(this);
 
     @Override
     public void init(){
-        Pose2d beginPose = new Pose2d(0, 0, 0);
-        MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
-
+        drive = new MecanumDrive(hardwareMap, beginPose);
     }
+
     @Override
     public void init_loop(){
         elementSpikeMark = autoSub.elementDetection();
@@ -50,17 +50,5 @@ public class AutoBlueLeftFixed extends OpMode {
     }
 
     @Override
-    public void start(){
-
-    }
-
-    @Override
-    public void stop(){
-
-    }
-
-    @Override
-    public void loop(){
-
-    }
+    public void loop() { }
 }

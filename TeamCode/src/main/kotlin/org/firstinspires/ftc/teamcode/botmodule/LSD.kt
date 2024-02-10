@@ -53,7 +53,6 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         }
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
     var targetHeight: Int = 0
         set(height) {
             // half the power for downwards movement

@@ -11,91 +11,11 @@ import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 
 @Autonomous(name = "# Clay Blue Left")
-class AutoBlueLeft : LinearOpMode() {
-    protected lateinit var intake: DcMotorEx
-    protected lateinit var slideR: DcMotorEx
-    protected lateinit var slideL: DcMotorEx
-    protected lateinit var trussL: Servo
-    protected lateinit var trussR: Servo
-    protected lateinit var armR: Servo
-    protected lateinit var armL: Servo
-    protected lateinit var clawR: Servo
-    protected lateinit var clawL: Servo
-    protected lateinit var drone: Servo
-    protected lateinit var inlift: Servo
-    protected lateinit var imu: IMU
+class AutoBlueLeft : AutoSuper() {
+    override val alliance = Alliance.BLUE
+    override val side = AllianceSide.BACKDROP_SIDE
 
-    var placementZone: SpikeMark = SpikeMark.LEFT
-    var teamAlliance = Alliance.BLUE
-    var elementSpikeMark = SpikeMark.RIGHT
-
-    protected lateinit var drive: MecanumDrive
-
-    open val beginPose = Pose2d(0.0, 0.0, 0.0)
-    protected var liftPos = 0
-
-    override fun runOpMode() {
-        drive = MecanumDrive(hardwareMap, beginPose)
-
-        intake =    hardwareMap[DcMotorEx::class.java,      "intake"    ]
-        slideR =    hardwareMap[DcMotorEx::class.java,      "slideR"    ]
-        slideL =    hardwareMap[DcMotorEx::class.java,      "slideL"    ]
-        drone =     hardwareMap[Servo::class.java,          "drone"     ]
-        trussR =    hardwareMap[Servo::class.java,          "trussR"    ]
-        trussL =    hardwareMap[Servo::class.java,          "trussL"    ]
-        armR =      hardwareMap[Servo::class.java,          "armR"      ]
-        armL =      hardwareMap[Servo::class.java,          "armL"      ]
-        clawR =     hardwareMap[Servo::class.java,          "clawR"     ]
-        clawL =     hardwareMap[Servo::class.java,          "clawL"     ]
-        inlift =    hardwareMap[Servo::class.java,          "inlift"    ]
-        imu =       hardwareMap[IMU::class.java,            "imu"       ]
-
-
-
-        clawR.position = 0.07
-        clawL.position = 0.29
-        inlift.position = 0.34
-
-        // arm
-        armR.position = 0.05
-        armL.position = 0.95
-
-        // mode settings
-        slideR.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        slideR.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-
-        val autoSub = AutoSubsystem(this)
-        autoSub.setAlliance(teamAlliance)
-
-        /*   for (i in 0..100) {
-               Thread.sleep(20)
-               elementSpikeMark = autoSub.elementDetection()
-               telemetry.addData("getMaxDistance", autoSub.pipeline.getMaxDistance())
-               if (isStopRequested){
-                   return
-               }
-           }*/
-
-        while (!isStarted && !isStopRequested){
-            elementSpikeMark = autoSub.elementDetection()
-            autoSub.setAlliance(teamAlliance)
-            telemetry.addLine("Select Alliance (Gamepad1 X = Blue, Gamepad1 B = Red)")
-            telemetry.addData("Current Alliance Selected", teamAlliance.toString())
-            telemetry.addData("Spike mark", autoSub.spikeMark == SpikeMark.LEFT)
-            telemetry.update()
-        }
-
-        if (autoSub.spikeMark == SpikeMark.LEFT){
-            elementSpikeMark = SpikeMark.LEFT
-        } else if (autoSub.spikeMark == SpikeMark.CENTER){
-            elementSpikeMark = SpikeMark.CENTER
-        } else {
-            elementSpikeMark = SpikeMark.RIGHT
-        }
-
-
+    override fun runSpecialized() {
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(19.75, 2.07), Math.toRadians(0.0))
@@ -154,4 +74,5 @@ class AutoBlueLeft : LinearOpMode() {
                 .build()
         )
     }
+
 }

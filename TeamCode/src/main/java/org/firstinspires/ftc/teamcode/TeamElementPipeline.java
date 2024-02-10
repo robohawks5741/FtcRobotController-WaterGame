@@ -14,9 +14,7 @@ import java.util.List;
 public class TeamElementPipeline extends OpenCvPipeline {
     List<Integer> ELEMENT_COLOR = Arrays.asList(0, 0, 255); //(red, green, blue)
 
-    /**
-     * TODO: document
-     */
+    // TODO: document
     static SpikeMark spikeMark = SpikeMark.RIGHT;
 
     // TODO: see if this needs to be atomic
@@ -75,8 +73,10 @@ public class TeamElementPipeline extends OpenCvPipeline {
         distance1 = colorDistance(avgColor1, ELEMENT_COLOR);
         distance2 = colorDistance(avgColor2, ELEMENT_COLOR);
         distance3 = colorDistance(avgColor3, ELEMENT_COLOR);
+
         maxDistance = Math.min(distance1, distance2);
         maxDistance = Math.min(maxDistance, distance3);
+
         if (maxDistance == distance1){
             spikeMark = SpikeMark.LEFT;
         } else if (maxDistance == distance2){
