@@ -31,7 +31,7 @@ class BotShared(opMode: OpMode) {
         val usb = UsbFacingDirection.FORWARD
         val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
         imu.initialize(IMU.Parameters(orientationOnRobot))
-        imu.resetYaw()
+//        imu.resetYaw()
 
 //        // Directions
 //        motorIntakeSpin?.   direction =         REVERSE

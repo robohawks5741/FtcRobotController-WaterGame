@@ -57,10 +57,10 @@ public class AutoSubsystem {
         pipeline.setAlliancePipe(alliance);
     }
 
-    public SpikeMark elementDetection() {
+    public void detectElement() {
         spikeMark = pipeline.getElementSpikeMark();
         telemetry.addData("Element Zone", spikeMark);
-        return spikeMark;
+//        return spikeMark;
     }
 
 }

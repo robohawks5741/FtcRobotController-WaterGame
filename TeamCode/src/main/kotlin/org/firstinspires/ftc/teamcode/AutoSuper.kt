@@ -64,10 +64,11 @@ abstract class AutoSuper : LinearOpMode() {
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
         autoSub = AutoSubsystem(this)
+        autoSub.setAlliance(alliance)
+
         shared = BotShared(this)
         opticon = Opticon(ModuleConfig(this, shared, false))
         drive = MecanumDrive(hardwareMap, beginPose)
-        autoSub.setAlliance(alliance)
 
         /* for (i in 0..100) {
            Thread.sleep(20)
@@ -79,11 +80,13 @@ abstract class AutoSuper : LinearOpMode() {
         } */
 
         while (!isStarted && !isStopRequested){
-            placementZone = autoSub.elementDetection()
-            telemetry.addData("Current Alliance Selected", alliance.toString())
-            telemetry.addData("Spike mark", autoSub.spikeMark.name)
+            autoSub.detectElement()
+            autoSub.setAlliance(alliance)
+            telemetry.addLine("Select Alliance (Gamepad1 X = Blue, Gamepad1 B = Red)")
+            telemetry.addData("Current Alliance Selected", alliance.name)
+            placementZone = autoSub.spikeMark
+
             telemetry.update()
-            Thread.yield()
         }
 
         placementZone = autoSub.spikeMark

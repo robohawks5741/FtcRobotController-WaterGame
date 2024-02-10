@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 @Autonomous(name = "#ClayAuto", group = "Auto")
 public final class ClayAuto extends LinearOpMode {
-    public SpikeMark elementSpikeMark = SpikeMark.RIGHT;
+//    public SpikeMark elementSpikeMark = SpikeMark.RIGHT;
     Alliance teamAlliance = Alliance.RED;
 
 
@@ -23,7 +23,8 @@ public final class ClayAuto extends LinearOpMode {
 
 
         while (opModeIsActive()) {
-            elementSpikeMark = autoSub.elementDetection();
+            autoSub.detectElement();
+//            elementSpikeMark = autoSub.spikeMark;
             telemetry.addData("getMaxDistance", autoSub.pipeline.getMaxDistance());
 
             if (togglePreview && gamepad2.a) {
