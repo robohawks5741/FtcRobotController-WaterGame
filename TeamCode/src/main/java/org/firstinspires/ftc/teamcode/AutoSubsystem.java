@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 public class AutoSubsystem {
     OpenCvCamera camera;
     public TeamElementPipeline pipeline;
-    int resolutionWidth = 1280;
-    int resolutionHeight = 720;
+    int resolutionWidth = 1920;
+    int resolutionHeight = 1080;
     SpikeMark spikeMark = SpikeMark.RIGHT;
     HardwareMap hardwareMap;
     OpMode opMode;
@@ -62,5 +62,6 @@ public class AutoSubsystem {
         telemetry.addData("Element Zone", spikeMark);
         return spikeMark;
     }
+
 }
 

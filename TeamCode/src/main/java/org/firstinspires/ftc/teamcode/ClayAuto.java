@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 @Autonomous(name = "#ClayAuto", group = "Auto")
 public final class ClayAuto extends LinearOpMode {
     public SpikeMark elementSpikeMark = SpikeMark.RIGHT;
+    Alliance teamAlliance = Alliance.RED;
+
 
     boolean togglePreview = true;
 
@@ -14,12 +16,11 @@ public final class ClayAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
+        AutoSubsystem autoSub = new AutoSubsystem(this);
 
         waitForStart();
 
-        AutoSubsystem autoSub = new AutoSubsystem(this);
 
-        Alliance teamAlliance = Alliance.RED;
 
         while (opModeIsActive()) {
             elementSpikeMark = autoSub.elementDetection();

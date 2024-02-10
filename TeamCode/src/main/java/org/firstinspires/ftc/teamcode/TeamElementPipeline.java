@@ -27,11 +27,18 @@ public class TeamElementPipeline extends OpenCvPipeline {
     Mat zone1;
     Mat zone2;
 
+    Mat zone3;
+
     Scalar avgColor1;
     Scalar avgColor2;
 
+    Scalar avgColor3;
+
+
     double distance1 = 1;
     double distance2 = 1;
+
+    double distance3 = 1;
 
     double maxDistance = 0;
 
@@ -39,8 +46,10 @@ public class TeamElementPipeline extends OpenCvPipeline {
     public void init(Mat mat) {
         //Defining Zones
         //Rect(top left x, top left y, bottom right x, bottom right y)
-        zone1 = mat.submat(new Rect(60, 170, 356, 285));
-        zone2 = mat.submat(new Rect(735, 170, 253, 230));
+        zone1 = mat.submat(new Rect(0, 540, 639, 500));
+        zone2 = mat.submat(new Rect(641, 540, 639, 500));
+        zone3 =  mat.submat(new Rect(1281, 540, 639, 500));
+
     }
 
     @Override
@@ -56,28 +65,26 @@ public class TeamElementPipeline extends OpenCvPipeline {
         //Averaging the colors in the zones
         avgColor1 = Core.mean(zone1);
         avgColor2 = Core.mean(zone2);
+        avgColor3 = Core.mean(zone3);
 
         //Putting averaged colors on zones (we can see on camera now)
         zone1.setTo(avgColor1);
         zone2.setTo(avgColor2);
+        zone3.setTo(avgColor3);
 
         distance1 = colorDistance(avgColor1, ELEMENT_COLOR);
         distance2 = colorDistance(avgColor2, ELEMENT_COLOR);
-
-        if ((distance1 > 195) && (distance2 > 190)) {
+        distance3 = colorDistance(avgColor3, ELEMENT_COLOR);
+        maxDistance = Math.min(distance1, distance2);
+        maxDistance = Math.min(maxDistance, distance3);
+        if (maxDistance == distance1){
             spikeMark = SpikeMark.LEFT;
-            maxDistance = -1;
+        } else if (maxDistance == distance2){
+            spikeMark = SpikeMark.CENTER;
+        } else if (maxDistance == distance3){
+            spikeMark = SpikeMark.RIGHT;
         } else {
-            maxDistance = Math.min(distance1, distance2);
-
-            if (maxDistance == distance1) {
-                //telemetry.addData("Zone 1 Has Element", distance1);
-                spikeMark = SpikeMark.RIGHT;
-
-            } else {
-                //telemetry.addData("Zone 2 Has Element", distance2);
-                spikeMark = SpikeMark.CENTER;
-            }
+            spikeMark = SpikeMark.CENTER;
         }
 
         // Allowing for the showing of the averages on the stream

@@ -40,7 +40,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var slideAdjustmentPressed = false
 
     private var hasCycledTrussHang = false
-    private var driverRelative = true
+    private var driverRelative = false
     private var hasToggledDriverRelativity = false
     private var runToHeight = 0;
     private var dpadUpPressed = false;
@@ -157,7 +157,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         isArmDown = true
 
         trussPos = TrussPosition.DOWN
-        drone.position = 0.36
+        drone.position = 0.0
         inlift.position = 0.0
         waitForStart()
 
@@ -197,12 +197,13 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
             // Move slides down
             if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
-                if (runToHeight == 0 && slidePos > 0){
+
+                runToHeight = 0;
+                if (runToHeight == 0 && slidePos > 0 && slidePos < 400){
                     isArmDown = true
-                    sleep(350)
+                    sleep(450)
                     slidePos = 0
                 } else {
-                    runToHeight = 0
                     isArmDown = true
                     slidePos = 0
                 }
@@ -230,9 +231,9 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
             // Arm Rotation
             if (gamepad1.left_bumper || gamepad2.left_bumper) { //place
-                isLeftClawOpen = true
-            } else if (gamepad1.right_bumper || gamepad2.right_bumper) { //Pickup
                 isRightClawOpen = true
+            } else if (gamepad1.right_bumper || gamepad2.right_bumper) { //Pickup
+                isLeftClawOpen = true
             }
 
             if (slideL.currentPosition > 500 && isSlideMovingUp) {
@@ -247,16 +248,20 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 isRightClawOpen = false
             } else if (gamepad1.right_trigger > 0.1 || gamepad2.right_trigger > 0.1) {
                 runToHeight = 0
-                // Open
                 if (!isRightClawOpen || !isLeftClawOpen) {
                     isLeftClawOpen = true
                     isRightClawOpen = true
                     sleep(200)
                 }
-                if (!isArmDown) {
+
+                if (runToHeight == 0 && slidePos > 0 && slidePos < 400){
                     isArmDown = true
+                    sleep(450)
+                    slidePos = 0
+                } else {
+                    isArmDown = true
+                    slidePos = 0
                 }
-                slidePos = 0
             }
 
             // Truss Hang
@@ -283,7 +288,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             }
 
             // Drone Launch ( !!! BOTH PLAYERS MUST HOLD B !!! )
-            if (gamepad1.b && gamepad2.b) drone.position = 0.8
+            if (gamepad1.b || gamepad2.b) drone.position = 1.0
 
             drive.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)
@@ -292,8 +297,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("heading", drive.pose.heading.log())
             telemetry.addData("rightSlide", slideR.currentPosition)
             telemetry.addData("leftSlide", slideL.currentPosition)
-            telemetry.addData("right arm", armR.position)
-            telemetry.addData("left arm", armL.position)
+            telemetry.addData("drone", drone.position)
             telemetry.addData("inlift", inlift.position)
             telemetry.addData("hangMode", trussPos)
             telemetry.addData("RunToHeight", runToHeight)
