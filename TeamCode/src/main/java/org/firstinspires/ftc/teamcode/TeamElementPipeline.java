@@ -57,7 +57,7 @@ public class TeamElementPipeline extends OpenCvPipeline {
         original = input.clone();
 
 //        input = input.submat(new Rect(0));
-        // TODO: use OKLab/Lch for color delta
+        // TODO: use OKLab/Lch for color delta and improve algorithm
 //        Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBALab);
 
         //Averaging the colors in the zones

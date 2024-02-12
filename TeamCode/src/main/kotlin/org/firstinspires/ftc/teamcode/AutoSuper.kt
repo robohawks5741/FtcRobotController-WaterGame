@@ -10,18 +10,18 @@ import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.Opticon
 
 abstract class AutoSuper : LinearOpMode() {
-    protected lateinit var intake: DcMotorEx
-    protected lateinit var slideR: DcMotorEx
-    protected lateinit var slideL: DcMotorEx
-    protected lateinit var trussL: Servo
-    protected lateinit var trussR: Servo
-    protected lateinit var armR: Servo
-    protected lateinit var armL: Servo
-    protected lateinit var clawR: Servo
-    protected lateinit var clawL: Servo
-    protected lateinit var drone: Servo
-    protected lateinit var inlift: Servo
-    protected lateinit var imu: IMU
+    protected val intake: DcMotorEx by lazy { hardwareMap[DcMotorEx::class.java,    "intake"] }
+    protected val slideR: DcMotorEx by lazy { hardwareMap[DcMotorEx::class.java,    "slideR"] }
+    protected val slideL: DcMotorEx by lazy { hardwareMap[DcMotorEx::class.java,    "slideL"] }
+    protected val trussL: Servo     by lazy { hardwareMap[Servo::class.java,        "trussL"] }
+    protected val trussR: Servo     by lazy { hardwareMap[Servo::class.java,        "trussR"] }
+    protected val armR: Servo       by lazy { hardwareMap[Servo::class.java,        "armR"] }
+    protected val armL: Servo       by lazy { hardwareMap[Servo::class.java,        "armL"] }
+    protected val clawR: Servo      by lazy { hardwareMap[Servo::class.java,        "clawR"] }
+    protected val clawL: Servo      by lazy { hardwareMap[Servo::class.java,        "clawL"] }
+    protected val drone: Servo      by lazy { hardwareMap[Servo::class.java,        "drone"] }
+    protected val inlift: Servo     by lazy { hardwareMap[Servo::class.java,        "inlift"] }
+    protected val imu: IMU          by lazy { hardwareMap[IMU::class.java,          "imu"] }
 
     protected lateinit var shared: BotShared
     protected lateinit var opticon: Opticon
@@ -36,19 +36,6 @@ abstract class AutoSuper : LinearOpMode() {
     abstract val side: AllianceSide
 
     final override fun runOpMode() {
-        intake =    hardwareMap[DcMotorEx::class.java,      "intake"    ]
-        slideR =    hardwareMap[DcMotorEx::class.java,      "slideR"    ]
-        slideL =    hardwareMap[DcMotorEx::class.java,      "slideL"    ]
-        drone =     hardwareMap[Servo::class.java,          "drone"     ]
-        trussR =    hardwareMap[Servo::class.java,          "trussR"    ]
-        trussL =    hardwareMap[Servo::class.java,          "trussL"    ]
-        armR =      hardwareMap[Servo::class.java,          "armR"      ]
-        armL =      hardwareMap[Servo::class.java,          "armL"      ]
-        clawR =     hardwareMap[Servo::class.java,          "clawR"     ]
-        clawL =     hardwareMap[Servo::class.java,          "clawL"     ]
-        inlift =    hardwareMap[Servo::class.java,          "inlift"    ]
-        imu =       hardwareMap[IMU::class.java,            "imu"       ]
-
         clawR.position = 0.07
         clawL.position = 0.29
         inlift.position = 0.34
@@ -92,6 +79,7 @@ abstract class AutoSuper : LinearOpMode() {
         placementZone = autoSub.spikeMark
 
         waitForStart()
+        BotShared.wasLastOpModeAutonomous = true
         runSpecialized()
     }
 

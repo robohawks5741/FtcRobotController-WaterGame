@@ -64,12 +64,13 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
     }
 
     override fun modUpdateTeleOp() {
-        trussPull?.power = if (gamepad1.a || gamepad2.a) 1.0 else 0.0
-
-        // Gamepad 2 truss controls
-        if (abs(gamepad2.right_stick_y) > 0.1) {
-            trussPull?.power = gamepad2.right_stick_y.toDouble().stickCurve()
+        if (gamepadyn == null) {
+            TODO("cry about it")
         }
+        val p0 = gamepadyn.players[0]
+        val p1 = gamepadyn.players[1]
+        val power = p0.getState(TRUSS_PULL).x + p1.getState(TRUSS_PULL).x
+        trussPull?.power = power.toDouble().stickCurve()
     }
 
     override fun modUpdate() {

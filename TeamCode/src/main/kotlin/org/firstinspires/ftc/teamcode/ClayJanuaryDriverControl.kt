@@ -166,7 +166,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         waitForStart()
 
         while (opModeIsActive()) {
-
+            BotShared.wasLastOpModeAutonomous = false
             updateDrive()
 
             // Left trigger -> Spin intake inwards

@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.hardware.Gamepad
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
 import computer.living.gamepadyn.Gamepadyn
 import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 import org.firstinspires.ftc.teamcode.*
 
 data class ModuleConfig(
@@ -15,20 +15,64 @@ data class ModuleConfig(
     val gamepadyn: Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>? = null
 )
 
-abstract class BotModule protected constructor(config: ModuleConfig) {
-    protected val opMode: OpMode = config.opMode
-    protected val hardwareMap: HardwareMap = config.opMode.hardwareMap
-    protected val telemetry: Telemetry = config.opMode.telemetry
-    protected val isTeleOp = config.isTeleOp
-    protected val gamepadyn = config.gamepadyn
+/**
+ * An abstract representation of an individual feature set of the greater robot.
+ * Provides an API for use with Autonomous or for complex macros, and handles TeleOp control.
+ *
+ * Note that there is no `modInit()` function, because modules are only ever constructed during the init phase of an OpMode.
+ * Feel free to call [HardwareMap.get] in member initialization.
+ */
+abstract class BotModule protected constructor(val config: ModuleConfig) {
     protected val shared = config.shared
-    protected val imu = shared.imu
-    protected val camera = shared.camera
 
-    protected val gamepad1: Gamepad
-        get() = opMode.gamepad1
-    protected val gamepad2: Gamepad
-        get() = opMode.gamepad2
+    /**
+     * The parent OpMode.
+     */
+    protected val opMode: OpMode = config.opMode
+
+    /**
+     * The hardware map of the parent OpMode.
+     */
+    protected val hardwareMap: HardwareMap = config.opMode.hardwareMap!!
+
+    /**
+     * The telemetry instance of the parent OpMode.
+     */
+    protected val telemetry: Telemetry = config.opMode.telemetry
+
+    /**
+     * A gamepadyn instance, if present.
+     */
+    protected val gamepadyn: GamepadynRH? = config.gamepadyn
+
+    /**
+     * The internal Inertial Measurement Unit (IMU) of the control hub.
+     */
+    protected val imu = shared.imu
+
+    /**
+     * The webcam connected to the robot, if present.
+     */
+    protected val camera: WebcamName? = shared.camera
+
+    enum class SafetyLevel {
+        /**
+         * Take no action.
+         */
+        SAFE,
+        /**
+         *
+         */
+        EUCLID,
+        /**
+         * Tell the module to panic then detach it.
+         */
+        KETER,
+        /**
+         * Stop the OpMode ASAP, unrecoverable error
+         */
+        APOLLYON
+    }
 
     enum class StatusEnum {
         OK,
@@ -38,18 +82,34 @@ abstract class BotModule protected constructor(config: ModuleConfig) {
     data class Status(
         val status: StatusEnum,
         val hardwareUsed: Set<HardwareDevice>? = setOf(),
-        val hardwareMissing: Set<String>? = null
-    )
+        val hardwareMissing: Set<String>? = null)
 
-    @Suppress("EmptyMethod")
     var status: Status = Status(StatusEnum.OK)
+        @Suppress("EmptyMethod")
         protected set
 
+    /**
+     * Run once when the OpMode is started.
+     */
     open fun modStart() { }
+
+    /**
+     * Run after [modStart], but only if the OpMode is TeleOp.
+     */
     open fun modStartTeleOp() { }
 
+    /**
+     * Run every loop of the parent OpMode.
+     */
     open fun modUpdate() { }
+
+    /**
+     * Run after [modUpdate], but only if the OpMode is TeleOp.
+     */
     open fun modUpdateTeleOp() { }
 
+    /**
+     * Run when the OpMode is stopped.
+     */
     open fun modStop() { }
 }

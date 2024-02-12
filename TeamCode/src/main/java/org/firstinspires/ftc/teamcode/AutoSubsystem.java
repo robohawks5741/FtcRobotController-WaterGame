@@ -46,6 +46,7 @@ public class AutoSubsystem {
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
 
+        assert hardwareMap != null;
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
         pipeline = new TeamElementPipeline();
 

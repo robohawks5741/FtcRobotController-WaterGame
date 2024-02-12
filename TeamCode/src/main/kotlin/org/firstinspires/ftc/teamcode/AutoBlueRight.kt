@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 class AutoBlueRight : AutoSuper() {
     override val alliance = Alliance.BLUE
     override val side = AllianceSide.AUDIENCE_SIDE
-
     override fun runSpecialized() {
         runBlocking(
             when (placementZone) {
