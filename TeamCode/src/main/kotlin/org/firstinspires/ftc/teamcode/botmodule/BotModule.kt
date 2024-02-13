@@ -60,14 +60,17 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
          * Take no action.
          */
         SAFE,
+
         /**
          *
          */
         EUCLID,
+
         /**
          * Tell the module to panic then detach it.
          */
         KETER,
+
         /**
          * Stop the OpMode ASAP, unrecoverable error
          */
@@ -76,13 +79,14 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
 
     enum class StatusEnum {
         OK,
-        MISSING_HARDWARE
+        BAD
     }
 
     data class Status(
         val status: StatusEnum,
         val hardwareUsed: Set<HardwareDevice>? = setOf(),
-        val hardwareMissing: Set<String>? = null)
+        val hardwareMissing: Set<String>? = null
+    )
 
     var status: Status = Status(StatusEnum.OK)
         @Suppress("EmptyMethod")
@@ -91,25 +95,26 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
     /**
      * Run once when the OpMode is started.
      */
-    open fun modStart() { }
+    open fun modStart() {}
 
     /**
      * Run after [modStart], but only if the OpMode is TeleOp.
      */
-    open fun modStartTeleOp() { }
+    open fun modStartTeleOp() {}
 
     /**
      * Run every loop of the parent OpMode.
      */
-    open fun modUpdate() { }
+    open fun modUpdate() {}
 
     /**
      * Run after [modUpdate], but only if the OpMode is TeleOp.
      */
-    open fun modUpdateTeleOp() { }
+    open fun modUpdateTeleOp() {}
 
     /**
      * Run when the OpMode is stopped.
      */
-    open fun modStop() { }
+    open fun modStop() {}
+
 }

@@ -1,6 +1,8 @@
+@file:JvmName("TeamMisc")
 package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.roadrunner.Vector2d
+import com.qualcomm.robotcore.hardware.HardwareMap
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
@@ -25,6 +27,17 @@ inline infix fun <T, I> I.idc(f: () -> T): T? = try { f() } catch (_: Exception)
  * Naive multiplication (x1 * x2, y1 * y2)
  */
 operator fun Vector2d.times(other: Vector2d) = Vector2d(this.x * other.x, this.y * other.y)
+
+data class DeviceRes<T>(
+    val device: T?,
+    val name: String,
+)
+
+/**
+ * Kotlin is beauty.
+ * 1. the compiler can deduce the type of DeviceResult
+ */
+inline fun <reified T> HardwareMap.search(deviceName: String): DeviceRes<T> = DeviceRes(this.tryGet(T::class.java, deviceName), deviceName)
 
 fun Boolean.toInt(): Int = if (this) 1 else 0
 fun Boolean.toUInt(): UInt = if (this) 1u else 0u

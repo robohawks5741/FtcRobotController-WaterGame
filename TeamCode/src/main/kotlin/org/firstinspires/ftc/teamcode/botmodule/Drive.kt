@@ -32,15 +32,16 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Drive(config: ModuleConfig) : BotModule(config) {
-    @JvmField val motorRightFront: DcMotorEx        =       hardwareMap[DcMotorEx::class.java,      "frontR"]
-    @JvmField val motorLeftFront: DcMotorEx         =       hardwareMap[DcMotorEx::class.java,      "frontL"]
-    @JvmField val motorRightBack: DcMotorEx         =       hardwareMap[DcMotorEx::class.java,      "backR" ]
-    @JvmField val motorLeftBack: DcMotorEx          =       hardwareMap[DcMotorEx::class.java,      "backL" ]
-    @JvmField val indicatorRed: DigitalChannel?     = idc { hardwareMap[DigitalChannel::class.java, "led1"  ] }
-    @JvmField val indicatorGreen: DigitalChannel?   = idc { hardwareMap[DigitalChannel::class.java, "led0"  ] }
+    @JvmField val motorRightFront: DcMotorEx        = hardwareMap[DcMotorEx::class.java,      "frontR"]
+    @JvmField val motorLeftFront: DcMotorEx         = hardwareMap[DcMotorEx::class.java,      "frontL"]
+    @JvmField val motorRightBack: DcMotorEx         = hardwareMap[DcMotorEx::class.java,      "backR" ]
+    @JvmField val motorLeftBack: DcMotorEx          = hardwareMap[DcMotorEx::class.java,      "backL" ]
+    @JvmField val indicatorRed: DigitalChannel?     = hardwareMap.tryGet(DigitalChannel::class.java, "led1")
+    @JvmField val indicatorGreen: DigitalChannel?   = hardwareMap.tryGet(DigitalChannel::class.java, "led0")
 
     private var powerModifier = 1.0
-    private var useDriverRelative = true
+    var snapToCardinal = true
+    var useDriverRelative = true
         set(status) {
             indicatorRed?.mode = DigitalChannel.Mode.OUTPUT
             indicatorGreen?.mode = DigitalChannel.Mode.OUTPUT
@@ -132,16 +133,41 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         )
 
         // +X = forward, +Y = left
-        shared.rr?.setDrivePowers(pv)
-//        val wheelVels = MecanumKinematics(1.0).inverse<Time>(PoseVelocity2dDual.constant(pv, 1))
-        val wheelVels: WheelVelocities<Time> = MecanumKinematics(1.0).inverse(
-            PoseVelocity2dDual.constant(pv, 1)
-        )
+//        shared.rr?.setDrivePowers(pv)
+        shared.rr?.run
 
-        motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
-        motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
-        motorRightBack.power = wheelVels.rightBack[0] / powerModifier
-        motorRightFront.power = wheelVels.rightFront[0] / powerModifier
+        /*
+
+        /**
+ * Run [a] to completion in a blocking loop.
+ */
+fun runBlocking(a: Action) {
+    val dash = FtcDashboard.getInstance()
+    val c = Canvas()
+    a.preview(c)
+
+    var b = true
+    while (b && !Thread.currentThread().isInterrupted) {
+        val p = TelemetryPacket()
+        p.fieldOverlay().operations.addAll(c.operations)
+
+        b = a.run(p)
+
+        dash.sendTelemetryPacket(p)
+    }
+}
+
+
+        */
+
+//        val wheelVels: WheelVelocities<Time> = MecanumKinematics(1.0).inverse(
+//            PoseVelocity2dDual.constant(pv, 1)
+//        )
+
+//        motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
+//        motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
+//        motorRightBack.power = wheelVels.rightBack[0] / powerModifier
+//        motorRightFront.power = wheelVels.rightFront[0] / powerModifier
 
 //        Actions.run
 

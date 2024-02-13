@@ -15,12 +15,12 @@ import org.firstinspires.ftc.teamcode.toDouble
 class Intake(config: ModuleConfig) : BotModule(config) {
     private val servoLiftName = "inlift"
     private val motorSpinName = "inspin"
-    private val motorSpin: DcMotorEx?   = idc { hardwareMap[DcMotorEx::class.java,   motorSpinName    ] }
-    private val servoLift: Servo?       = idc { hardwareMap[Servo    ::class.java,   servoLiftName    ] }
+    private val motorSpin: DcMotorEx?   = hardwareMap.tryGet(DcMotorEx::class.java,   motorSpinName)
+    private val servoLift: Servo?       = hardwareMap.tryGet(Servo    ::class.java,   servoLiftName)
 
     init {
         if (motorSpin == null && servoLift == null) {
-            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = setOf(servoLiftName, motorSpinName))
+            status = Status(StatusEnum.BAD, hardwareMissing = setOf(servoLiftName, motorSpinName))
         } else {
 //            motorLift?.position = 0
 //            motorLift?.mode = DcMotor.RunMode.RUN_TO_POSITION

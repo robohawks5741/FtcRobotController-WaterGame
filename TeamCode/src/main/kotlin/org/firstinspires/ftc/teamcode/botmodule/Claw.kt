@@ -5,8 +5,8 @@ import computer.living.gamepadyn.InputDataDigital
 import org.firstinspires.ftc.teamcode.*
 
 class Claw(config: ModuleConfig) : BotModule(config) {
-    private val clawLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawL"     ] }
-    private val clawRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawR"     ] }
+    private val clawLeft: Servo?    =   hardwareMap.tryGet(Servo  ::class.java,   "clawL")
+    private val clawRight: Servo?   =   hardwareMap.tryGet(Servo  ::class.java,   "clawR")
 
     companion object {
         /**
@@ -41,7 +41,7 @@ class Claw(config: ModuleConfig) : BotModule(config) {
             if (clawLeft == null) missing.add("clawL")
             if (clawRight == null) missing.add("clawR")
 
-            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = missing)
+            status = Status(StatusEnum.BAD, hardwareMissing = missing)
         } else {
             clawLeft.direction = Servo.Direction.FORWARD
             clawRight.direction = Servo.Direction.FORWARD

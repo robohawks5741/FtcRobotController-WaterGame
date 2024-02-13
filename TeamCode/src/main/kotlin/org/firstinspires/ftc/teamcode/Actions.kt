@@ -5,13 +5,13 @@ import computer.living.gamepadyn.ActionEnumAnalog1
 import computer.living.gamepadyn.ActionEnumAnalog2
 
 enum class ActionDigital : ActionEnumDigital {
-    // toggle
+    // toggles
     TOGGLE_DRIVER_RELATIVITY,
-    // toggle
     TOGGLE_INTAKE_HEIGHT,
+    TOGGLE_CARDINALITY_SNAP,
 
+    // one-shots
     TRUSS_CYCLE,
-    // one-shot
     DRONE_LAUNCH,
     CLAW_LEFT_OPEN,
     CLAW_LEFT_CLOSE,

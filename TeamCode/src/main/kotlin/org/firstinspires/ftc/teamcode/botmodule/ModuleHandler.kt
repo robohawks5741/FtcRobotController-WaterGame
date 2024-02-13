@@ -89,6 +89,12 @@ class ModuleHandler(
                 config.opMode.telemetry.addLine("MODULE NOT OK: \"${module::class.simpleName}\" is missing hardware: $missingString")
             }
         }
+
+        val voltageSensor = config.opMode.hardwareMap.voltageSensor
+        for (sensor in voltageSensor) {
+            config.opMode.telemetry.addData("(voltage sensor ${sensor.deviceName}) voltage", sensor.voltage)
+        }
+
     }
 
     fun stop() {

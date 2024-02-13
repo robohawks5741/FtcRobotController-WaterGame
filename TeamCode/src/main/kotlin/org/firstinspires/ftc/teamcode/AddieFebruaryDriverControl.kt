@@ -47,9 +47,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
     private lateinit var shared: BotShared
     private lateinit var moduleHandler: ModuleHandler
 
-    private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
-    private lateinit var armR: Servo
-    private lateinit var armL: Servo
     private lateinit var drone: Servo
     private lateinit var imu: IMU
 
@@ -148,7 +145,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         drone.position = 1.0
 
         // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
-        shared.rr = MecanumDrive(hardwareMap, poseEstimate)
+        shared.rr = MecanumDrive(hardwareMap, BotShared.storedPose)
         moduleHandler = ModuleHandler(ModuleConfig(this, shared, isTeleOp = true, gamepadyn))
 
         // Configuration
@@ -183,67 +180,64 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
         // TODO: fix these macros
 
-//        // MACROS
-//        val macroSlideUp = fun(it: InputDataDigital) {
-//            if (it()) {
-//                // TODO: reduce the use of sleep
-//                if (claw.leftOpen || claw.rightOpen) {
-//                    claw.leftOpen = false
-//                    claw.rightOpen = false
-//                    // wait for claws to move
-//                    sleep(300)
-//                }
-//                // move up slightly as to move the arm up
-//                lsd.targetHeight = 400
-//                // wait for slide to move
-//                sleep(300)
-//                isArmDown = false
-//                // move up now
-//                lsd.targetHeight = LSD.HEIGHT_MAX
-//            }
-//        }
+//        // MACRO
 //
-//        val macroSlideDown = fun(it: InputDataDigital) {
-//            if (it()) {
-//                if (!isArmDown) {
-//                    isArmDown = true
-//                    sleep(100)
-//                }
-//                lsd.targetHeight = LSD.HEIGHT_MIN
-//            }
-//        }
-//
-//        val macroPlacePixel = fun(it: InputDataDigital) {
-//            if (it()) {
-//                // Open the claws
-//                if (!claw.leftOpen || !claw.leftOpen) {
-//                    claw.leftOpen = true
-//                    claw.rightOpen = true
-//                    sleep(400)
-//                }
-//                if (!isArmDown) {
-//                    isArmDown = true
-//                    sleep(400)
-//                }
-//                lsd.targetHeight = LSD.HEIGHT_MIN
-//            }
-//        }
-//
-//        p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-//        p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-//
-//        p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-//        p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-//
-//        p0.getEvent(DRONE_LAUNCH) {
-//            droneTurnKey0 = it()
-//        }
-//        p1.getEvent(DRONE_LAUNCH) {
-//            droneTurnKey1 = it()
-//        }
-//
-//        p0.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
-//        p1.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
+        val macroPlacePixel = fun(it: InputDataDigital) {
+            if (it()) {
+                // Open the claws
+                if (!claw.leftOpen || !claw.leftOpen) {
+                    claw.leftOpen = true
+                    claw.rightOpen = true
+                    sleep(400)
+                }
+                lsd.isArmDown = true
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
+
+        val macroSlideUp = fun(it: InputDataDigital) {
+            if (it()) {
+                // TODO: reduce the use of sleep
+                if (claw.leftOpen || claw.rightOpen) {
+                    claw.leftOpen = false
+                    claw.rightOpen = false
+                    // wait for claws to move
+                    sleep(300)
+                }
+
+                lsd.isArmDown = false
+
+                // move up slightly as to move the arm up
+                lsd.targetHeight = 400
+                // wait for slide to move
+                lsd.isArmDown = false
+                // move up now
+                lsd.targetHeight = LSD.HEIGHT_MAX
+            }
+        }
+
+        val macroSlideDown = fun(it: InputDataDigital) {
+            if (it()) {
+                lsd.isArmDown = true
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
+
+        p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+        p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+
+        p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+        p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+
+        p0.getEvent(DRONE_LAUNCH) {
+            droneTurnKey0 = it()
+        }
+        p1.getEvent(DRONE_LAUNCH) {
+            droneTurnKey1 = it()
+        }
+
+        p0.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
+        p1.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
 
         // MOD START
         moduleHandler.start()
@@ -266,12 +260,9 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             if (droneTurnKey0 && droneTurnKey1) drone.position = 0.0
 
             rr.updatePoseEstimate()
-            telemetry.addData("DriverRelative", driverRelative)
             telemetry.addData("RR pos x", rr.pose.position.x)
             telemetry.addData("RR pos y", rr.pose.position.y)
             telemetry.addData("RR heading", rr.pose.heading.log())
-            telemetry.addData("right arm", armR.position)
-            telemetry.addData("left arm", armL.position)
 //            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
             telemetry.update()
         }

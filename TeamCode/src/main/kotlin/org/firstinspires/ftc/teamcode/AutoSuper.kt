@@ -81,6 +81,9 @@ abstract class AutoSuper : LinearOpMode() {
         waitForStart()
         BotShared.wasLastOpModeAutonomous = true
         runSpecialized()
+        while (opModeIsActive()) {
+            BotShared.storedPose = drive.pose
+        }
     }
 
     abstract fun runSpecialized()

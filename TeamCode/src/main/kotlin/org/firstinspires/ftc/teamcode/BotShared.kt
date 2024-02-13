@@ -23,8 +23,8 @@ class BotShared(opMode: OpMode) {
     /**
      * The control hub's internal Inertial Measurement Unit (IMU).
      */
-    @JvmField val imu:      IMU         =       hardwareMap[IMU::class.java,        "imu"       ]
-    @JvmField val camera:   WebcamName? = idc { hardwareMap[WebcamName::class.java, "Webcam 1"  ] }
+    @JvmField val imu:      IMU         = hardwareMap[IMU::class.java, "imu" ]
+    @JvmField val camera:   WebcamName? = hardwareMap.tryGet(WebcamName::class.java, "Webcam 1")
     @JvmField var rr:       MecanumDrive? = null
 
     init {

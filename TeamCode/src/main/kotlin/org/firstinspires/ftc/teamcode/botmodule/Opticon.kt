@@ -47,7 +47,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
     override fun modStart() {
         if (camera == null) {
-            status = Status(StatusEnum.MISSING_HARDWARE, null, hardwareMissing = setOf("Webcam 1"))
+            status = Status(StatusEnum.BAD, null, hardwareMissing = setOf("Webcam 1"))
         }
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream")
@@ -55,9 +55,8 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     }
 
     override fun modUpdate() {
-        opticonTelemetry()
-
         if (visionPortal != null) {
+            opticonTelemetry()
             when (val camState = visionPortal.cameraState) {
                 CameraState.CAMERA_DEVICE_CLOSED,
                 CameraState.CLOSING_CAMERA_DEVICE,
@@ -72,17 +71,16 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
                     else -> { /* shouldn't ever get here, but whatever */  }
                 }
             }
+            // Share the CPU.
+            Thread.sleep(20)
         }
-
-        // Share the CPU.
-        Thread.sleep(20)
     }
 
-    public var isStreaming: Boolean = true
+    var isStreaming: Boolean = true
 
     override fun modStop() {
         // Save more CPU resources when camera is no longer needed.
-        visionPortal!!.close()
+        visionPortal?.close()
     }
 
     private fun opticonTelemetry() {
@@ -148,11 +146,12 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     }
 
     init {
-        if (camera == null) {
+        // OPTICON IS CURRENTLY DISABLED!!!
+        if (camera == null || true) {
             visionPortal = null
             tfod = null
             aprilTag = null
-            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = setOf("Webcam 1"))
+            status = Status(StatusEnum.BAD, hardwareMissing = setOf("Webcam 1"))
         } else {
             // Create the TensorFlow processor by using a builder.
             tfod = TfodProcessor.Builder()
