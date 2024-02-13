@@ -46,6 +46,7 @@ public class AutoSubsystem {
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
 
+        assert hardwareMap != null;
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
         pipeline = new TeamElementPipeline();
 
@@ -57,10 +58,10 @@ public class AutoSubsystem {
         pipeline.setAlliancePipe(alliance);
     }
 
-    public SpikeMark elementDetection() {
+    public void detectElement() {
         spikeMark = pipeline.getElementSpikeMark();
         telemetry.addData("Element Zone", spikeMark);
-        return spikeMark;
+//        return spikeMark;
     }
 
 }

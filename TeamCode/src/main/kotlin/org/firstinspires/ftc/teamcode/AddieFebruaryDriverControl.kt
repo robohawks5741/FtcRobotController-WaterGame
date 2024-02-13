@@ -4,8 +4,6 @@ import android.util.Log
 import com.acmerobotics.roadrunner.Pose2d
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
@@ -32,6 +30,7 @@ import kotlin.math.abs
 typealias GamepadynRH = Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>
 typealias ConfigurationRH = Configuration<ActionDigital, ActionAnalog1, ActionAnalog2>
 typealias PlayerRH = Player<ActionDigital, ActionAnalog1, ActionAnalog2>
+// TODO: fix this up
 
 @TeleOp(name = "# Addie February Driver Control")
 class AddieFebruaryDriverControl : LinearOpMode() {
@@ -49,38 +48,18 @@ class AddieFebruaryDriverControl : LinearOpMode() {
     private lateinit var moduleHandler: ModuleHandler
 
     private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
-    private lateinit var hang: DcMotorEx
-    private lateinit var intake: DcMotorEx
-    private lateinit var slideR: DcMotorEx
-    private lateinit var slideL: DcMotorEx
-    private lateinit var trussL: Servo
-    private lateinit var trussR: Servo
     private lateinit var armR: Servo
     private lateinit var armL: Servo
-    private lateinit var clawR: Servo
-    private lateinit var clawL: Servo
     private lateinit var drone: Servo
-    private lateinit var inlift: Servo
     private lateinit var imu: IMU
-//    private lateinit var distance: DistanceSensor
 
     private var driverRelative = true
 
-    // automatically updates the truss servos when the value is changed
-    private var trussPos = TrussPosition.DOWN
-        set(pos) {
-            field = pos
-            trussL.position = trussPos.leftPos
-            trussR.position = trussPos.rightPos
-        }
-
-    // THE ARM HAS NO MODULE !!
-    private var isArmDown = true
-        set(status) {
-            armR.position = if (status) 0.05 else 0.35
-            armL.position = if (status) 0.95 else 0.65
-            field = status
-        }
+    /**
+     * Both players must be holding down the drone launch button in order to launch the drone.
+     */
+    private var droneTurnKey0 = false
+    private var droneTurnKey1 = false
 
     object GamepadConfig {
         /**
@@ -89,7 +68,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         val player0 = ConfigurationRH(
             ActionBind(TOGGLE_DRIVER_RELATIVITY,            SPECIAL_BACK),
             ActionBind(MOVEMENT,                            STICK_LEFT),
-            ActionBind(INTAKE_SPIN,                         TRIGGER_LEFT),
             ActionBind(TRUSS_CYCLE,                         FACE_UP),
 
             ActionBind(CLAW_LEFT_OPEN,                      BUMPER_LEFT),
@@ -111,10 +89,15 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                     return InputDataAnalog1(if (inputState()) 1.0f else 0.0f)
                 }
             },
+
             ActionBind(MACRO_SLIDE_UP,                      DPAD_UP),
             ActionBind(MACRO_SLIDE_DOWN,                    DPAD_DOWN),
+
+            ActionBind(SLIDE_ADJUST_UP,                     DPAD_LEFT),
+            ActionBind(SLIDE_ADJUST_DOWN,                   DPAD_RIGHT),
+
             ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
-            ActionBindAnalog1Snap(INTAKE_SPIN,              TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
+            ActionBindAnalog1SnapToAnalog1(INTAKE_SPIN,     TRIGGER_LEFT, activeValue = 0.8f, inactiveValue = Float.NaN, threshold = 0.2f),
             // TODO: Replace with BindSingleAxis
             object : ActionBind<ActionAnalog1>(ROTATION, STICK_RIGHT) {
                 override fun transform(
@@ -135,33 +118,36 @@ class AddieFebruaryDriverControl : LinearOpMode() {
          * Player 2 (index 1) config
          */
         val player1 = ConfigurationRH(
-            ActionBind(CLAW_LEFT_OPEN,                      BUMPER_LEFT),
-            ActionBind(CLAW_RIGHT_OPEN,                     BUMPER_RIGHT),
+            ActionBind(MACRO_SLIDE_UP,                      DPAD_UP),
+            ActionBind(MACRO_SLIDE_DOWN,                    DPAD_DOWN),
+
+            ActionBind(SLIDE_ADJUST_UP,                     DPAD_LEFT),
+            ActionBind(SLIDE_ADJUST_DOWN,                   DPAD_RIGHT),
+
+            /*
+             * These are backwards. This is sorta intentional.
+             */
+            ActionBind(CLAW_LEFT_OPEN,                      BUMPER_RIGHT),
+            ActionBind(CLAW_RIGHT_OPEN,                     BUMPER_LEFT),
             ActionBind(CLAW_LEFT_CLOSE,                     FACE_LEFT),
             ActionBind(CLAW_RIGHT_CLOSE,                    FACE_LEFT),
+
             ActionBind(DRONE_LAUNCH,                        FACE_RIGHT),
             ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
-            ActionBindAnalog1Snap(INTAKE_SPIN,              TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
+            ActionBindAnalog1SnapToAnalog1(INTAKE_SPIN,     TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
         )
     }
 
     override fun runOpMode() {
-        hang = hardwareMap[DcMotorEx::class.java, "hang"]
-        intake = hardwareMap[DcMotorEx::class.java, "intake"]
-        slideR = hardwareMap[DcMotorEx::class.java, "slideR"]
-        slideL = hardwareMap[DcMotorEx::class.java, "slideL"]
-        drone = hardwareMap[Servo::class.java, "drone"]
-        trussR = hardwareMap[Servo::class.java, "trussR"]
-        trussL = hardwareMap[Servo::class.java, "trussL"]
-        armR = hardwareMap[Servo::class.java, "armR"]
-        armL = hardwareMap[Servo::class.java, "armL"]
-        clawR = hardwareMap[Servo::class.java, "clawR"]
-        clawL = hardwareMap[Servo::class.java, "clawL"]
-        inlift = hardwareMap[Servo::class.java, "inlift"]
-//        distance = hardwareMap[DistanceSensor::class.java, "distance"]
-        imu = hardwareMap[IMU::class.java, "imu"]
+        drone   = hardwareMap!![Servo::class.java, "drone"]
+        imu     = hardwareMap!![IMU::class.java, "imu"]
+
         shared = BotShared(this)
 
+        // initial drone position
+        drone.position = 1.0
+
+        // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
         shared.rr = MecanumDrive(hardwareMap, poseEstimate)
         moduleHandler = ModuleHandler(ModuleConfig(this, shared, isTeleOp = true, gamepadyn))
 
@@ -171,7 +157,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         p0.configuration = GamepadConfig.player0
         p1.configuration = GamepadConfig.player1
 
-
         // MOD INIT
         moduleHandler.init()
 
@@ -180,102 +165,85 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         val intake = moduleHandler.intake
         val lsd = moduleHandler.lsd
         val opticon = moduleHandler.opticon
-        val trussel = moduleHandler.trussle
+        val trussle = moduleHandler.trussle
         val rr = shared.rr!!
 
-//        data class Timeout(val calltime: Long, val callback: () -> Unit)
-//        val waitList: ArrayList<Timeout> = arrayListOf();
-//        fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
-
         imu.resetYaw()
-        slideR.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        slideR.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-        slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        hang.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
         claw.leftOpen = true
         claw.rightOpen = true
-        isArmDown = true
 
-        trussPos = TrussPosition.DOWN
+        trussle.position = TrussPosition.DOWN
         drone.position = 0.36
-        inlift.position = 0.0
+        intake.raised = false
 
         telemetry.update()
 
         waitForStart()
 
-        //        lsd.currentHeight > LSD.SLIDE_HEIGHT_CLAW_SAFE
+        // TODO: fix these macros
 
-        // MACROS
-        val macroSlideUp = { it: InputDataDigital ->
-            if (it()) {
-//                    isSlideMovingUp = true
-                // TODO: reduce the use of sleep
-                if (claw.leftOpen || claw.rightOpen) {
-                    claw.leftOpen = false
-                    claw.leftOpen = false
-                    // wait for claws to move
-                    sleep(200)
-                }
-                // move up slightly as to move the arm up
-                lsd.targetHeight = 400
-                // wait for slide to move
-                sleep(300)
-//                while (lsd.currentHeight < LSD.HEIGHT_CLAW_SAFE) {
-//                    sleep(20)
+//        // MACROS
+//        val macroSlideUp = fun(it: InputDataDigital) {
+//            if (it()) {
+//                // TODO: reduce the use of sleep
+//                if (claw.leftOpen || claw.rightOpen) {
+//                    claw.leftOpen = false
+//                    claw.rightOpen = false
+//                    // wait for claws to move
+//                    sleep(300)
 //                }
-                isArmDown = false
-                // move up now
-                lsd.targetHeight = LSD.HEIGHT_MAX
-//                    isSlideMovingUp = false
-            }
-        }
-
-        val macroSlideDown = { it: InputDataDigital ->
-            if (it()) {
-                if (!isArmDown) {
-                    isArmDown = true
-                    sleep(100)
-                }
-                lsd.targetHeight = LSD.HEIGHT_MIN
-            }
-        }
-
-        val droneLaunch = { it: InputDataDigital ->
-            if (it()) {
-                drone.position = 0.8
-            }
-        }
-
-        val macroPlacePixel = { it: InputDataDigital ->
-            if (it()) {
-                // Open the claws
-                if (!claw.leftOpen || !claw.leftOpen) {
-                    claw.leftOpen = true
-                    claw.rightOpen = true
-                    sleep(400)
-                }
-                if (!isArmDown) {
-                    isArmDown = true
-                    sleep(400)
-                }
-                lsd.targetHeight = LSD.HEIGHT_MIN
-            }
-        }
-
-        p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-        p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-
-        p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-        p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-
-        p0.getEvent(DRONE_LAUNCH, droneLaunch)
-        p1.getEvent(DRONE_LAUNCH, droneLaunch)
-
-        p0.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
-        p1.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
+//                // move up slightly as to move the arm up
+//                lsd.targetHeight = 400
+//                // wait for slide to move
+//                sleep(300)
+//                isArmDown = false
+//                // move up now
+//                lsd.targetHeight = LSD.HEIGHT_MAX
+//            }
+//        }
+//
+//        val macroSlideDown = fun(it: InputDataDigital) {
+//            if (it()) {
+//                if (!isArmDown) {
+//                    isArmDown = true
+//                    sleep(100)
+//                }
+//                lsd.targetHeight = LSD.HEIGHT_MIN
+//            }
+//        }
+//
+//        val macroPlacePixel = fun(it: InputDataDigital) {
+//            if (it()) {
+//                // Open the claws
+//                if (!claw.leftOpen || !claw.leftOpen) {
+//                    claw.leftOpen = true
+//                    claw.rightOpen = true
+//                    sleep(400)
+//                }
+//                if (!isArmDown) {
+//                    isArmDown = true
+//                    sleep(400)
+//                }
+//                lsd.targetHeight = LSD.HEIGHT_MIN
+//            }
+//        }
+//
+//        p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+//        p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
+//
+//        p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+//        p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
+//
+//        p0.getEvent(DRONE_LAUNCH) {
+//            droneTurnKey0 = it()
+//        }
+//        p1.getEvent(DRONE_LAUNCH) {
+//            droneTurnKey1 = it()
+//        }
+//
+//        p0.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
+//        p1.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
 
         // MOD START
         moduleHandler.start()
@@ -283,56 +251,27 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         telemetry.update()
 
         while (opModeIsActive()) {
+            BotShared.wasLastOpModeAutonomous = false
             gamepadyn.update()
 
             // MOD UPDATE
             moduleHandler.update()
-
-            // TODO: port to gamepadyn
-            // if dpad left is pressed (and the slide is up, mostly
-            if ((gamepad1.dpad_left || gamepad2.dpad_left) && lsd.currentHeight > LSD.HEIGHT_CLAW_SAFE) {
-                if (lsd.targetHeight == 600 && !isArmDown) {
-                    isArmDown = true
-                    // used to be 100
-                    sleep(200)
-                    lsd.targetHeight = 0
-                } else {
-                    lsd.targetHeight -= 200
-                }
-            }
-
-            // TODO: port to gamepadyn
-            if ((gamepad1.dpad_right || gamepad2.dpad_right) && lsd.currentHeight < LSD.HEIGHT_MAX - 64) {
-                if (claw.leftOpen || claw.rightOpen) {
-                    claw.rightOpen = false
-                    claw.leftOpen = false
-                    sleep(200)
-                }
-                if (lsd.targetHeight == 0) {
-                    lsd.targetHeight = 600
-//                    isSlideMovingUp = true
-                } else {
-                    lsd.targetHeight += 200
-                }
-            }
 
             // Driver 2 Override
             if (abs(gamepad2.left_stick_y) > 0.1) {
                 intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
             }
 
+            // drone launch turnkey
+            if (droneTurnKey0 && droneTurnKey1) drone.position = 0.0
 
             rr.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)
-            telemetry.addData("x", rr.pose.position.x)
-            telemetry.addData("y", rr.pose.position.y)
-            telemetry.addData("heading", rr.pose.heading.log())
-            telemetry.addData("rightSlide", slideR.currentPosition)
-            telemetry.addData("leftSlide", slideL.currentPosition)
+            telemetry.addData("RR pos x", rr.pose.position.x)
+            telemetry.addData("RR pos y", rr.pose.position.y)
+            telemetry.addData("RR heading", rr.pose.heading.log())
             telemetry.addData("right arm", armR.position)
             telemetry.addData("left arm", armL.position)
-            telemetry.addData("inlift", inlift.position)
-            telemetry.addData("hangMode", trussPos)
 //            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
             telemetry.update()
         }

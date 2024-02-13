@@ -4,7 +4,6 @@ package org.firstinspires.ftc.teamcode.botmodule
 class ModuleHandler(
     private val config: ModuleConfig
 ) {
-//    private lateinit var modules: Set<BotModule>
     private var hasStarted = false
 
     /**
@@ -38,15 +37,10 @@ class ModuleHandler(
     lateinit var intake: Intake private set
 
     /**
-     * STATUS: UNKOWN
+     * STATUS: UNKNOWN
      * TODO: test
      */
     lateinit var trussle: Trussle private set
-
-    /**
-     * STATUS: NOT WORKING
-     * TODO:
-     */
 
     val modules
         get() = setOf(
@@ -91,8 +85,8 @@ class ModuleHandler(
         }
         for (module in modules) {
             if (module.status.status != BotModule.StatusEnum.OK) {
-                val hmissing = module.status.hardwareMissing?.joinToString("\", \"", "[ \"", "\" ]")
-//                config.opMode.telemetry.addLine("MODULE NOT OK: \"${module::class.simpleName}\" is missing hardware: $hmissing")
+                val missingString = module.status.hardwareMissing?.joinToString("\", \"", "[ \"", "\" ]")
+                config.opMode.telemetry.addLine("MODULE NOT OK: \"${module::class.simpleName}\" is missing hardware: $missingString")
             }
         }
     }

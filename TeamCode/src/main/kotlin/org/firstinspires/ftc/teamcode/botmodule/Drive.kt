@@ -145,7 +145,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
 
 //        Actions.run
 
-        telemetry.addLine("Driver Relativity: ${if (useDriverRelative) "en" else "dis" }abled")
+        telemetry.addLine("Driver Relativity: ${if (useDriverRelative) "enabled" else "disable" }")
         telemetry.addLine("Gyro Yaw: ${toDegrees(gyroYaw)}")
         telemetry.addLine("Rotation Input: ${rotation.x}")
         telemetry.addLine("Movement Input: (${movement.x}, ${movement.y})")

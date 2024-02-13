@@ -26,4 +26,10 @@ inline infix fun <T, I> I.idc(f: () -> T): T? = try { f() } catch (_: Exception)
  */
 operator fun Vector2d.times(other: Vector2d) = Vector2d(this.x * other.x, this.y * other.y)
 
+fun Boolean.toInt(): Int = if (this) 1 else 0
+fun Boolean.toUInt(): UInt = if (this) 1u else 0u
+fun Boolean.toLong(): Long = if (this) 1 else 0
+fun Boolean.toDouble(): Double = if (this) 1.0 else 0.0
+fun Boolean.toFloat(): Float = if (this) 1f else 0f
+
 fun Double.clamp(min: Double, max: Double) = if (this < min) min; else if (this > max) max; else this
