@@ -56,8 +56,9 @@ dependencies {
     implementation files("lib/gamepadyn/core-0.2.1-BETA-sources.jar")
     implementation files("lib/gamepadyn/ftc-0.2.1-BETA.aar")
     implementation files("lib/gamepadyn/ftc-0.2.1-BETA-sources.jar")
-    //  roadrunner 0.1.X
-    implementation "com.acmerobotics.roadrunner:ftc:0.1.11"
+    //  roadrunner 0.5.X
+    implementation "com.acmerobotics.roadrunner:core:0.5.6"
+    implementation "com.acmerobotics.roadrunner:ftc:0.1.12"
     implementation "com.acmerobotics.dashboard:dashboard"
     // roadrunner 1.0.X BETA
 //    implementation 'com.acmerobotics.roadrunner:core:1.0.0-beta4'

@@ -28,16 +28,13 @@ inline infix fun <T, I> I.idc(f: () -> T): T? = try { f() } catch (_: Exception)
  */
 operator fun Vector2d.times(other: Vector2d) = Vector2d(this.x * other.x, this.y * other.y)
 
-data class DeviceRes<T>(
-    val device: T?,
-    val name: String,
-)
-
 /**
  * Kotlin is beauty.
- * 1. the compiler can deduce the type of DeviceResult
+ * 1. the compiler can deduce the generic type T
+ * 2. the compiler can reflect on T and get its class
+ * 3. the compiler can use get the Java class from the reflection
  */
-inline fun <reified T> HardwareMap.search(deviceName: String): DeviceRes<T> = DeviceRes(this.tryGet(T::class.java, deviceName), deviceName)
+inline fun <reified T> HardwareMap.search(deviceName: String): T? = this.tryGet(T::class.java, deviceName)
 
 fun Boolean.toInt(): Int = if (this) 1 else 0
 fun Boolean.toUInt(): UInt = if (this) 1u else 0u

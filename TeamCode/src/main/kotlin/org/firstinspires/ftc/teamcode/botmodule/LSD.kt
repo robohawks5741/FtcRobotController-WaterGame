@@ -1,24 +1,21 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
-import com.acmerobotics.roadrunner.lerp
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.RUN_TO_POSITION
 import com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
 import com.qualcomm.robotcore.hardware.Servo
-import com.qualcomm.robotcore.hardware.ServoControllerEx
 import computer.living.gamepadyn.InputDataDigital
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.BotShared
-import org.firstinspires.ftc.teamcode.DeviceRes
-import org.firstinspires.ftc.teamcode.idc
 import org.firstinspires.ftc.teamcode.search
 import kotlin.math.roundToInt
 
 /**
  * Linear Slide Driver
+ * Also controls the arm, maybe the claw in the future
  */
 // TODO: make sure the slides are zeroed out and that the zero-position is KEPT across autonomous and TeleOp boundaries
 // TODO:
@@ -30,16 +27,12 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
 //    private val slideLeftController: DcMotorControllerEx?   = slideLeft?.controller as? DcMotorControllerEx
 //    private val slideRightController: DcMotorControllerEx?  = slideRight?.controller as? DcMotorControllerEx
-    private val slideLeftRes:  DeviceRes<DcMotorEx>         = hardwareMap.search("slideL")
-    private val slideRightRes: DeviceRes<DcMotorEx>         = hardwareMap.search("slideR")
-    private val armLeftRes: DeviceRes<Servo>                = hardwareMap.search("armL")
-    private val armRightRes: DeviceRes<Servo>               = hardwareMap.search("armR")
-    private val slideLeft: DcMotorEx?                       = slideLeftRes.device
-    private val slideRight: DcMotorEx?                      = slideRightRes.device
-    private val armLeft: Servo?                             = armLeftRes.device
-    private val armRight: Servo?                            = armRightRes.device
-    private val armLeftController: ServoControllerEx?       = armLeft?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armL"] }
-    private val armRightController: ServoControllerEx?      = armRight?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armR"] }
+    private val slideLeft: DcMotorEx?                       = hardwareMap.search("slideL")
+    private val slideRight: DcMotorEx?                      = hardwareMap.search("slideR")
+    private val armLeft: Servo?                             = hardwareMap.search("armL")
+    private val armRight: Servo?                            = hardwareMap.search("armR")
+//    private val armLeftController: ServoControllerEx?       = armLeft?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armL"] }
+//    private val armRightController: ServoControllerEx?      = armRight?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armR"] }
 
     // it takes ~900ms to move the slides up from HEIGHT_ARM_SAFE to HEIGHT_MAX
     // it takes ~600ms to move the slides down to HEIGHT_MIN from HEIGHT_MAX
@@ -64,10 +57,10 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
     init {
         if (slideLeft == null || slideRight == null || armLeft == null || armRight == null) {
             val missing = mutableSetOf<String>()
-            if (slideLeft == null) missing.add(slideLeftRes.name)
-            if (slideRight == null) missing.add(slideRightRes.name)
-            if (armLeft == null) missing.add(armLeftRes.name)
-            if (armRight == null) missing.add(armRightRes.name)
+            if (slideLeft == null)  missing.add("slideL")
+            if (slideRight == null) missing.add("slideR")
+            if (armLeft == null)    missing.add("armL")
+            if (armRight == null)   missing.add("armR")
 
             status = Status(StatusEnum.BAD, hardwareMissing = missing)
         } else {
@@ -91,52 +84,6 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 //            slideRight.direction =              REVERSE
         }
     }
-
-    var isArmDown = true
-        set(status) {
-            if (field == status) return
-            // we can safely move the arm, assuming we have enough time
-            if (currentHeight >= HEIGHT_ARM_SAFE) {
-                field = status
-                //                  if             [down pos]     else [up pos]
-                armRight?.position = if (isArmDown) ARM_DOWN_RIGHT else ARM_UP_RIGHT
-                armLeft?.position =  if (isArmDown) ARM_DOWN_LEFT  else ARM_UP_LEFT
-
-                if (targetHeight < HEIGHT_ARM_SAFE) {
-                    targetHeight = HEIGHT_ARM_SAFE
-                    // "dynamic" wait time
-                    val waitTime = lerp(
-                        currentHeight.toDouble(),
-                        // 300ms
-                        HEIGHT_ARM_SAFE.toDouble(),
-                        // 0ms
-                        HEIGHT_MAX.toDouble(),
-                        300.0,
-                        50.0
-                    )
-                    Thread.sleep(waitTime.toLong())
-                    targetHeight = HEIGHT_MIN
-                }
-            } else if (targetHeight >= HEIGHT_ARM_SAFE) {
-                field = status
-
-                // "dynamic" wait time
-                val waitTime = lerp(
-                    currentHeight.toDouble(),
-                    // 300ms
-                    0.0,
-                    // 0ms
-                    HEIGHT_ARM_SAFE.toDouble(),
-                    400.0,
-                    20.0
-                )
-                Thread.sleep(waitTime.toLong())
-
-                //                  if             [down pos]     else [up pos]
-                armRight?.position = if (isArmDown) ARM_DOWN_RIGHT else ARM_UP_RIGHT
-                armLeft?.position =  if (isArmDown) ARM_DOWN_LEFT  else ARM_UP_LEFT
-            }
-        }
 
     var targetHeight: Int = 0
         set(height) {
@@ -183,7 +130,8 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
     override fun modStartTeleOp() {
         if (gamepadyn == null) {
-            TODO("cry about it")
+            telemetry.addLine("(LSD Module) TeleOp was enabled but Gamepadyn was null!")
+            return
         }
 
         val p0 = gamepadyn.players[0]
@@ -211,10 +159,18 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         p1.getEvent(SLIDE_ADJUST_DOWN, macroSlideAdjustDown)
     }
 
+    override fun modUpdateTeleOp() {
+        telemetry.addData("LSD (TeleOp) target height:", teleOpTargetHeight)
+    }
+
     override fun modUpdate() {
-        // if our target & current heights are above the safe height for the arm, extend the arm.
-        if (targetHeight > HEIGHT_ARM_SAFE && currentHeight > HEIGHT_ARM_SAFE) {
-            isArmDown = false
+        // if our target & current heights are above the safe height for the arm, always extend the arm.
+        if (targetHeight >= HEIGHT_ARM_SAFE && currentHeight >= HEIGHT_ARM_SAFE) {
+            armRight?.position = ARM_DOWN_RIGHT
+            armLeft?.position =  ARM_DOWN_LEFT
+        } else {
+            armRight?.position = ARM_UP_RIGHT
+            armLeft?.position =  ARM_UP_LEFT
         }
 
         telemetry.addData("LSD target height:", targetHeight)

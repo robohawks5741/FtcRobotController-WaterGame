@@ -190,7 +190,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                     claw.rightOpen = true
                     sleep(400)
                 }
-                lsd.isArmDown = true
                 lsd.targetHeight = LSD.HEIGHT_MIN
             }
         }
@@ -205,12 +204,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                     sleep(300)
                 }
 
-                lsd.isArmDown = false
-
-                // move up slightly as to move the arm up
-                lsd.targetHeight = 400
-                // wait for slide to move
-                lsd.isArmDown = false
                 // move up now
                 lsd.targetHeight = LSD.HEIGHT_MAX
             }
@@ -218,7 +211,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
         val macroSlideDown = fun(it: InputDataDigital) {
             if (it()) {
-                lsd.isArmDown = true
                 lsd.targetHeight = LSD.HEIGHT_MIN
             }
         }
@@ -251,10 +243,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             // MOD UPDATE
             moduleHandler.update()
 
-            // Driver 2 Override
-            if (abs(gamepad2.left_stick_y) > 0.1) {
-                intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
-            }
+            // TODO: patch this in
+//            // Driver 2 Override
+//            if (abs(gamepad2.left_stick_y) > 0.1) {
+//                intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
+//            }
 
             // drone launch turnkey
             if (droneTurnKey0 && droneTurnKey1) drone.position = 0.0

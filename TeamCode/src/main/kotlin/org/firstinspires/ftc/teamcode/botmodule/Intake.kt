@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.InputDataAnalog1
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.idc
+import org.firstinspires.ftc.teamcode.search
 import org.firstinspires.ftc.teamcode.toDouble
 
 /**
@@ -13,14 +14,12 @@ import org.firstinspires.ftc.teamcode.toDouble
  */
 @Suppress("unused")
 class Intake(config: ModuleConfig) : BotModule(config) {
-    private val servoLiftName = "inlift"
-    private val motorSpinName = "inspin"
-    private val motorSpin: DcMotorEx?   = hardwareMap.tryGet(DcMotorEx::class.java,   motorSpinName)
-    private val servoLift: Servo?       = hardwareMap.tryGet(Servo    ::class.java,   servoLiftName)
+    private val motorSpin: DcMotorEx?   = hardwareMap.search("inspin")
+    private val servoLift: Servo?       = hardwareMap.search("inlift")
 
     init {
         if (motorSpin == null && servoLift == null) {
-            status = Status(StatusEnum.BAD, hardwareMissing = setOf(servoLiftName, motorSpinName))
+            status = Status(StatusEnum.BAD, hardwareMissing = setOf("inspin", "inlift"))
         } else {
 //            motorLift?.position = 0
 //            motorLift?.mode = DcMotor.RunMode.RUN_TO_POSITION

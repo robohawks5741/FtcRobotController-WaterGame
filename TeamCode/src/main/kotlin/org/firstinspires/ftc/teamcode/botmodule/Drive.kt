@@ -1,13 +1,18 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.canvas.Canvas
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.DualNum
 import com.acmerobotics.roadrunner.MecanumKinematics
 import com.acmerobotics.roadrunner.MecanumKinematics.WheelVelocities
 import com.acmerobotics.roadrunner.PoseVelocity2d
 import com.acmerobotics.roadrunner.PoseVelocity2dDual
 import com.acmerobotics.roadrunner.Time
+import com.acmerobotics.roadrunner.TurnConstraints
 import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.clamp
+import com.acmerobotics.roadrunner.ftc.runBlocking
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
@@ -19,28 +24,35 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
+import org.firstinspires.ftc.teamcode.MecanumDrive.TurnAction
+import org.firstinspires.ftc.teamcode.SpikeMark
 import org.firstinspires.ftc.teamcode.idc
+import org.firstinspires.ftc.teamcode.search
 import org.firstinspires.ftc.teamcode.stickCurve
 import java.lang.Math.toDegrees
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
+import kotlin.math.round
 import kotlin.math.sign
 import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Drive(config: ModuleConfig) : BotModule(config) {
-    @JvmField val motorRightFront: DcMotorEx        = hardwareMap[DcMotorEx::class.java,      "frontR"]
-    @JvmField val motorLeftFront: DcMotorEx         = hardwareMap[DcMotorEx::class.java,      "frontL"]
-    @JvmField val motorRightBack: DcMotorEx         = hardwareMap[DcMotorEx::class.java,      "backR" ]
-    @JvmField val motorLeftBack: DcMotorEx          = hardwareMap[DcMotorEx::class.java,      "backL" ]
-    @JvmField val indicatorRed: DigitalChannel?     = hardwareMap.tryGet(DigitalChannel::class.java, "led1")
-    @JvmField val indicatorGreen: DigitalChannel?   = hardwareMap.tryGet(DigitalChannel::class.java, "led0")
+    @JvmField val motorRightFront: DcMotorEx        = hardwareMap.search("frontR")!!
+    @JvmField val motorLeftFront: DcMotorEx         = hardwareMap.search("frontL")!!
+    @JvmField val motorRightBack: DcMotorEx         = hardwareMap.search("backR")!!
+    @JvmField val motorLeftBack: DcMotorEx          = hardwareMap.search("backL")!!
+    @JvmField val indicatorRed: DigitalChannel?     = hardwareMap.search("led1")
+    @JvmField val indicatorGreen: DigitalChannel?   = hardwareMap.search("led0")
 
     private var powerModifier = 1.0
     var snapToCardinal = true
+    var isSnapping = false
+
     var useDriverRelative = true
         set(status) {
             indicatorRed?.mode = DigitalChannel.Mode.OUTPUT
@@ -124,52 +136,22 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         // \frac{1}{1+\sqrt{2\left(1-\frac{\operatorname{abs}\left(\operatorname{mod}\left(a,90\right)-45\right)}{45}\right)\ }}
 //        powerModifier = 1.0 / (1.0 + sqrt(2.0 * (1.0 - abs((gyroYaw % (PI / 2)) - (PI / 4)) / (PI / 4))))
 
+        val turnPower = if (snapToCardinal && abs(rotation.x) < 0.1) {
+            // quantize the angle and sorta turn it into a motor power
+            (gyroYaw - (round(gyroYaw * (PI / 2)) / (PI / 2))) * PI * 2
+        } else {
+            -rotation.x.toDouble().stickCurve()
+        }
+
         val pv = PoseVelocity2d(
             if (useDriverRelative) Vector2d(
                 driveRelativeX,
                 driveRelativeY
             ) else inputVector,
-            -rotation.x.toDouble().stickCurve()
+            turnPower
         )
 
-        // +X = forward, +Y = left
-//        shared.rr?.setDrivePowers(pv)
-        shared.rr?.run
-
-        /*
-
-        /**
- * Run [a] to completion in a blocking loop.
- */
-fun runBlocking(a: Action) {
-    val dash = FtcDashboard.getInstance()
-    val c = Canvas()
-    a.preview(c)
-
-    var b = true
-    while (b && !Thread.currentThread().isInterrupted) {
-        val p = TelemetryPacket()
-        p.fieldOverlay().operations.addAll(c.operations)
-
-        b = a.run(p)
-
-        dash.sendTelemetryPacket(p)
-    }
-}
-
-
-        */
-
-//        val wheelVels: WheelVelocities<Time> = MecanumKinematics(1.0).inverse(
-//            PoseVelocity2dDual.constant(pv, 1)
-//        )
-
-//        motorLeftFront.power = wheelVels.leftFront[0] / powerModifier
-//        motorLeftBack.power = wheelVels.leftBack[0] / powerModifier
-//        motorRightBack.power = wheelVels.rightBack[0] / powerModifier
-//        motorRightFront.power = wheelVels.rightFront[0] / powerModifier
-
-//        Actions.run
+        shared.rr?.setDrivePowers(pv)
 
         telemetry.addLine("Driver Relativity: ${if (useDriverRelative) "enabled" else "disable" }")
         telemetry.addLine("Gyro Yaw: ${toDegrees(gyroYaw)}")

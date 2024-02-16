@@ -5,8 +5,8 @@ import computer.living.gamepadyn.InputDataDigital
 import org.firstinspires.ftc.teamcode.*
 
 class Claw(config: ModuleConfig) : BotModule(config) {
-    private val clawLeft: Servo?    =   hardwareMap.tryGet(Servo  ::class.java,   "clawL")
-    private val clawRight: Servo?   =   hardwareMap.tryGet(Servo  ::class.java,   "clawR")
+    private val clawLeft: Servo?            =   hardwareMap.search("clawL")
+    private val clawRight: Servo?           =   hardwareMap.search("clawR")
 
     companion object {
         /**

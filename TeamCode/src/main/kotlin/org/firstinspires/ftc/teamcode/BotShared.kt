@@ -29,21 +29,17 @@ class BotShared(opMode: OpMode) {
 
     init {
         // IMU orientation/calibration
-        val logo = LogoFacingDirection.LEFT
-        val usb = UsbFacingDirection.FORWARD
-        val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
         imu.initialize(IMU.Parameters(orientationOnRobot))
 //        imu.resetYaw()
     }
-
-
 
     companion object {
         /**
          * RoadRunner Pose Storage
          */
-        @JvmStatic var storedPose: Pose2d = Pose2d(0.0, 0.0, 0.0)
-        @JvmStatic var wasLastOpModeAutonomous: Boolean = false
+        @JvmField var storedPose: Pose2d = Pose2d(0.0, 0.0, 0.0)
+        @JvmField var wasLastOpModeAutonomous: Boolean = false
+        @JvmField val orientationOnRobot = RevHubOrientationOnRobot(LogoFacingDirection.LEFT, UsbFacingDirection.FORWARD)
     }
 
 }
