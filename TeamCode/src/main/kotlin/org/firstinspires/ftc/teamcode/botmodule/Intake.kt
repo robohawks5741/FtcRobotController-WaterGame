@@ -32,12 +32,13 @@ class Intake(config: ModuleConfig) : BotModule(config) {
     // 0.0 is off, 1.0 is inwards, -1.0 is outwards
     var power: Double = 0.0
         set(status) {
+            // if the motor doesn't exist, we can't really change its power
             if (motorSpin == null) {
-                field = 0.0
-            } else {
-                field = status
-                motorSpin.power = if (field > 1.0) 1.0 else if (field < -1.0) -1.0 else field
+                field = Double.NaN
+                return
             }
+            field = if (config.parent.lsd.currentHeight >= 20) 0.0 else status
+            motorSpin.power = field.coerceIn(-1.0..1.0)
         }
 
     var raised: Boolean = false
@@ -59,6 +60,10 @@ class Intake(config: ModuleConfig) : BotModule(config) {
     }
 
     override fun modUpdate() {
+        if (config.parent.lsd.currentHeight >= 20) {
+            telemetry.addLine("Intake spin power overridden by slide height!")
+            power = 0.0
+        }
         telemetry.addData("Intake Spin", power)
         telemetry.addData("Intake raised", raised)
     }

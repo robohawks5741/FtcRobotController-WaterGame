@@ -3,17 +3,9 @@ package org.firstinspires.ftc.teamcode.botmodule
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
-import computer.living.gamepadyn.Gamepadyn
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.firstinspires.ftc.teamcode.*
-
-data class ModuleConfig(
-    val opMode: OpMode,
-    val shared: BotShared,
-    val isTeleOp: Boolean,
-    val gamepadyn: Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>? = null
-)
+import org.firstinspires.ftc.teamcode.GamepadynRH
 
 /**
  * An abstract representation of an individual feature set of the greater robot.
@@ -54,28 +46,6 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
      * The webcam connected to the robot, if present.
      */
     protected val camera: WebcamName? = shared.camera
-
-    enum class SafetyLevel {
-        /**
-         * Take no action.
-         */
-        SAFE,
-
-        /**
-         *
-         */
-        EUCLID,
-
-        /**
-         * Tell the module to panic then detach it.
-         */
-        KETER,
-
-        /**
-         * Stop the OpMode ASAP, unrecoverable error
-         */
-        APOLLYON
-    }
 
     enum class StatusEnum {
         OK,

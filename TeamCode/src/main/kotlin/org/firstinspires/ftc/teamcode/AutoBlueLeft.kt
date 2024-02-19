@@ -16,7 +16,6 @@ class AutoBlueLeft : AutoSuper() {
     override val side = AllianceSide.BACKDROP_SIDE
 
     override fun runSpecialized() {
-
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
                 .splineTo(Vector2d(21.00, 2.08), Math.toRadians(0.0))

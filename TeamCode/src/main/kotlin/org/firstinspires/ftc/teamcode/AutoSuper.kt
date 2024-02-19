@@ -66,10 +66,9 @@ abstract class AutoSuper : LinearOpMode() {
            }
         } */
 
-        while (!isStarted && !isStopRequested){
+        while (!isStarted && !isStopRequested) {
             autoSub.detectElement()
             autoSub.setAlliance(alliance)
-            telemetry.addLine("Select Alliance (Gamepad1 X = Blue, Gamepad1 B = Red)")
             telemetry.addData("Current Alliance Selected", alliance.name)
             placementZone = autoSub.spikeMark
 

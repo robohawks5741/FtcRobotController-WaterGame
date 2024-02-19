@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 @Suppress("MemberVisibilityCanBePrivate")
 class ModuleHandler(
-    private val config: ModuleConfig
+    config: ModuleConfig
 ) {
+    private val config: ModuleConfig = ModuleConfig(config.opMode, config.shared, this, config.isTeleOp, config.gamepadyn)
+
     private var hasStarted = false
 
     /**
