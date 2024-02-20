@@ -29,7 +29,7 @@ class ModuleCheckAutonomous : OpMode() {
     override fun init() {
         shared = BotShared(this)
         shared.rr = MecanumDrive(hardwareMap, Pose2d(0.0, 0.0, 0.0))
-        moduleHandler = ModuleHandler(ModuleConfig(this, shared, isTeleOp = false, gamepadyn = null))
+        moduleHandler = ModuleHandler(this, shared, isTeleOp = false, gamepadyn = null)
         moduleHandler.init()
     }
 
@@ -66,7 +66,7 @@ class ModuleCheckTeleop : OpMode() {
     override fun init() {
         shared = BotShared(this)
         shared.rr = MecanumDrive(hardwareMap, Pose2d(0.0, 0.0, 0.0))
-        moduleHandler = ModuleHandler(ModuleConfig(this, shared, isTeleOp = true, gamepadyn = gamepadyn))
+        moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn = gamepadyn)
         moduleHandler.init()
         telemetry.update()
     }

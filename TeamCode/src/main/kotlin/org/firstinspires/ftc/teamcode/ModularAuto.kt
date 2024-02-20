@@ -29,7 +29,7 @@ open class AddieAutoSuper(
 
     private lateinit var shared: BotShared
     @Suppress("LeakingThis")
-    private val moduleHandler = ModuleHandler(ModuleConfig(this, shared, false, null))
+    private val moduleHandler = ModuleHandler(this, shared, false, null)
 
     var elementSpikeMark = SpikeMark.RIGHT
     var togglePreview = true

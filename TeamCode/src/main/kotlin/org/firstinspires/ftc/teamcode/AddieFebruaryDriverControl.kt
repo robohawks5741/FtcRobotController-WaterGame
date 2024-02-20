@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.ActionBind
-import computer.living.gamepadyn.ActionMap
 import computer.living.gamepadyn.Configuration
 import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.InputData
@@ -35,14 +34,12 @@ typealias PlayerRH = Player<ActionDigital, ActionAnalog1, ActionAnalog2>
 @TeleOp(name = "# Addie February Driver Control")
 class AddieFebruaryDriverControl : LinearOpMode() {
 
-    private val gamepadyn = GamepadynRH(
+    private val gamepadyn = GamepadynRH.create(
+        ActionDigital::class,
+        ActionAnalog1::class,
+        ActionAnalog2::class,
         InputBackendFtc(this),
         strict = true,
-        ActionMap(
-            ActionDigital.entries,
-            ActionAnalog1.entries,
-            ActionAnalog2.entries,
-        )
     )
     private lateinit var shared: BotShared
     private lateinit var moduleHandler: ModuleHandler
@@ -146,7 +143,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
         // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
         shared.rr = MecanumDrive(hardwareMap, BotShared.storedPose)
-        moduleHandler = ModuleHandler(ModuleConfig(this, shared, isTeleOp = true, gamepadyn))
+        moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn)
 
         // Configuration
         val p0 = gamepadyn.players[0]
@@ -180,22 +177,8 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
         // TODO: fix these macros
 
-//        // MACRO
-//
-        val macroPlacePixel = fun(it: InputDataDigital) {
-            if (it()) {
-                // Open the claws
-                if (!claw.leftOpen || !claw.leftOpen) {
-                    claw.leftOpen = true
-                    claw.rightOpen = true
-                    sleep(400)
-                }
-                lsd.targetHeight = LSD.HEIGHT_MIN
-            }
-        }
-
-        val macroSlideUp = fun(it: InputDataDigital) {
-            if (it()) {
+        gamepadyn.addListener(MACRO_SLIDE_UP) { data: InputDataDigital, _: PlayerRH ->
+            if (data()) {
                 // TODO: reduce the use of sleep
                 if (claw.leftOpen || claw.rightOpen) {
                     claw.leftOpen = false
@@ -208,28 +191,30 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                 lsd.targetHeight = LSD.HEIGHT_MAX
             }
         }
-
-        val macroSlideDown = fun(it: InputDataDigital) {
-            if (it()) {
+        gamepadyn.addListener(MACRO_SLIDE_DOWN) { data: InputDataDigital, _: PlayerRH ->
+            if (data()) {
                 lsd.targetHeight = LSD.HEIGHT_MIN
             }
         }
 
-        p0.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-        p1.getEvent(MACRO_SLIDE_UP, macroSlideUp)
-
-        p0.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-        p1.getEvent(MACRO_SLIDE_DOWN, macroSlideDown)
-
-        p0.getEvent(DRONE_LAUNCH) {
-            droneTurnKey0 = it()
+        p0.addListener(DRONE_LAUNCH) { data: InputDataDigital, _: PlayerRH ->
+            droneTurnKey0 = data()
         }
-        p1.getEvent(DRONE_LAUNCH) {
-            droneTurnKey1 = it()
+        p1.addListener(DRONE_LAUNCH) { data: InputDataDigital, _: PlayerRH ->
+            droneTurnKey1 = data()
         }
 
-        p0.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
-        p1.getEvent(MACRO_PLACE_PIXEL, macroPlacePixel)
+        p0.addListener(MACRO_PLACE_PIXEL) { data: InputDataDigital, _: PlayerRH ->
+            if (data()) {
+                // Open the claws
+                if (!claw.leftOpen || !claw.leftOpen) {
+                    claw.leftOpen = true
+                    claw.rightOpen = true
+                    sleep(400)
+                }
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
 
         // MOD START
         moduleHandler.start()

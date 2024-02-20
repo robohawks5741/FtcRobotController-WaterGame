@@ -5,8 +5,10 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.InputDataAnalog1
 import computer.living.gamepadyn.InputDataDigital
+import computer.living.gamepadyn.Player
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
+import org.firstinspires.ftc.teamcode.PlayerRH
 import org.firstinspires.ftc.teamcode.TrussPosition
 import org.firstinspires.ftc.teamcode.idc
 import org.firstinspires.ftc.teamcode.stickCurve
@@ -41,9 +43,10 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
             telemetry.addLine("(Trussle Module) TeleOp was enabled but Gamepadyn was null!")
             return
         }
+
         // cycle the truss hanger positions when the button is pressed
-        val cycleHandler: (InputDataDigital) -> Unit = {
-            if (it()) {
+        gamepadyn.addEventListener(TRUSS_CYCLE) { data: InputDataDigital, _: PlayerRH ->
+            if (data()) {
                 position = when (position) {
                     TrussPosition.UP -> TrussPosition.DOWN
                     TrussPosition.DOWN -> TrussPosition.UP
@@ -52,15 +55,9 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
         }
 
         // pull in the motors if the button is being held down
-        val hangHandler: (InputDataAnalog1) -> Unit = {
-            trussPull?.power = it.x.toDouble()
+        gamepadyn.addEventListener(TRUSS_PULL) { data: InputDataAnalog1, _: PlayerRH ->
+            trussPull?.power = data.x.toDouble()
         }
-
-        gamepadyn.players[0].getEvent(TRUSS_CYCLE).addListener(cycleHandler)
-        gamepadyn.players[1].getEvent(TRUSS_CYCLE).addListener(cycleHandler)
-
-        gamepadyn.players[0].getEvent(TRUSS_PULL).addListener(hangHandler)
-        gamepadyn.players[1].getEvent(TRUSS_PULL).addListener(hangHandler)
     }
 
     override fun modUpdateTeleOp() {

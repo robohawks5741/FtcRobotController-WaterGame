@@ -35,11 +35,11 @@ class Drive(config: ModuleConfig) : BotModule(config) {
     private var powerModifier = 1.0
     var snapToCardinal = true
     var isSnapping = false
-    var lastUpdateTimeNs: Long = 0
+    private var lastUpdateTimeNs: Long = 0
 
 
-    var previousError = 0.0
-    var integral = 0.0
+    private var previousError = 0.0
+    private var integral = 0.0
     var kP: Double = 0.2
     var kI: Double = 0.005
     var kD: Double = 0.2
@@ -141,6 +141,13 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             integral += error * deltaTime
             val derivative = (error - previousError) / deltaTime
             turnPower = (kP * error) + (kI * integral) + (kD * derivative)
+            telemetry.addLine("Drive (kP, kI, kD) = ($kP, $kI, $kD)")
+            telemetry.addData("Drive delta T", deltaTime)
+            telemetry.addData("Drive integral", integral)
+            telemetry.addData("Drive error", error)
+            telemetry.addData("Drive previous error", previousError)
+            telemetry.addData("Drive derivative", derivative)
+            telemetry.addData("Drive PID output", turnPower)
             previousError = error
         } else {
             turnPower = -rotation.x.toDouble().stickCurve()
@@ -156,13 +163,12 @@ class Drive(config: ModuleConfig) : BotModule(config) {
 
         shared.rr?.setDrivePowers(pv)
 
-        telemetry.addLine("Driver Relativity: ${if (useDriverRelative) "enabled" else "disable" }")
-        telemetry.addLine("Gyro Yaw: ${toDegrees(currentYaw)}")
-        telemetry.addLine("Rotation Input: ${rotation.x}")
+        telemetry.addData("Driver Relativity", if (useDriverRelative) "enabled" else "disable")
+        telemetry.addData("Gyro Yaw", toDegrees(currentYaw))
+        telemetry.addData("Rotation Input", rotation.x)
         telemetry.addLine("Movement Input: (${movement.x}, ${movement.y})")
-        telemetry.addLine("Input Yaw: " + if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0)
+        telemetry.addData("Input Yaw", if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0)
 //        telemetry.addLine("Yaw Difference (bot - input): " + )
-
     }
 
 }

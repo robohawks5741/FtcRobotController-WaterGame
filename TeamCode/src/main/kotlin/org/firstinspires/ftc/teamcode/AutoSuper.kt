@@ -24,7 +24,7 @@ abstract class AutoSuper : LinearOpMode() {
     protected val imu: IMU          by lazy { hardwareMap[IMU::class.java,          "imu"] }
 
     protected lateinit var shared: BotShared
-    protected lateinit var opticon: Opticon
+//    protected lateinit var opticon: Opticon
 
     protected lateinit var drive: MecanumDrive
     protected lateinit var autoSub: AutoSubsystem
@@ -54,7 +54,7 @@ abstract class AutoSuper : LinearOpMode() {
         autoSub.setAlliance(alliance)
 
         shared = BotShared(this)
-        opticon = Opticon(ModuleConfig(this, shared, false))
+//        opticon = Opticon(ModuleConfig(this, shared, false))
         drive = MecanumDrive(hardwareMap, beginPose)
 
         /* for (i in 0..100) {
