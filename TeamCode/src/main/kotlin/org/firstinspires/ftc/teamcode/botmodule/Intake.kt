@@ -52,11 +52,9 @@ class Intake(config: ModuleConfig) : BotModule(config) {
             telemetry.addLine("(Intake Module) TeleOp was enabled but Gamepadyn was null!")
             return
         }
-        val spinFunc: (InputDataAnalog1) -> Unit = {
-            motorSpin?.power = it.x.toDouble().coerceIn(0.0..1.0)
+        gamepadyn.addListener(INTAKE_SPIN) {
+            motorSpin?.power = it.data.x.toDouble().coerceIn(0.0..1.0)
         }
-        gamepadyn.players[0].getEvent(INTAKE_SPIN, spinFunc)
-        gamepadyn.players[1].getEvent(INTAKE_SPIN, spinFunc)
     }
 
     override fun modUpdate() {

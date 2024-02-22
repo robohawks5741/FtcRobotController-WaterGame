@@ -4,7 +4,6 @@ import com.acmerobotics.roadrunner.Pose2d
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
-import computer.living.gamepadyn.ActionMap
 import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.ftc.InputBackendFtc
 import org.firstinspires.ftc.teamcode.ActionAnalog1
@@ -51,13 +50,12 @@ class ModuleCheckAutonomous : OpMode() {
 @TeleOp(name = "# Module Check (TeleOp)")
 class ModuleCheckTeleop : OpMode() {
 
-    private val gamepadyn = Gamepadyn(
+    private val gamepadyn = Gamepadyn.create(
+        ActionDigital::class,
+        ActionAnalog1::class,
+        ActionAnalog2::class,
         InputBackendFtc(this),
-        true, ActionMap(
-            ActionDigital.entries,
-            ActionAnalog1.entries,
-            ActionAnalog2.entries,
-        )
+        strict =true,
     )
 
     private lateinit var shared: BotShared

@@ -177,8 +177,8 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 
         // TODO: fix these macros
 
-        gamepadyn.addListener(MACRO_SLIDE_UP) { data: InputDataDigital, _: PlayerRH ->
-            if (data()) {
+        gamepadyn.addListener(MACRO_SLIDE_UP) {
+            if (it.data()) {
                 // TODO: reduce the use of sleep
                 if (claw.leftOpen || claw.rightOpen) {
                     claw.leftOpen = false
@@ -191,21 +191,21 @@ class AddieFebruaryDriverControl : LinearOpMode() {
                 lsd.targetHeight = LSD.HEIGHT_MAX
             }
         }
-        gamepadyn.addListener(MACRO_SLIDE_DOWN) { data: InputDataDigital, _: PlayerRH ->
-            if (data()) {
+        gamepadyn.addListener(MACRO_SLIDE_DOWN) {
+            if (it.data()) {
                 lsd.targetHeight = LSD.HEIGHT_MIN
             }
         }
 
-        p0.addListener(DRONE_LAUNCH) { data: InputDataDigital, _: PlayerRH ->
-            droneTurnKey0 = data()
+        p0.addListener(DRONE_LAUNCH) {
+            droneTurnKey0 = it.data()
         }
-        p1.addListener(DRONE_LAUNCH) { data: InputDataDigital, _: PlayerRH ->
-            droneTurnKey1 = data()
+        p1.addListener(DRONE_LAUNCH) {
+            droneTurnKey1 = it.data()
         }
 
-        p0.addListener(MACRO_PLACE_PIXEL) { data: InputDataDigital, _: PlayerRH ->
-            if (data()) {
+        p0.addListener(MACRO_PLACE_PIXEL) {
+            if (it.data()) {
                 // Open the claws
                 if (!claw.leftOpen || !claw.leftOpen) {
                     claw.leftOpen = true

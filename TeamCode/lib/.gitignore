@@ -1,0 +1,7 @@
+gamepadyn/**/*.xml
+gamepadyn/**/*.md5
+gamepadyn/**/*.sha1
+gamepadyn/**/*.sha256
+gamepadyn/**/*.sha512
+gamepadyn/**/*.pom
+gamepadyn/**/*.module
