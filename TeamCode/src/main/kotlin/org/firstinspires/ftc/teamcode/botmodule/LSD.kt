@@ -133,10 +133,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
             telemetry.addLine("(LSD Module) TeleOp was enabled but Gamepadyn was null!")
             return
         }
-
-        val p0 = gamepadyn.players[0]
-        val p1 = gamepadyn.players[1]
-
+        
         gamepadyn.addListener(SLIDE_ADJUST_UP) {
             // D-Pad left -> raise slides
             // pos = target * 200 + 300
