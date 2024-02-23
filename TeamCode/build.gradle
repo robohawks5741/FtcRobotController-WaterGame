@@ -12,13 +12,13 @@
 // Custom definitions may go here
 
 plugins {
-    id 'org.jetbrains.kotlin.android'
 //    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
+apply plugin: 'kotlin-android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
