@@ -55,10 +55,10 @@ class Claw(config: ModuleConfig) : BotModule(config) {
             return
         }
 
-        gamepadyn.addListener(CLAW_LEFT_OPEN) { data: InputDataDigital, _: PlayerRH -> if (data()) leftOpen = true }
-        gamepadyn.addListener(CLAW_LEFT_CLOSE) { data: InputDataDigital, _: PlayerRH -> if (data()) leftOpen = false }
-        gamepadyn.addListener(CLAW_RIGHT_OPEN) { data: InputDataDigital, _: PlayerRH -> if (data()) rightOpen = true }
-        gamepadyn.addListener(CLAW_RIGHT_CLOSE) { data: InputDataDigital, _: PlayerRH -> if (data()) rightOpen = false }
+        gamepadyn.addListener(CLAW_LEFT_OPEN)   { if (it.data()) leftOpen = true }
+        gamepadyn.addListener(CLAW_LEFT_CLOSE)  { if (it.data()) leftOpen = false }
+        gamepadyn.addListener(CLAW_RIGHT_OPEN)  { if (it.data()) rightOpen = true }
+        gamepadyn.addListener(CLAW_RIGHT_CLOSE) { if (it.data()) rightOpen = false }
     }
 
 }

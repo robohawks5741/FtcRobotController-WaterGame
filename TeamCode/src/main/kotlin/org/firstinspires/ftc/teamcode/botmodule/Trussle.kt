@@ -45,8 +45,8 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
         }
 
         // cycle the truss hanger positions when the button is pressed
-        gamepadyn.addEventListener(TRUSS_CYCLE) { data: InputDataDigital, _: PlayerRH ->
-            if (data()) {
+        gamepadyn.addListener(TRUSS_CYCLE) {
+            if (it.data()) {
                 position = when (position) {
                     TrussPosition.UP -> TrussPosition.DOWN
                     TrussPosition.DOWN -> TrussPosition.UP
@@ -55,8 +55,8 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
         }
 
         // pull in the motors if the button is being held down
-        gamepadyn.addEventListener(TRUSS_PULL) { data: InputDataAnalog1, _: PlayerRH ->
-            trussPull?.power = data.x.toDouble()
+        gamepadyn.addListener(TRUSS_PULL) {
+            trussPull?.power = it.data.x.toDouble()
         }
     }
 

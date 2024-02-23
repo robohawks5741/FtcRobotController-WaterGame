@@ -80,7 +80,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
             return
         }
-        gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) { if (it()) useDriverRelative = !useDriverRelative }
+        gamepadyn.players[0].addListener(TOGGLE_DRIVER_RELATIVITY) { if (it.data()) useDriverRelative = !useDriverRelative }
         // IMU orientation/calibration
         val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
         val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD

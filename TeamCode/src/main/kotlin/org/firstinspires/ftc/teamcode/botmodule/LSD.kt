@@ -137,26 +137,21 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         val p0 = gamepadyn.players[0]
         val p1 = gamepadyn.players[1]
 
-        val macroSlideAdjustUp = fun(it: InputDataDigital) {
+        gamepadyn.addListener(SLIDE_ADJUST_UP) {
             // D-Pad left -> raise slides
             // pos = target * 200 + 300
-            if (it() && teleOpTargetHeight < 6) {
+            if (it.data() && teleOpTargetHeight < 6) {
                 teleOpTargetHeight++
                 teleOpSlideUpdate()
             }
         }
 
-        val macroSlideAdjustDown = fun(it: InputDataDigital) {
-            if (it() && teleOpTargetHeight > 0) {
+        gamepadyn.addListener(SLIDE_ADJUST_DOWN) {
+            if (it.data() && teleOpTargetHeight > 0) {
                 teleOpTargetHeight--
                 teleOpSlideUpdate()
             }
         }
-
-        p0.getEvent(SLIDE_ADJUST_UP, macroSlideAdjustUp)
-        p1.getEvent(SLIDE_ADJUST_UP, macroSlideAdjustUp)
-        p0.getEvent(SLIDE_ADJUST_DOWN, macroSlideAdjustDown)
-        p1.getEvent(SLIDE_ADJUST_DOWN, macroSlideAdjustDown)
     }
 
     override fun modUpdateTeleOp() {
