@@ -33,7 +33,7 @@ public class ServoTest extends LinearOpMode {
         armR = hardwareMap.get(Servo.class, "armR");
         armL = hardwareMap.get(Servo.class, "armL");
         clawR = hardwareMap.get(Servo.class, "clawR");
-        clawL = hardwareMap.get(Servo.class, "clawL");
+        drone = hardwareMap.get(Servo.class, "drone");
 
 
 
@@ -43,9 +43,6 @@ public class ServoTest extends LinearOpMode {
         slideL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
-        trussR.setPosition(0.32);
-        trussL.setPosition(0.3);
 
         waitForStart();
 
@@ -74,13 +71,13 @@ public class ServoTest extends LinearOpMode {
 
 
             if (gamepad1.dpad_left) {
-                armL.setPosition(armL.getPosition() + 0.01);
+                drone.setPosition(drone.getPosition() + 0.01);
 
 
             } else if (gamepad1.dpad_right) {
-                armL.setPosition(armL.getPosition() - 0.01);
+                drone.setPosition(drone.getPosition() - 0.01);
             } else if (gamepad1.dpad_down) {
-                armL.setPosition(0);
+                drone.setPosition(0);
             }
 //0.36
             if (gamepad1.x) {
@@ -93,6 +90,7 @@ public class ServoTest extends LinearOpMode {
                 armR.setPosition(0);
             }
 
+
             drive.updatePoseEstimate();
 
             telemetry.addData("x", drive.pose.position.x);
@@ -100,7 +98,7 @@ public class ServoTest extends LinearOpMode {
             telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
-            telemetry.addData("left servo", armL .getPosition());
+            telemetry.addData("drone", drone .getPosition());
             telemetry.addData("right servo", armR .getPosition());
 
             telemetry.update();

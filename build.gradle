@@ -1,18 +1,22 @@
 /**
- * Top-level build file for ftc_app project.
- *
- * It is extraordinarily rare that you will ever need to edit this file.
+ * Top-level build file for ftc_app project. <s>It is extraordinarily rare that you will ever need to edit this file.</s>
+ * <br>
+ * <br>
+ * Your IDE will relentlessly tell you to edit this file and you must not listen to it.
+ * <br>
+ * Unless it tells you to update the Kotlin Gradle Plugin. In that case, listen to it.
  */
-
 buildscript {
+    // this is used everywhere so we can use a single Kotlin version everywhere
+    ext.kotlin_version = "1.9.22"
     repositories {
         mavenCentral()
         google()
     }
     dependencies {
         // Note for FTC Teams: Do not modify this yourself.
-        classpath 'com.android.tools.build:gradle:8.2.0'
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.0'
+        classpath 'com.android.tools.build:gradle:8.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 

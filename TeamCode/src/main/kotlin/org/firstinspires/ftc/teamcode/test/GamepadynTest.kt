@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.test
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import computer.living.gamepadyn.ActionBind
-import computer.living.gamepadyn.ActionMap
 import computer.living.gamepadyn.Configuration
 import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.RawInputDigital
@@ -21,14 +20,12 @@ import org.firstinspires.ftc.teamcode.ActionDigital.*
 
 @TeleOp
 class GamepadynTest : OpMode() {
-    private val gamepadyn = Gamepadyn(
+    private val gamepadyn = Gamepadyn.create(
+        ActionDigital::class,
+        ActionAnalog1::class,
+        ActionAnalog2::class,
         InputBackendFtc(this),
-        strict = true,
-        ActionMap(
-            ActionDigital.entries,
-            ActionAnalog1.entries,
-            ActionAnalog2.entries,
-        )
+        strict = true
     )
 
     override fun init() {
@@ -42,8 +39,8 @@ class GamepadynTest : OpMode() {
 
     override fun start() {
 
-        gamepadyn.players[0].getEvent(TOGGLE_DRIVER_RELATIVITY) {
-            if (it()) {
+        gamepadyn.players[0].addListener(TOGGLE_DRIVER_RELATIVITY) {
+            if (it.data()) {
                 driverRelative = !driverRelative
             }
         }

@@ -5,89 +5,115 @@ import com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
-import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE
+import com.qualcomm.robotcore.hardware.Servo
 import computer.living.gamepadyn.InputDataDigital
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.ActionDigital.*
-import org.firstinspires.ftc.teamcode.idc
+import org.firstinspires.ftc.teamcode.BotShared
+import org.firstinspires.ftc.teamcode.search
+import kotlin.math.roundToInt
 
 /**
  * Linear Slide Driver
+ * Also controls the arm, maybe the claw in the future
  */
+// TODO: make sure the slides are zeroed out and that the zero-position is KEPT across autonomous and TeleOp boundaries
+// TODO:
+//  - make sure that the slides won't break if they get stuck on the truss
+//  - collision avoidance in both TeleOp and Auto
+//  - Beam breaks to the claws so we know when the pixels are in and maybe to spin the intake
 class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
-    private val slideLeft:  DcMotorEx?  = idc { hardwareMap[DcMotorEx   ::class.java,   "slideL"     ] }
-    private val slideRight: DcMotorEx?  = idc { hardwareMap[DcMotorEx   ::class.java,   "slideR"     ] }
 
+//    private val slideLeftController: DcMotorControllerEx?   = slideLeft?.controller as? DcMotorControllerEx
+//    private val slideRightController: DcMotorControllerEx?  = slideRight?.controller as? DcMotorControllerEx
+    private val slideLeft: DcMotorEx?                       = hardwareMap.search("slideL")
+    private val slideRight: DcMotorEx?                      = hardwareMap.search("slideR")
+    private val armLeft: Servo?                             = hardwareMap.search("armL")
+    private val armRight: Servo?                            = hardwareMap.search("armR")
+//    private val armLeftController: ServoControllerEx?       = armLeft?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armL"] }
+//    private val armRightController: ServoControllerEx?      = armRight?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armR"] }
+
+    // it takes ~900ms to move the slides up from HEIGHT_ARM_SAFE to HEIGHT_MAX
+    // it takes ~600ms to move the slides down to HEIGHT_MIN from HEIGHT_MAX
     companion object {
         /**
          * The maximum position of the slide, in encoder ticks.
          */
-        const val SLIDE_HEIGHT_MAX = 1585
-        const val SLIDE_HEIGHT_MIN = 0
-        const val POWER_MAX = 1.0
-    }
+        const val HEIGHT_MAX = 1500
+        const val HEIGHT_MIN = 0
+        const val HEIGHT_ARM_SAFE = 502
 
-    enum class SlideStop(@JvmField public val height: Int) {
-        BOTTOM(SLIDE_HEIGHT_MIN),
-        TOP(SLIDE_HEIGHT_MAX)
-    }
+        const val ARM_UP_LEFT = 0.65
+        const val ARM_UP_RIGHT = 0.35
+        const val ARM_DOWN_LEFT = 0.98
+        const val ARM_DOWN_RIGHT = 0.05
 
-//    private val coefficients = PIDFCoefficients(
-//        0.0,
-//        0.0,
-//        0.0,
-//        0.0,
-//        PIDF
-//    )
+        var POWER_MAX = 1.0
+        // scale when moving downwards
+        var POWER_DOWNWARD_SCALE = 1.0 // 0.75
+    }
 
     init {
-        if (slideLeft == null || slideRight == null) {
+        if (slideLeft == null || slideRight == null || armLeft == null || armRight == null) {
             val missing = mutableSetOf<String>()
-            if (slideLeft != null) missing.add("slideL")
-            if (slideRight != null) missing.add("slideR")
+            if (slideLeft == null)  missing.add("slideL")
+            if (slideRight == null) missing.add("slideR")
+            if (armLeft == null)    missing.add("armL")
+            if (armRight == null)   missing.add("armR")
 
-            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = missing)
+            status = Status(StatusEnum.BAD, hardwareMissing = missing)
         } else {
             slideLeft.targetPosition = 0
             slideRight.targetPosition = 0
-            slideLeft.mode =   STOP_AND_RESET_ENCODER
-            slideRight.mode =  STOP_AND_RESET_ENCODER
-            slideLeft.mode =   RUN_TO_POSITION
-            slideRight.mode =  RUN_TO_POSITION
 
-            slideLeft.zeroPowerBehavior =       BRAKE
-            slideRight.zeroPowerBehavior =      BRAKE
+            if (!BotShared.wasLastOpModeAutonomous) {
+                slideLeft.mode = STOP_AND_RESET_ENCODER
+                slideRight.mode = STOP_AND_RESET_ENCODER
+            }
+
+            slideLeft.mode = RUN_TO_POSITION
+            slideRight.mode = RUN_TO_POSITION
+
+            slideLeft.zeroPowerBehavior = BRAKE
+            slideRight.zeroPowerBehavior = BRAKE
 
             // Directions
-            slideLeft.direction =               FORWARD
-            slideRight.direction =              REVERSE
+            slideLeft.direction = FORWARD
+            slideLeft.direction = FORWARD
+//            slideRight.direction =              REVERSE
         }
     }
 
-//        slideLeft.targetPosition = 0
-//        slideLeft.mode = RUN_TO_POSITION
-//        slideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-//        slideLeft.power = 0.0
-//        slideLeft.power = 1.0
-//
-//        slide.targetPositionTolerance = 1
-//        slide.setPIDFCoefficients(RUN_TO_POSITION, coefficients)
-
-
-    @Suppress("MemberVisibilityCanBePrivate")
     var targetHeight: Int = 0
         set(height) {
             // half the power for downwards movement
-            val desiredPower = if (height < field) (POWER_MAX / 2.0) else POWER_MAX
+            val desiredPower = if (height < currentHeight) POWER_MAX * POWER_DOWNWARD_SCALE else POWER_MAX
+
             slideLeft?. power = desiredPower
             slideRight?.power = desiredPower
             // evaluated height
-            val evaluatedHeight = height.coerceIn(SLIDE_HEIGHT_MIN..SLIDE_HEIGHT_MAX)
-            slideLeft?. targetPosition = evaluatedHeight
-            slideRight?.targetPosition = evaluatedHeight
-
-            field = evaluatedHeight
+            field = height.coerceIn(HEIGHT_MIN..HEIGHT_MAX)
+            slideLeft?. targetPosition = field
+            slideRight?.targetPosition = -field
         }
+
+    private var isMovingSlides = false
+    var teleOpTargetHeight = 0
+
+    /**
+     * Whether or not the slide's **target height** is up.
+     */
+    val isSlideUp: Boolean
+        get() = targetHeight > HEIGHT_ARM_SAFE
+
+    /**
+     * The average value (in ticks) of the two slides.
+     */
+    val currentHeight: Int
+        // pay attention to the negative sign here, the right slide is negative.
+        get() = if (status.status == StatusEnum.OK) ((slideLeft!!.currentPosition + -slideRight!!.currentPosition).toFloat() / 2f).roundToInt()
+                else 0
 
     override fun modStart() {
         slideLeft?.targetPosition = 0
@@ -95,74 +121,61 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
         slideLeft?.mode  = RUN_TO_POSITION
         slideRight?.mode = RUN_TO_POSITION
+    }
 
-        if (isTeleOp) {
-            if (gamepadyn == null) {
-                return
-            }
-            val moveUp: (InputDataDigital) -> Unit = {
-                if (it()) targetHeight += 200
-            }
-            val moveDown: (InputDataDigital) -> Unit = {
-                if (it()) targetHeight -= 200
-            }
+    private fun teleOpSlideUpdate() {
+        teleOpTargetHeight = teleOpTargetHeight.coerceIn(0..6)
+        if (isSlideUp) targetHeight = teleOpTargetHeight * 200 + 300
+    }
 
-            val p0 = gamepadyn.players[0]
-            val p1 = gamepadyn.players[1]
+    override fun modStartTeleOp() {
+        if (gamepadyn == null) {
+            telemetry.addLine("(LSD Module) TeleOp was enabled but Gamepadyn was null!")
+            return
+        }
 
-            p0.getEvent(PIXEL_MOVE_UP,      moveUp)
-            p1.getEvent(PIXEL_MOVE_UP,      moveUp)
-            p0.getEvent(PIXEL_MOVE_DOWN,    moveDown)
-            p1.getEvent(PIXEL_MOVE_DOWN,    moveDown)
+        val p0 = gamepadyn.players[0]
+        val p1 = gamepadyn.players[1]
+
+        gamepadyn.addListener(SLIDE_ADJUST_UP) {
+            // D-Pad left -> raise slides
+            // pos = target * 200 + 300
+            if (it.data() && teleOpTargetHeight < 6) {
+                teleOpTargetHeight++
+                teleOpSlideUpdate()
+            }
+        }
+
+        gamepadyn.addListener(SLIDE_ADJUST_DOWN) {
+            if (it.data() && teleOpTargetHeight > 0) {
+                teleOpTargetHeight--
+                teleOpSlideUpdate()
+            }
         }
     }
 
+    override fun modUpdateTeleOp() {
+        telemetry.addData("LSD (TeleOp) target height:", teleOpTargetHeight)
+    }
+
     override fun modUpdate() {
+        // if our target & current heights are above the safe height for the arm, always extend the arm.
+        if (targetHeight >= HEIGHT_ARM_SAFE && currentHeight >= HEIGHT_ARM_SAFE) {
+            armRight?.position = ARM_DOWN_RIGHT
+            armLeft?.position =  ARM_DOWN_LEFT
+        } else {
+            armRight?.position = ARM_UP_RIGHT
+            armLeft?.position =  ARM_UP_LEFT
+        }
 
         telemetry.addData("LSD target height:", targetHeight)
+        telemetry.addData("LSD current avg. height", currentHeight)
+        telemetry.addData("LSD slide L height", slideLeft?.currentPosition)
+        telemetry.addData("LSD slide R height", slideRight?.currentPosition)
+        telemetry.addData("LSD arm L pos", armLeft?.position)
+        telemetry.addData("LSD arm R pos", armRight?.position)
 
-//        targetHeight += 10 * ((if (opMode.gamepad1.left_trigger > 0.5) 1 else 0) + (if (opMode.gamepad1.right_trigger > 0.5) -1 else 0))
-//
-//        if (isTeleOp) {
-//            if (gamepadyn == null) {
-//                telemetry.addLine("(LSD) TeleOp was enabled but Gamepadyn was null!")
-//                return
-//            }
-//            val player = gamepadyn.players[1]
-//            slideLeft?. mode = RUN_USING_ENCODER
-//            slideRight?.mode = RUN_USING_ENCODER
-//            val p = player.getState(SLIDE_MANUAL).x.toDouble().coerceAtMost(1.0) * POWER_MAX
-//            slideLeft?. power = p
-//            slideRight?.power = p
-//        }
-
-//    //        shared.motorSlide!!.mode = RUN_WITHOUT_ENCODER
-//    //        shared.motorSlide!!.power = (gamepad1.left_trigger - gamepad2.right_trigger).toDouble().coerceAtLeast(0.0).coerceAtMost(1.0)
-//        shared.motorSlide!!.targetPosition = (shared.motorSlide!!.targetPosition + (10 * ((if (gamepad1.left_trigger > 0.5) 1 else 0) + (if (gamepad1.right_trigger > 0.5) -1 else 0)))).coerceAtLeast(0).coerceAtMost(1086)
-//        shared.motorSlide!!.mode = RUN_TO_POSITION
-//        shared.motorSlide!!.power = 1.0
-//        telemetry.addLine(
-//            """
-//        |==================================================
-//        |Slide target position: ${shared.motorSlide!!.targetPosition}
-//        |Slide current position: ${shared.motorSlide!!.currentPosition}
-//        |Slide mode: ${shared.motorSlide!!.mode}
-//        |Slide ZPB: ${shared.motorSlide!!.zeroPowerBehavior}"
-//        |Slide is enabled: ${shared.motorSlide!!.isMotorEnabled}"
-//        |Slide power: ${shared.motorSlide!!.power}"
-//        |Slide current: ${shared.motorSlide!!.getCurrent(CurrentUnit.AMPS)}"
-//        |Slide velocity: ${shared.motorSlide!!.velocity}
-//        |==================================================
-//        """.trimMargin()
-//        )
+        telemetry.addData("LSD slide L amps", slideLeft?.getCurrent(CurrentUnit.AMPS))
+        telemetry.addData("LSD slide R amps", slideRight?.getCurrent(CurrentUnit.AMPS))
     }
-//
-//    fun addHeight(offset: Double): Unit {
-////        TODO()
-//    }
-//
-//    fun setRow(row: Int): Unit {
-//        useManual = false
-//        TODO("automatically set the slide to be aligned with a row (0 to 10, -1 for retracted)")
-//    }
 }

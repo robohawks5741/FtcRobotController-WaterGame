@@ -1,66 +1,64 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.hardware.Servo
+import computer.living.gamepadyn.InputDataDigital
 import org.firstinspires.ftc.teamcode.*
+import org.firstinspires.ftc.teamcode.ActionDigital.*
 
 class Claw(config: ModuleConfig) : BotModule(config) {
-    private val servoLeft: Servo?    =   idc {   hardwareMap[Servo  ::class.java,   "clawL"     ] }
-    private val servoRight: Servo?   =   idc {   hardwareMap[Servo  ::class.java,   "clawR"     ] }
-    private var position: Double = 0.0
+    private val clawLeft: Servo?            =   hardwareMap.search("clawL")
+    private val clawRight: Servo?           =   hardwareMap.search("clawR")
 
     companion object {
         /**
          * minimums and maximums
          */
-        @JvmStatic private val CLAW_LEFT_OPEN: Double       = 0.29
-        @JvmStatic private val CLAW_LEFT_CLOSED: Double     = 0.0
-        @JvmStatic private val CLAW_RIGHT_OPEN: Double      = 0.07
-        @JvmStatic private val CLAW_RIGHT_CLOSED: Double    = 0.36
+        const val CLAW_LEFT_POS_OPEN: Double       = 0.0
+        const val CLAW_LEFT_POS_CLOSED: Double     = 0.29
+        const val CLAW_RIGHT_POS_OPEN: Double      = 0.36
+        const val CLAW_RIGHT_POS_CLOSED: Double    = 0.07
     }
 
     /**
-     * 1 is fully closed,
-     * 0 is fully opened.
+     * Whether the left claw is open. The setter moves the servos.
      */
-    var state: Double
-        get() = position
-        set(x) {
-            val y = if (x > 1.0) 1.0; else if (x < 0.0) 0.0; else x
-            position = y
-            val interpLeftPos = (((1.0 - position) * CLAW_LEFT_OPEN) + (position * CLAW_LEFT_CLOSED))
-            val interpRightPos = (((1.0 - position) * CLAW_RIGHT_OPEN) + (position * CLAW_RIGHT_CLOSED))
-            servoLeft?.position = interpLeftPos
-            servoRight?.position = interpRightPos
+    var leftOpen: Boolean = true
+        set(state) {
+            field = state
+            clawLeft?.position = if (state) CLAW_LEFT_POS_OPEN else CLAW_LEFT_POS_CLOSED
+        }
+    /**
+     * Whether the right claw is open. The setter moves the servos.
+     */
+    var rightOpen: Boolean = true
+        set(state) {
+            field = state
+            clawRight?.position = if (state) CLAW_RIGHT_POS_OPEN else CLAW_RIGHT_POS_CLOSED
         }
 
     init {
-        if (servoLeft == null || servoRight == null) {
+        if (clawLeft == null || clawRight == null) {
             val missing = mutableSetOf<String>()
-            if (servoLeft != null) missing.add("clawl")
-            if (servoRight != null) missing.add("clawr")
+            if (clawLeft == null) missing.add("clawL")
+            if (clawRight == null) missing.add("clawR")
 
-            status = Status(StatusEnum.MISSING_HARDWARE, hardwareMissing = missing)
+            status = Status(StatusEnum.BAD, hardwareMissing = missing)
         } else {
-            servoLeft.direction = Servo.Direction.FORWARD
-            servoRight.direction = Servo.Direction.FORWARD
+            clawLeft.direction = Servo.Direction.FORWARD
+            clawRight.direction = Servo.Direction.FORWARD
         }
     }
 
-//    override fun modStart() {
-//        if (isTeleOp) {
-//            if (gamepadyn == null) {
-//                telemetry.addLine("(Claw Module) TeleOp was enabled but Gamepadyn was null!")
-//                return
-//            }
-//
-//            gamepadyn.players[0].getEvent(ActionAnalog1.CLAW)!! {
-//                if (it()) useBotRelative = !useBotRelative
-//            }
-//        }
-//    }
+    override fun modStartTeleOp() {
+        if (gamepadyn == null) {
+            telemetry.addLine("(Claw Module) TeleOp was enabled but Gamepadyn was null!")
+            return
+        }
 
-//    override fun <T : Enum<T>> bindTeleOp(gamepadyn: Gamepadyn<T>) {
-//        super.bindTeleOp(gamepadyn)
-//    }
+        gamepadyn.addListener(CLAW_LEFT_OPEN)   { if (it.data()) leftOpen = true }
+        gamepadyn.addListener(CLAW_LEFT_CLOSE)  { if (it.data()) leftOpen = false }
+        gamepadyn.addListener(CLAW_RIGHT_OPEN)  { if (it.data()) rightOpen = true }
+        gamepadyn.addListener(CLAW_RIGHT_CLOSE) { if (it.data()) rightOpen = false }
+    }
 
 }

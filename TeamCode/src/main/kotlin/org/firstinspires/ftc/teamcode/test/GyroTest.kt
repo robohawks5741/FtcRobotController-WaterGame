@@ -15,9 +15,7 @@ class GyroTest : OpMode() {
         imu = hardwareMap[IMU::class.java, "imu"]
     }
 
-    override fun start() {
-
-    }
+    override fun start() {}
 
     private var logo = RevHubOrientationOnRobot.LogoFacingDirection.UP
     private var usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD

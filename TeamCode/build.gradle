@@ -12,13 +12,13 @@
 // Custom definitions may go here
 
 plugins {
-    id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.9.0'
+//    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
+apply plugin: 'kotlin-android'
 
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
@@ -47,25 +47,27 @@ repositories {
 
 dependencies {
     implementation project(':FtcRobotController')
-//  comment below to get faster compiles BUT no compile-time OpMode duplication checking
+    //  comment below to get faster compiles BUT no compile-time OpMode duplication checking
 //    annotationProcessor files('lib/OpModeAnnotationProcessor.jar')
-
-//  kotlin
+    //  kotlin
 //    implementation 'androidx.core:core-ktx:1.10.1'
-//  Gamepadyn
-    implementation files("lib/gamepadyn/core-0.2.0-BETA.jar")
-    implementation files("lib/gamepadyn/core-0.2.0-BETA-sources.jar")
-    implementation files("lib/gamepadyn/ftc-0.2.0-BETA.aar")
-    implementation files("lib/gamepadyn/ftc-0.2.0-BETA-sources.jar")
-//  roadrunner 0.1.11
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0'
-    implementation "com.acmerobotics.roadrunner:ftc:0.1.11"
-    implementation "com.acmerobotics.dashboard:dashboard:0.4.14"
-//  roadrunner 1.0.0 BETA
+    //  Gamepadyn
+    implementation files("lib/gamepadyn/core/0.3.0-BETA/core-0.3.0-BETA.jar")
+    implementation files("lib/gamepadyn/core/0.3.0-BETA/core-0.3.0-BETA-sources.jar")
+    implementation files("lib/gamepadyn/ftc/0.3.0-BETA/ftc-0.3.0-BETA.aar")
+    implementation files("lib/gamepadyn/ftc/0.3.0-BETA/ftc-0.3.0-BETA-sources.jar")
+    //  roadrunner 0.5.X
+    implementation "com.acmerobotics.roadrunner:core:0.5.6"
+    implementation "com.acmerobotics.roadrunner:ftc:0.1.12"
+    implementation "com.acmerobotics.dashboard:dashboard"
+    // roadrunner 1.0.X BETA
 //    implementation 'com.acmerobotics.roadrunner:core:1.0.0-beta4'
 //    implementation 'com.acmerobotics.roadrunner:actions:1.0.0-beta4'
+    //  kotlin
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+//    implementation 'androidx.core:core-ktx:1.12.0'
+//    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json"
+    // other
 //    implementation "org.nanohttpd:nanohttpd:2.3.1"
 //    implementation "org.nanohttpd:nanohttpd-websocket:2.3.1"
-    implementation "org.jetbrains.kotlin:kotlin-reflect:1.9.0"
-
 }

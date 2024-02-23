@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.MecanumDrive;
 @TeleOp
 public class ServoTest1 extends LinearOpMode {
 
-    private DcMotorEx hang, intake, slideR, slideL;
+    private DcMotorEx hang, intake, slideR, slideL, leftFront, leftBack, rightBack, rightFront;
     private Servo trussL, trussR, armR, armL, clawR, clawL, drone;
 
     private int liftPos = 0;
@@ -26,6 +26,11 @@ public class ServoTest1 extends LinearOpMode {
         slideR = hardwareMap.get(DcMotorEx.class, "slideR");
         slideL = hardwareMap.get(DcMotorEx.class, "slideL");
 
+        leftFront = hardwareMap.get(DcMotorEx.class, "frontL");
+        leftBack = hardwareMap.get(DcMotorEx.class, "backL");
+        rightBack = hardwareMap.get(DcMotorEx.class, "backR");
+        rightFront = hardwareMap.get(DcMotorEx.class, "frontR");
+
         trussR = hardwareMap.get(Servo.class, "trussR");
         trussL = hardwareMap.get(Servo.class, "trussL");
         armR = hardwareMap.get(Servo.class, "armR");
@@ -35,15 +40,13 @@ public class ServoTest1 extends LinearOpMode {
 
 
 
+
         slideR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         slideL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         slideL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-
-        trussR.setPosition(0.32);
-        trussL.setPosition(0.3);
 
         waitForStart();
 
@@ -72,23 +75,25 @@ public class ServoTest1 extends LinearOpMode {
 
 
             if (gamepad1.dpad_left) {
-                armL.setPosition(armL.getPosition() + 0.01);
+                rightFront.setPower(1);
 
 
             } else if (gamepad1.dpad_right) {
-                armL.setPosition(armL.getPosition() - 0.01);
+                rightBack.setPower(1);
             } else if (gamepad1.dpad_down) {
-                armL.setPosition(0);
+                leftFront.setPower(1);
+            } else if (gamepad1.dpad_up){
+                leftBack.setPower(1);
             }
 //0.36
             if (gamepad1.x) {
-                armR.setPosition(armR.getPosition() + 0.01);
+                trussR.setPosition(trussR.getPosition() + 0.01);
 
             } else if (gamepad1.b) {
-                armR.setPosition(armR.getPosition() - 0.01);
+                trussR.setPosition(trussR.getPosition() - 0.01);
 
             } else if (gamepad1.a) {
-                armR.setPosition(0);
+                trussR.setPosition(0);
             }
 
             drive.updatePoseEstimate();
@@ -98,8 +103,8 @@ public class ServoTest1 extends LinearOpMode {
             telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
-            telemetry.addData("left servo", armL .getPosition());
-            telemetry.addData("right servo", armR .getPosition());
+            telemetry.addData("left servo", trussL .getPosition());
+            telemetry.addData("right servo", trussR .getPosition());
 
             telemetry.update();
         }
