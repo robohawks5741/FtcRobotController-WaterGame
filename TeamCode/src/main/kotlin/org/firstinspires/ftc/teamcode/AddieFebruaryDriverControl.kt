@@ -185,15 +185,11 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         gamepadyn.addListener(SLIDE_ADJUST_UP) {
             // D-Pad left -> raise slides
             // pos = target * 200 + 300
-            if (it.data() && slideAdjustHeight < 6) {
-                slideAdjustHeight++
-            }
+            if (it.data() && slideAdjustHeight < 6) slideAdjustHeight++
         }
 
         gamepadyn.addListener(SLIDE_ADJUST_DOWN) {
-            if (it.data() && slideAdjustHeight > 0) {
-                slideAdjustHeight--
-            }
+            if (it.data() && slideAdjustHeight > 0) slideAdjustHeight--
         }
 
         // MOD START

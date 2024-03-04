@@ -16,7 +16,7 @@ public final class ClayAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
-        AutoSubsystem autoSub = new AutoSubsystem(this);
+        ComputerVisionSubsystem autoSub = new ComputerVisionSubsystem(this);
 
         waitForStart();
 
@@ -25,7 +25,7 @@ public final class ClayAuto extends LinearOpMode {
         while (opModeIsActive()) {
             autoSub.detectElement();
 //            elementSpikeMark = autoSub.spikeMark;
-            telemetry.addData("getMaxDistance", autoSub.pipeline.getMaxDistance());
+            telemetry.addData("getMaxDistance", autoSub.pipeline.maxDistance);
 
             if (togglePreview && gamepad2.a) {
                 togglePreview = false;

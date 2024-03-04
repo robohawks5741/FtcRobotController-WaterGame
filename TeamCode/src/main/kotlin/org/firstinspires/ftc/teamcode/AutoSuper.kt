@@ -6,8 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
-import org.firstinspires.ftc.teamcode.botmodule.Opticon
 
 abstract class AutoSuper : LinearOpMode() {
     protected val intake: DcMotorEx by lazy { hardwareMap[DcMotorEx::class.java,    "intake"] }
@@ -27,7 +25,7 @@ abstract class AutoSuper : LinearOpMode() {
 //    protected lateinit var opticon: Opticon
 
     protected lateinit var drive: MecanumDrive
-    protected lateinit var autoSub: AutoSubsystem
+    protected lateinit var autoSub: ComputerVisionSubsystem
 
     open val beginPose = Pose2d(0.0, 0.0, 0.0)
     protected var placementZone: SpikeMark = SpikeMark.RIGHT
@@ -50,7 +48,7 @@ abstract class AutoSuper : LinearOpMode() {
         slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        autoSub = AutoSubsystem(this)
+        autoSub = ComputerVisionSubsystem(this)
         autoSub.setAlliance(alliance)
 
         shared = BotShared(this)
