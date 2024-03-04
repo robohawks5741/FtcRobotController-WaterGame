@@ -99,7 +99,6 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
         }
 
     private var isMovingSlides = false
-    var teleOpTargetHeight = 0
 
     /**
      * Whether or not the slide's **target height** is up.
@@ -121,38 +120,6 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
         slideLeft?.mode  = RUN_TO_POSITION
         slideRight?.mode = RUN_TO_POSITION
-    }
-
-    private fun teleOpSlideUpdate() {
-        teleOpTargetHeight = teleOpTargetHeight.coerceIn(0..6)
-        if (isSlideUp) targetHeight = teleOpTargetHeight * 200 + 300
-    }
-
-    override fun modStartTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(LSD Module) TeleOp was enabled but Gamepadyn was null!")
-            return
-        }
-        
-        gamepadyn.addListener(SLIDE_ADJUST_UP) {
-            // D-Pad left -> raise slides
-            // pos = target * 200 + 300
-            if (it.data() && teleOpTargetHeight < 6) {
-                teleOpTargetHeight++
-                teleOpSlideUpdate()
-            }
-        }
-
-        gamepadyn.addListener(SLIDE_ADJUST_DOWN) {
-            if (it.data() && teleOpTargetHeight > 0) {
-                teleOpTargetHeight--
-                teleOpSlideUpdate()
-            }
-        }
-    }
-
-    override fun modUpdateTeleOp() {
-        telemetry.addData("LSD (TeleOp) target height:", teleOpTargetHeight)
     }
 
     override fun modUpdate() {

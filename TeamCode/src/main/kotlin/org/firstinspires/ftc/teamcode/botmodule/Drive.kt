@@ -9,10 +9,13 @@ import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple
 import com.qualcomm.robotcore.hardware.DigitalChannel
 import com.qualcomm.robotcore.hardware.IMU
+import computer.living.gamepadyn.InputDataAnalog1
+import computer.living.gamepadyn.InputDataAnalog2
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
+import org.firstinspires.ftc.teamcode.getLength
 import org.firstinspires.ftc.teamcode.search
 import org.firstinspires.ftc.teamcode.stickCurve
 import java.lang.Math.toDegrees
@@ -37,12 +40,14 @@ class Drive(config: ModuleConfig) : BotModule(config) {
     var isSnapping = false
     private var lastUpdateTimeNs: Long = 0
 
+    var movement = InputDataAnalog2()
+    var rotation = InputDataAnalog1()
 
     private var previousError = 0.0
     private var integral = 0.0
-    var kP: Double = 0.2
-    var kI: Double = 0.005
-    var kD: Double = 0.2
+    private var kP: Double = 0.2
+    private var kI: Double = 0.005
+    private var kD: Double = 0.2
 
     var useDriverRelative = true
         set(status) {
@@ -75,23 +80,10 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         useDriverRelative = true
     }
 
-    override fun modStartTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
-            return
-        }
-        gamepadyn.players[0].addListener(TOGGLE_DRIVER_RELATIVITY) { if (it.data()) useDriverRelative = !useDriverRelative }
-        // IMU orientation/calibration
-        val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
-        val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-        val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
-        imu.initialize(IMU.Parameters(orientationOnRobot))
-        imu.resetYaw()
-    }
+    override fun modUpdate() {
 
-    override fun modUpdateTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
+        if (!config.isTeleOp) {
+            telemetry.addLine("(Drive Module) Skipping update for autonomous")
             return
         }
 
@@ -99,9 +91,6 @@ class Drive(config: ModuleConfig) : BotModule(config) {
 
         // counter-clockwise
         val currentYaw = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
-
-        val movement = gamepadyn.players[0].getState(MOVEMENT)
-        val rotation = gamepadyn.players[0].getState(ROTATION)
 
         // +X = forward
         // +Y = left
@@ -161,7 +150,7 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             turnPower
         )
 
-        shared.rr?.setDrivePowers(pv)
+        if (pv.linearVel.getLength() > 0.0 || pv.angVel > 0.0) shared.rr?.setDrivePowers(pv)
 
         telemetry.addData("Driver Relativity", if (useDriverRelative) "enabled" else "disable")
         telemetry.addData("Gyro Yaw", toDegrees(currentYaw))

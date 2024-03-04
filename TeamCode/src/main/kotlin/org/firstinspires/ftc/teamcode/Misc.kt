@@ -4,8 +4,11 @@ package org.firstinspires.ftc.teamcode
 import com.acmerobotics.roadrunner.Vector2d
 import com.qualcomm.robotcore.hardware.HardwareMap
 import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sign
+import kotlin.math.sqrt
 
 /**
  * **I Don't Care** if it's `null`, but I don't want an exception, so I use the `idc` function
@@ -43,3 +46,13 @@ fun Boolean.toDouble(): Double = if (this) 1.0 else 0.0
 fun Boolean.toFloat(): Float = if (this) 1f else 0f
 
 fun Double.clamp(min: Double, max: Double) = if (this < min) min; else if (this > max) max; else this
+fun Double.remap(inputLow: Double, inputHigh: Double, outputLow: Double, outputHigh: Double, clamp: Boolean = true): Double {
+    var res = (outputHigh - outputLow) / (inputHigh / inputHigh) * (this - inputLow) + outputLow
+    if (clamp) res = res.clamp(min(inputLow, inputHigh), max(inputLow, inputHigh))
+    return res
+}
+
+/**
+ * Returns the length of the vector.
+ */
+fun Vector2d.getLength() = sqrt(this.x * this.x + this.y * this.y)

@@ -33,11 +33,6 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
     protected val telemetry: Telemetry = config.opMode.telemetry
 
     /**
-     * A gamepadyn instance, if present.
-     */
-    protected val gamepadyn: GamepadynRH? = config.gamepadyn
-
-    /**
      * The internal Inertial Measurement Unit (IMU) of the control hub.
      */
     protected val imu = shared.imu
@@ -68,19 +63,9 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
     open fun modStart() {}
 
     /**
-     * Run after [modStart], but only if the OpMode is TeleOp.
-     */
-    open fun modStartTeleOp() {}
-
-    /**
      * Run every loop of the parent OpMode.
      */
     open fun modUpdate() {}
-
-    /**
-     * Run after [modUpdate], but only if the OpMode is TeleOp.
-     */
-    open fun modUpdateTeleOp() {}
 
     /**
      * Run when the OpMode is stopped.

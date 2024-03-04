@@ -32,42 +32,16 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
             trussRight?.position = position.rightPos
         }
 
+    var pullPower: Double = 0.0
+        set(power) {
+            field = power.coerceIn(-1.0..1.0)
+            trussPull?.power = field
+        }
+
     override fun modStart() {
         trussPull?.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
         trussLeft?.position = position.leftPos
         trussRight?.position = position.rightPos
-    }
-
-    override fun modStartTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(Trussle Module) TeleOp was enabled but Gamepadyn was null!")
-            return
-        }
-
-        // cycle the truss hanger positions when the button is pressed
-        gamepadyn.addListener(TRUSS_CYCLE) {
-            if (it.data()) {
-                position = when (position) {
-                    TrussPosition.UP -> TrussPosition.DOWN
-                    TrussPosition.DOWN -> TrussPosition.UP
-                }
-            }
-        }
-
-        // pull in the motors if the button is being held down
-        gamepadyn.addListener(TRUSS_PULL) {
-            trussPull?.power = it.data.x.toDouble()
-        }
-    }
-
-    override fun modUpdateTeleOp() {
-        if (gamepadyn == null) {
-            TODO("cry about it")
-        }
-        val p0 = gamepadyn.players[0]
-        val p1 = gamepadyn.players[1]
-        val power = p0.getState(TRUSS_PULL).x + p1.getState(TRUSS_PULL).x
-        trussPull?.power = power.toDouble().stickCurve()
     }
 
     override fun modUpdate() {

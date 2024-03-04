@@ -47,16 +47,6 @@ class Intake(config: ModuleConfig) : BotModule(config) {
             field = height
         }
 
-    override fun modStartTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(Intake Module) TeleOp was enabled but Gamepadyn was null!")
-            return
-        }
-        gamepadyn.addListener(INTAKE_SPIN) {
-            motorSpin?.power = it.data.x.toDouble().coerceIn(0.0..1.0)
-        }
-    }
-
     override fun modUpdate() {
         if (config.parent.lsd.currentHeight >= 20) {
             telemetry.addLine("Intake spin power overridden by slide height!")

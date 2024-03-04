@@ -48,17 +48,4 @@ class Claw(config: ModuleConfig) : BotModule(config) {
             clawRight.direction = Servo.Direction.FORWARD
         }
     }
-
-    override fun modStartTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(Claw Module) TeleOp was enabled but Gamepadyn was null!")
-            return
-        }
-
-        gamepadyn.addListener(CLAW_LEFT_OPEN)   { if (it.data()) leftOpen = true }
-        gamepadyn.addListener(CLAW_LEFT_CLOSE)  { if (it.data()) leftOpen = false }
-        gamepadyn.addListener(CLAW_RIGHT_OPEN)  { if (it.data()) rightOpen = true }
-        gamepadyn.addListener(CLAW_RIGHT_CLOSE) { if (it.data()) rightOpen = false }
-    }
-
 }

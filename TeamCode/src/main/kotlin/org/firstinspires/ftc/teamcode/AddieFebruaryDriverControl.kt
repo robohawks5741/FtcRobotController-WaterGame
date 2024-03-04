@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode
 
 import android.util.Log
-import com.acmerobotics.roadrunner.Pose2d
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.IMU
@@ -22,9 +24,8 @@ import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.botmodule.LSD
-import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
-import kotlin.math.abs
+import kotlin.math.roundToInt
 
 typealias GamepadynRH = Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>
 typealias ConfigurationRH = Configuration<ActionDigital, ActionAnalog1, ActionAnalog2>
@@ -54,6 +55,184 @@ class AddieFebruaryDriverControl : LinearOpMode() {
      */
     private var droneTurnKey0 = false
     private var droneTurnKey1 = false
+
+
+    private var slideAdjustHeight = 0
+    private var wantSlideUp = false
+
+    override fun runOpMode() {
+        drone   = hardwareMap!![Servo::class.java, "drone"]
+        imu     = hardwareMap!![IMU::class.java, "imu"]
+
+        shared = BotShared(this)
+
+        // initial drone position
+        drone.position = 1.0
+
+        // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
+        shared.rr = MecanumDrive(hardwareMap, BotShared.storedPose)
+        moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn)
+
+        // Configuration
+        val p0 = gamepadyn.players[0]
+        val p1 = gamepadyn.players[1]
+        p0.configuration = GamepadConfig.player0
+        p1.configuration = GamepadConfig.player1
+
+        // MOD INIT
+        moduleHandler.init()
+
+        val claw = moduleHandler.claw
+        val drive = moduleHandler.drive
+        val intake = moduleHandler.intake
+        val lsd = moduleHandler.lsd
+        val opticon = moduleHandler.opticon
+        val trussle = moduleHandler.trussle
+        val rr = shared.rr!!
+
+        imu.resetYaw()
+
+        claw.leftOpen = true
+        claw.rightOpen = true
+
+        trussle.position = TrussPosition.DOWN
+        drone.position = 0.36
+        intake.raised = false
+
+        telemetry.update()
+
+        waitForStart()
+
+        // IMU orientation/calibration
+        imu.initialize(IMU.Parameters(RevHubOrientationOnRobot(
+            LogoFacingDirection.LEFT,
+            UsbFacingDirection.FORWARD
+        )))
+        if (!BotShared.wasLastOpModeAutonomous) imu.resetYaw()
+
+        gamepadyn.addListener(CLAW_LEFT_OPEN)   { if (it.data()) claw.leftOpen = true }
+        gamepadyn.addListener(CLAW_LEFT_CLOSE)  { if (it.data()) claw.leftOpen = false }
+        gamepadyn.addListener(CLAW_RIGHT_OPEN)  { if (it.data()) claw.rightOpen = true }
+        gamepadyn.addListener(CLAW_RIGHT_CLOSE) { if (it.data()) claw.rightOpen = false }
+
+        // cycle the truss hanger positions when the button is pressed
+        gamepadyn.addListener(TRUSS_CYCLE) {
+            if (it.data()) {
+                trussle.position = when (trussle.position) {
+                    TrussPosition.UP -> TrussPosition.DOWN
+                    TrussPosition.DOWN -> TrussPosition.UP
+                }
+            }
+        }
+
+        // pull in the motors if the button is being held down
+        gamepadyn.addListener(TRUSS_PULL) {
+            trussle.pullPower = it.data.x.toDouble().stickCurve()
+        }
+
+        p0.addListener(TOGGLE_DRIVER_RELATIVITY) { if (it.data()) drive.useDriverRelative = !drive.useDriverRelative }
+
+        gamepadyn.addListener(INTAKE_SPIN) { intake.power = it.data.x.toDouble() }
+
+        gamepadyn.addListener(MACRO_SLIDE_UP) {
+            if (it.data()) {
+                // TODO: reduce the use of sleep
+                if (claw.leftOpen || claw.rightOpen) {
+                    claw.leftOpen = false
+                    claw.rightOpen = false
+                    // wait for claws to move
+                    sleep(300)
+                }
+
+                // move up now
+                if (slideAdjustHeight == 0) slideAdjustHeight = 6
+                wantSlideUp = true
+            }
+        }
+
+        gamepadyn.addListener(MACRO_SLIDE_DOWN) {
+            if (it.data()) {
+                // reset teleOp adjustments
+                slideAdjustHeight = 0
+                wantSlideUp = false
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
+
+        p0.addListener(DRONE_LAUNCH) {
+            droneTurnKey0 = it.data()
+        }
+
+        p1.addListener(DRONE_LAUNCH) {
+            droneTurnKey1 = it.data()
+        }
+
+        p0.addListener(MACRO_PLACE_PIXEL) {
+            if (it.data()) {
+                // Open the claws
+                if (!claw.leftOpen || !claw.leftOpen) {
+                    claw.leftOpen = true
+                    claw.rightOpen = true
+                    sleep(400)
+                }
+                // reset teleOp adjustments
+                slideAdjustHeight = 0
+                wantSlideUp = false
+                lsd.targetHeight = LSD.HEIGHT_MIN
+            }
+        }
+
+        gamepadyn.addListener(SLIDE_ADJUST_UP) {
+            // D-Pad left -> raise slides
+            // pos = target * 200 + 300
+            if (it.data() && slideAdjustHeight < 6) {
+                slideAdjustHeight++
+            }
+        }
+
+        gamepadyn.addListener(SLIDE_ADJUST_DOWN) {
+            if (it.data() && slideAdjustHeight > 0) {
+                slideAdjustHeight--
+            }
+        }
+
+        // MOD START
+        moduleHandler.start()
+
+        telemetry.update()
+
+        while (opModeIsActive()) {
+            BotShared.wasLastOpModeAutonomous = false
+            gamepadyn.update()
+
+            drive.movement = p0.getState(MOVEMENT)
+            drive.rotation = p0.getState(ROTATION)
+
+            // MOD UPDATE
+            moduleHandler.update()
+
+            // TODO: patch this in
+//            // Driver 2 Override
+//            if (abs(gamepad2.left_stick_y) > 0.1) {
+//                intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
+//            }
+
+            // drone launch turnkey
+            if (droneTurnKey0 && droneTurnKey1) drone.position = 0.0
+
+            slideAdjustHeight = slideAdjustHeight.coerceIn(0..6)
+            if (wantSlideUp) moduleHandler.lsd.targetHeight = (slideAdjustHeight.toDouble() * ((LSD.HEIGHT_MAX - LSD.HEIGHT_ARM_SAFE).toDouble() / 6.0) + LSD.HEIGHT_ARM_SAFE.toDouble()).roundToInt()
+
+            rr.updatePoseEstimate()
+            telemetry.addData("RR pos x", rr.pose.position.x)
+            telemetry.addData("RR pos y", rr.pose.position.y)
+            telemetry.addData("RR heading", rr.pose.heading.log())
+//            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
+            telemetry.update()
+        }
+
+        moduleHandler.stop()
+    }
 
     object GamepadConfig {
         /**
@@ -130,122 +309,5 @@ class AddieFebruaryDriverControl : LinearOpMode() {
             ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
             ActionBindAnalog1SnapToAnalog1(INTAKE_SPIN,     TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
         )
-    }
-
-    override fun runOpMode() {
-        drone   = hardwareMap!![Servo::class.java, "drone"]
-        imu     = hardwareMap!![IMU::class.java, "imu"]
-
-        shared = BotShared(this)
-
-        // initial drone position
-        drone.position = 1.0
-
-        // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
-        shared.rr = MecanumDrive(hardwareMap, BotShared.storedPose)
-        moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn)
-
-        // Configuration
-        val p0 = gamepadyn.players[0]
-        val p1 = gamepadyn.players[1]
-        p0.configuration = GamepadConfig.player0
-        p1.configuration = GamepadConfig.player1
-
-        // MOD INIT
-        moduleHandler.init()
-
-        val claw = moduleHandler.claw
-        val drive = moduleHandler.drive
-        val intake = moduleHandler.intake
-        val lsd = moduleHandler.lsd
-        val opticon = moduleHandler.opticon
-        val trussle = moduleHandler.trussle
-        val rr = shared.rr!!
-
-        imu.resetYaw()
-
-        claw.leftOpen = true
-        claw.rightOpen = true
-
-        trussle.position = TrussPosition.DOWN
-        drone.position = 0.36
-        intake.raised = false
-
-        telemetry.update()
-
-        waitForStart()
-
-        // TODO: fix these macros
-
-        gamepadyn.addListener(MACRO_SLIDE_UP) {
-            if (it.data()) {
-                // TODO: reduce the use of sleep
-                if (claw.leftOpen || claw.rightOpen) {
-                    claw.leftOpen = false
-                    claw.rightOpen = false
-                    // wait for claws to move
-                    sleep(300)
-                }
-
-                // move up now
-                lsd.targetHeight = LSD.HEIGHT_MAX
-            }
-        }
-        gamepadyn.addListener(MACRO_SLIDE_DOWN) {
-            if (it.data()) {
-                lsd.targetHeight = LSD.HEIGHT_MIN
-            }
-        }
-
-        p0.addListener(DRONE_LAUNCH) {
-            droneTurnKey0 = it.data()
-        }
-
-        p1.addListener(DRONE_LAUNCH) {
-            droneTurnKey1 = it.data()
-        }
-
-        p0.addListener(MACRO_PLACE_PIXEL) {
-            if (it.data()) {
-                // Open the claws
-                if (!claw.leftOpen || !claw.leftOpen) {
-                    claw.leftOpen = true
-                    claw.rightOpen = true
-                    sleep(400)
-                }
-                lsd.targetHeight = LSD.HEIGHT_MIN
-            }
-        }
-
-        // MOD START
-        moduleHandler.start()
-
-        telemetry.update()
-
-        while (opModeIsActive()) {
-            BotShared.wasLastOpModeAutonomous = false
-            gamepadyn.update()
-
-            // MOD UPDATE
-            moduleHandler.update()
-
-            // TODO: patch this in
-//            // Driver 2 Override
-//            if (abs(gamepad2.left_stick_y) > 0.1) {
-//                intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
-//            }
-
-            // drone launch turnkey
-            if (droneTurnKey0 && droneTurnKey1) drone.position = 0.0
-
-            rr.updatePoseEstimate()
-            telemetry.addData("RR pos x", rr.pose.position.x)
-            telemetry.addData("RR pos y", rr.pose.position.y)
-            telemetry.addData("RR heading", rr.pose.heading.log())
-//            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
-            telemetry.update()
-        }
-
-        moduleHandler.stop()
     }
 }
