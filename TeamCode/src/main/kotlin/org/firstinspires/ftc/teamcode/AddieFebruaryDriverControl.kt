@@ -200,6 +200,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         p0.addListener(DRONE_LAUNCH) {
             droneTurnKey0 = it.data()
         }
+
         p1.addListener(DRONE_LAUNCH) {
             droneTurnKey1 = it.data()
         }

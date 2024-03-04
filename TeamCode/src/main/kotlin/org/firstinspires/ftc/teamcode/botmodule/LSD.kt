@@ -174,5 +174,7 @@ class LSD(cfg: ModuleConfig) : BotModule(cfg) {
 
         telemetry.addData("LSD slide L amps", slideLeft?.getCurrent(CurrentUnit.AMPS))
         telemetry.addData("LSD slide R amps", slideRight?.getCurrent(CurrentUnit.AMPS))
+
+//        if (slideLeft?.getCurrent(CurrentUnit.AMPS) >)
     }
 }

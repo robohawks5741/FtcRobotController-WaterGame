@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar
 import com.qualcomm.robotcore.hardware.IMU
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 
-// TODO: should this be a superclass? our codebase has grown so much, and we might want to reconsider
 /**
  * Shared data.
  * Construct during the init phase. Contains HardwareMap definitions, as well as some other classes like the PixelPlacer and MecanumDrive.
