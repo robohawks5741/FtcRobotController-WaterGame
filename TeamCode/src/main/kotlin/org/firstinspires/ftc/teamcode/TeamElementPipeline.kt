@@ -2,11 +2,15 @@ package org.firstinspires.ftc.teamcode
 
 import org.opencv.core.Core
 import org.opencv.core.Mat
+import org.opencv.core.MatOfFloat
+import org.opencv.core.MatOfInt
 import org.opencv.core.Rect
 import org.opencv.core.Scalar
+import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.OpenCvPipeline
 import kotlin.math.pow
 import kotlin.math.sqrt
+
 
 class TeamElementPipeline : OpenCvPipeline() {
     private var elementColor: List<Int> = mutableListOf(0, 0, 255) //(red, green, blue)
@@ -32,19 +36,45 @@ class TeamElementPipeline : OpenCvPipeline() {
     override fun processFrame(input: Mat): Mat {
 
         //Creating duplicate of original frame with no edits
-        val original = input.clone()
+        val hsvMat = Mat()
+        hsvMat.create(input.size(), input.type())
+        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
+        val channels = ArrayList<Mat>()
+        Core.split(hsvMat, channels)
+        val hs = channels[0].mul(channels[1])
 
-//        input = input.submat(new Rect(0));
-//        Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBALab);
+        val planes = arrayListOf<Mat>(hs)
 
         // TODO: new algorithm:
         //      - convert to HSV and posterize
         //      - median instead of mode?
+        //      - weighted average
 
         //Averaging the colors in the zones
-        val avgColor1 = Core.mean(zone1)
-        val avgColor2 = Core.mean(zone2)
-        val avgColor3 = Core.mean(zone3)
+//        val zone1Cols = Core.()
+        val hsHist = Mat()
+        val histRange = MatOfFloat(0f, 256f)
+        Imgproc.calcHist(
+            planes,
+            MatOfInt(0),
+            Mat(),
+            hsHist,
+            MatOfInt(256),
+            histRange,
+            true
+        )
+
+        var med = 0.0
+        var i = 0;
+        while (i < 256 && med < 0.0) {
+            hsHist.at(Float::class.java, i)
+            if ( bin > m && med < 0.0 ) med = i
+            ++i
+        }
+
+//        val avgColor1 = Core.mean(zone1)
+//        val avgColor2 = Core.mean(zone2)
+//        val avgColor3 = Core.mean(zone3)
 
         //Putting averaged colors on zones (we can see on camera now)
         zone1.setTo(avgColor1)
