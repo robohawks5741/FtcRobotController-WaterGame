@@ -58,6 +58,8 @@ class ModuleHandler(
      */
     lateinit var trussle: Trussle private set
 
+    lateinit var samFin: SamFin private set
+
     val modules
         get() = setOf(
             drive,
@@ -65,7 +67,8 @@ class ModuleHandler(
             claw,
             opticon,
             intake,
-            trussle
+            trussle,
+            samFin
         )
 
     fun init() {
@@ -75,6 +78,7 @@ class ModuleHandler(
         opticon = Opticon(config)
         intake = Intake(config)
         trussle = Trussle(config)
+        samFin = SamFin(config)
     }
 
     fun start() {

@@ -22,7 +22,6 @@ inline infix fun <T, I> I.idc(f: () -> T): T? = try { f() } catch (_: Exception)
 @JvmOverloads
     fun Double.stickCurve(nI: Double = 1.5, nO: Double = 0.5): Double {
     val x = this.absoluteValue
-    val s = this.sign
     return (x.pow(nI) * (1 - x)) + (x.pow(nO) * x) * sign
 }
 
@@ -57,7 +56,7 @@ fun Double.remap(inputLow: Double, inputHigh: Double, outputLow: Double, outputH
  */
 fun Vector2d.getLength() = sqrt(this.x * this.x + this.y * this.y)
 
-fun <T> MutableCollection<T>.addSome(vararg items: T): Unit {
+fun <T> MutableCollection<T>.addSome(vararg items: T) {
     this.addAll(items)
 //    for (item in items) this.add(item)
 }
