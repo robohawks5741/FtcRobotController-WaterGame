@@ -84,70 +84,69 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     }
 
     private fun opticonTelemetry() {
-        val currentRecognitions = tfod!!.recognitions
-        telemetry.addData("TFOD Object Count", currentRecognitions.size)
-
-        // Step through the list of recognitions and display info for each one.
-        for (recognition in currentRecognitions) {
-            val x = ((recognition.left + recognition.right) / 2).toDouble()
-            val y = ((recognition.top + recognition.bottom) / 2).toDouble()
-            telemetry.addData("", " ")
-            telemetry.addData(
-                "Image",
-                "%s (%.0f %% Conf.)",
-                recognition.label,
-                recognition.confidence * 100
-            )
-            telemetry.addData("- Position", "%.0f / %.0f", x, y)
-            telemetry.addData("- Size", "%.0f x %.0f", recognition.width, recognition.height)
-        }
-
-//        val detections = aprilTag!!.detections
-//        telemetry.addData("AprilTag Count", currentRecognitions.size)
+//        val currentRecognitions = tfod!!.recognitions
+//        telemetry.addData("TFOD Object Count", currentRecognitions.size)
+//
 //        // Step through the list of recognitions and display info for each one.
-//        for (detection in detections) {
-//            if (detection.metadata != null) {
-//                telemetry.addLine("\n==== (ID ${detection.id}) ${detection.metadata.name}")
-//                telemetry.addLine(
-//                    String.format(
-//                        "XYZ %6.1f %6.1f %6.1f  (inch)",
-//                        detection.ftcPose.x,
-//                        detection.ftcPose.y,
-//                        detection.ftcPose.z
-//                    )
-//                )
-//                telemetry.addLine(
-//                    String.format(
-//                        "PRY %6.1f %6.1f %6.1f  (deg)",
-//                        detection.ftcPose.pitch,
-//                        detection.ftcPose.roll,
-//                        detection.ftcPose.yaw
-//                    )
-//                )
-//                telemetry.addLine(
-//                    String.format(
-//                        "RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
-//                        detection.ftcPose.range,
-//                        detection.ftcPose.bearing,
-//                        detection.ftcPose.elevation
-//                    )
-//                )
-//            } else {
-//                telemetry.addLine("\n==== (ID ${detection.id}) Unknown")
-//                telemetry.addLine(
-//                    String.format(
-//                        "Center %6.0f %6.0f   (pixels)",
-//                        detection.center.x,
-//                        detection.center.y
-//                    )
-//                )
-//            }
+//        for (recognition in currentRecognitions) {
+//            val x = ((recognition.left + recognition.right) / 2).toDouble()
+//            val y = ((recognition.top + recognition.bottom) / 2).toDouble()
+//            telemetry.addData("", " ")
+//            telemetry.addData(
+//                "Image",
+//                "%s (%.0f %% Conf.)",
+//                recognition.label,
+//                recognition.confidence * 100
+//            )
+//            telemetry.addData("- Position", "%.0f / %.0f", x, y)
+//            telemetry.addData("- Size", "%.0f x %.0f", recognition.width, recognition.height)
 //        }
+
+        val detections = aprilTag!!.detections
+        telemetry.addData("AprilTag Count", detections.size)
+        // Step through the list of recognitions and display info for each one.
+        for (detection in detections) {
+            if (detection.metadata != null) {
+                telemetry.addLine("\n==== (ID ${detection.id}) ${detection.metadata.name}")
+                telemetry.addLine(
+                    String.format(
+                        "XYZ %6.1f %6.1f %6.1f  (inch)",
+                        detection.ftcPose.x,
+                        detection.ftcPose.y,
+                        detection.ftcPose.z
+                    )
+                )
+                telemetry.addLine(
+                    String.format(
+                        "PRY %6.1f %6.1f %6.1f  (deg)",
+                        detection.ftcPose.pitch,
+                        detection.ftcPose.roll,
+                        detection.ftcPose.yaw
+                    )
+                )
+                telemetry.addLine(
+                    String.format(
+                        "RBE %6.1f %6.1f %6.1f  (inch, deg, deg)",
+                        detection.ftcPose.range,
+                        detection.ftcPose.bearing,
+                        detection.ftcPose.elevation
+                    )
+                )
+            } else {
+                telemetry.addLine("\n==== (ID ${detection.id}) Unknown")
+                telemetry.addLine(
+                    String.format(
+                        "Center %6.0f %6.0f   (pixels)",
+                        detection.center.x,
+                        detection.center.y
+                    )
+                )
+            }
+        }
     }
 
     init {
-        // OPTICON IS CURRENTLY DISABLED!!!
-        if (camera == null || true) {
+        if (camera == null) {
             visionPortal = null
             tfod = null
             aprilTag = null
@@ -206,8 +205,8 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             //builder.setAutoStopLiveView(false);
 
             // Set and enable the processor.
-//            portalBuilder.addProcessor(aprilTag)
-            portalBuilder.addProcessor(tfod)
+            portalBuilder.addProcessor(aprilTag)
+//            portalBuilder.addProcessor(tfod)
 
             // Build the Vision Portal, using the above settings.
             visionPortal = portalBuilder.build()

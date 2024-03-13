@@ -12,7 +12,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 
-class TeamElementPipeline : OpenCvPipeline() {
+class CvTeamElementPipeline : OpenCvPipeline() {
     private var elementColor: List<Int> = mutableListOf(0, 0, 255) //(red, green, blue)
 
     // TODO: see if this needs to be atomic
@@ -28,9 +28,9 @@ class TeamElementPipeline : OpenCvPipeline() {
     override fun init(mat: Mat) {
         //Defining Zones
         //Rect(top left x, top left y, bottom right x, bottom right y)
-        zone1 = mat.submat(Rect(0, 0, 639, 600))
-        zone2 = mat.submat(Rect(641, 0, 639, 600))
-        zone3 = mat.submat(Rect(1281, 0, 639, 600))
+        zone1 = mat
+        zone2 = mat
+        zone3 = mat
     }
 
     override fun processFrame(input: Mat): Mat {
@@ -43,11 +43,16 @@ class TeamElementPipeline : OpenCvPipeline() {
         Core.split(hsvMat, channels)
         val hs = channels[0].mul(channels[1])
 
+
+//            .submat(Rect(0, 0, 639, 600))
+//            .submat(Rect(641, 0, 639, 600))
+//            .submat(Rect(1281, 0, 639, 600))
+
         val planes = arrayListOf<Mat>(hs)
 
         // TODO: new algorithm:
         //      - convert to HSV and posterize
-        //      - median instead of mode?
+        //      - mode instead of mean? (i mixed them up T_T)
         //      - weighted average
 
         //Averaging the colors in the zones
@@ -64,37 +69,32 @@ class TeamElementPipeline : OpenCvPipeline() {
             true
         )
 
-        var med = 0.0
-        var i = 0;
-        while (i < 256 && med < 0.0) {
-            hsHist.at(Float::class.java, i)
-            if ( bin > m && med < 0.0 ) med = i
-            ++i
-        }
+        // the mode
+        val mml = Core.minMaxLoc(hsHist)
 
 //        val avgColor1 = Core.mean(zone1)
 //        val avgColor2 = Core.mean(zone2)
 //        val avgColor3 = Core.mean(zone3)
 
         //Putting averaged colors on zones (we can see on camera now)
-        zone1.setTo(avgColor1)
-        zone2.setTo(avgColor2)
-        zone3.setTo(avgColor3)
-
-        val distance1 = colorDistance(avgColor1, elementColor)
-        val distance2 = colorDistance(avgColor2, elementColor)
-        val distance3 = colorDistance(avgColor3, elementColor)
-        maxDistance = maxOf(distance1, distance2, distance3)
-
-        elementSpikeMark = when (maxDistance) {
-            distance1 -> SpikeMark.LEFT
-            distance2 -> SpikeMark.CENTER
-            distance3 -> SpikeMark.RIGHT
-            else -> SpikeMark.CENTER
-        }
+//        zone1.setTo(avgColor1)
+//        zone2.setTo(avgColor2)
+//        zone3.setTo(avgColor3)
+//
+//        val distance1 = colorDistance(avgColor1, elementColor)
+//        val distance2 = colorDistance(avgColor2, elementColor)
+//        val distance3 = colorDistance(avgColor3, elementColor)
+//        maxDistance = maxOf(distance1, distance2, distance3)
+//
+//        elementSpikeMark = when (maxDistance) {
+//            distance1 -> SpikeMark.LEFT
+//            distance2 -> SpikeMark.CENTER
+//            distance3 -> SpikeMark.RIGHT
+//            else -> SpikeMark.CENTER
+//        }
 
         // Allowing for the showing of the averages on the stream
-        return if (toggleShow) input else original
+        return if (toggleShow) hsHist else input
     }
 
     private fun colorDistance(color1: Scalar, color2: List<Int>): Double {

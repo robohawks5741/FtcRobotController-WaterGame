@@ -16,7 +16,7 @@ public final class ClayAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
-        ComputerVisionSubsystem autoSub = new ComputerVisionSubsystem(this);
+        CvSubsystem autoSub = new CvSubsystem(this);
 
         waitForStart();
 

@@ -8,10 +8,10 @@ import org.openftc.easyopencv.OpenCvCamera.AsyncCameraOpenListener
 import org.openftc.easyopencv.OpenCvCameraFactory
 import org.openftc.easyopencv.OpenCvCameraRotation
 
-class ComputerVisionSubsystem(private var opMode: OpMode) {
+class CvSubsystem(private var opMode: OpMode) {
     var camera: OpenCvCamera
     @JvmField
-    var pipeline: TeamElementPipeline
+    var pipeline: CvTeamElementPipeline
     var resolutionWidth = 1920
     var resolutionHeight = 1080
     var spikeMark = SpikeMark.RIGHT
@@ -36,7 +36,7 @@ class ComputerVisionSubsystem(private var opMode: OpMode) {
 
     init {
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.search("Webcam 1")!!)
-        pipeline = TeamElementPipeline()
+        pipeline = CvTeamElementPipeline()
         camera.setPipeline(pipeline)
         camera.openCameraDeviceAsync(EpicCameraListener(hardwareMap, telemetry))
     }
