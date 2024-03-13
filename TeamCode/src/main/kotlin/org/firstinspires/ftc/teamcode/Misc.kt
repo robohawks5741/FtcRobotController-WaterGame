@@ -56,3 +56,8 @@ fun Double.remap(inputLow: Double, inputHigh: Double, outputLow: Double, outputH
  * Returns the length of the vector.
  */
 fun Vector2d.getLength() = sqrt(this.x * this.x + this.y * this.y)
+
+fun <T> MutableCollection<T>.addSome(vararg items: T): Unit {
+    this.addAll(items)
+//    for (item in items) this.add(item)
+}
