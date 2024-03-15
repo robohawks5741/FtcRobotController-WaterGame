@@ -36,7 +36,7 @@ class CvSubsystem(private var opMode: OpMode) {
 
     init {
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.search("Webcam 1")!!)
-        pipeline = CvTeamElementPipeline()
+        pipeline = CvTeamElementPipeline(opMode)
         camera.setPipeline(pipeline)
         camera.openCameraDeviceAsync(EpicCameraListener(hardwareMap, telemetry))
     }

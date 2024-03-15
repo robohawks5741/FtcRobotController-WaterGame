@@ -25,7 +25,7 @@ public final class ClayAuto extends LinearOpMode {
         while (opModeIsActive()) {
             autoSub.detectElement();
 //            elementSpikeMark = autoSub.spikeMark;
-            telemetry.addData("getMaxDistance", autoSub.pipeline.maxDistance);
+//            telemetry.addData("getMaxDistance", autoSub.pipeline.maxDistance);
 
             if (togglePreview && gamepad2.a) {
                 togglePreview = false;

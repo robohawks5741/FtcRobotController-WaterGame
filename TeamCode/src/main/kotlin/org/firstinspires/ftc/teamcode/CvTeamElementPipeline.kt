@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
+import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.MatOfFloat
@@ -12,16 +13,15 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 
-class CvTeamElementPipeline : OpenCvPipeline() {
-    private var elementColor: List<Int> = mutableListOf(0, 0, 255) //(red, green, blue)
+class CvTeamElementPipeline(private val opMode: OpMode) : OpenCvPipeline() {
+    // * 360 / 256 = H 0-256 to to H 0-360
+    private var elementHue = 120
 
     // TODO: see if this needs to be atomic
     var toggleShow = true
     lateinit var zone1: Mat
     lateinit var zone2: Mat
     lateinit var zone3: Mat
-    @JvmField
-    var maxDistance = Double.NaN
 
     var elementSpikeMark = SpikeMark.RIGHT
 
@@ -35,66 +35,71 @@ class CvTeamElementPipeline : OpenCvPipeline() {
 
     override fun processFrame(input: Mat): Mat {
 
-        //Creating duplicate of original frame with no edits
+        // Creating duplicate of original frame with no edits
         val hsvMat = Mat()
         hsvMat.create(input.size(), input.type())
         Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
         val channels = ArrayList<Mat>()
         Core.split(hsvMat, channels)
-        val hs = channels[0].mul(channels[1])
+        val hueInput = channels[0]//.mul(channels[1])
 
-
-//            .submat(Rect(0, 0, 639, 600))
-//            .submat(Rect(641, 0, 639, 600))
-//            .submat(Rect(1281, 0, 639, 600))
-
-        val planes = arrayListOf<Mat>(hs)
-
-        // TODO: new algorithm:
-        //      - convert to HSV and posterize
-        //      - mode instead of mean? (i mixed them up T_T)
-        //      - weighted average
-
-        //Averaging the colors in the zones
-//        val zone1Cols = Core.()
-        val hsHist = Mat()
-        val histRange = MatOfFloat(0f, 256f)
-        Imgproc.calcHist(
-            planes,
-            MatOfInt(0),
-            Mat(),
-            hsHist,
-            MatOfInt(256),
-            histRange,
-            true
+        val rectangles = arrayOf(
+            Rect(0, 0, 639, 600),
+            Rect(641, 0, 639, 600),
+            Rect(1281, 0, 639, 600)
         )
+        val dxs = arrayOf(Double.NaN, Double.NaN, Double.NaN)
+        val subMatrices = ArrayList<Mat>()
+        var i = 0
+        while (i < 3) {
+            val submat = hueInput.submat(rectangles[i])
 
-        // the mode
-        val mml = Core.minMaxLoc(hsHist)
+            val planes = arrayListOf(hueInput)
 
-//        val avgColor1 = Core.mean(zone1)
-//        val avgColor2 = Core.mean(zone2)
-//        val avgColor3 = Core.mean(zone3)
+            // TODO: new algorithm:
+            //      - convert to HSV and posterize
+            //      - most frequent instead of average
+            //      - weighted?
 
-        //Putting averaged colors on zones (we can see on camera now)
+            // create histogram
+            val hsHist = Mat()
+            // range of values
+            val histRange = MatOfFloat(0f, 256f)
+            Imgproc.calcHist(
+                planes,
+                MatOfInt(0),
+                Mat(),
+                hsHist,
+                MatOfInt(256),
+                histRange,
+                true
+            )
+
+            // the mode (max value of a histogram is the most frequent)
+            val mml = Core.minMaxLoc(hsHist)
+
+            opMode.telemetry.addLine("(CV PIPELINE INJECT) maxVal: ${mml.maxVal} maxLoc: ${mml.maxLoc}")
+
+            dxs[i] = mml.maxLoc.x
+
+            //Putting averaged colors on zones (we can see on camera now)
 //        zone1.setTo(avgColor1)
 //        zone2.setTo(avgColor2)
 //        zone3.setTo(avgColor3)
-//
-//        val distance1 = colorDistance(avgColor1, elementColor)
-//        val distance2 = colorDistance(avgColor2, elementColor)
-//        val distance3 = colorDistance(avgColor3, elementColor)
-//        maxDistance = maxOf(distance1, distance2, distance3)
-//
-//        elementSpikeMark = when (maxDistance) {
-//            distance1 -> SpikeMark.LEFT
-//            distance2 -> SpikeMark.CENTER
-//            distance3 -> SpikeMark.RIGHT
-//            else -> SpikeMark.CENTER
-//        }
+
+            subMatrices.add(submat)
+
+            i++
+        }
+
+        val targetHue = elementHue * 256f / 360f
+//        dxs
+        // TODO: set this based on the distance to the desired hue
+//        elementSpikeMark
 
         // Allowing for the showing of the averages on the stream
-        return if (toggleShow) hsHist else input
+        // just show the first one of them since I'm still testing this
+        return if (toggleShow) subMatrices[0] else hueInput
     }
 
     private fun colorDistance(color1: Scalar, color2: List<Int>): Double {
@@ -121,8 +126,8 @@ class CvTeamElementPipeline : OpenCvPipeline() {
     }
 
     fun setAlliancePipe(alliance: Alliance) = when (alliance) {
-        Alliance.RED -> elementColor = mutableListOf(255, 0, 0)
-        Alliance.BLUE -> elementColor = mutableListOf(0, 0, 255)
+        Alliance.RED -> elementHue = 355 // approx. red on a 0-360 color picker
+        Alliance.BLUE -> elementHue = 220 // approx. blue on a 0-360 color picker
     }
 
     fun toggleShowAverageZone() {
