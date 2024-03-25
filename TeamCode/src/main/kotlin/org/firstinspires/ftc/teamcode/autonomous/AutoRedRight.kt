@@ -1,9 +1,12 @@
-package org.firstinspires.ftc.teamcode
+package org.firstinspires.ftc.teamcode.autonomous
 
 import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.ftc.runBlocking
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.hardware.DcMotor
+import org.firstinspires.ftc.teamcode.Alliance
+import org.firstinspires.ftc.teamcode.AllianceSide
+import org.firstinspires.ftc.teamcode.SpikeMark
 
 @Autonomous(name = "# Clay Red Right")
 class AutoRedRight : AutoSuper() {
@@ -62,7 +65,6 @@ class AutoRedRight : AutoSuper() {
         slideL.mode = DcMotor.RunMode.RUN_TO_POSITION
         slideR.power = 1.0
         slideL.power = 1.0
-        inlift.position = 0.0
         sleep(200)
         runBlocking(
             drive.actionBuilder(drive.pose)

@@ -4,6 +4,8 @@ import com.acmerobotics.roadrunner.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.autonomous.AutoSubsystem;
+
 @Autonomous(name = "#ClayAuto", group = "Auto")
 public final class ClayAuto extends LinearOpMode {
 //    public SpikeMark elementSpikeMark = SpikeMark.RIGHT;

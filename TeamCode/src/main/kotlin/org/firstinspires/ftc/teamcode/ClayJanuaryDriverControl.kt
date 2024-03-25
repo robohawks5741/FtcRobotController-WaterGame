@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -24,6 +25,11 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private lateinit var intake: DcMotorEx
     private lateinit var slideR: DcMotorEx
     private lateinit var slideL: DcMotorEx
+    private lateinit var leftFront: DcMotorEx
+    private lateinit var rightFront: DcMotorEx
+    private lateinit var leftBack: DcMotorEx
+    private lateinit var rightBack: DcMotorEx
+
     private lateinit var trussL: Servo
     private lateinit var trussR: Servo
     private lateinit var armR: Servo
@@ -117,7 +123,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
     private var slidePos = 0
         set(pos) {
-            field = pos.coerceIn(0..1500)
+            field = pos.coerceIn(0..2000)
             slideR.targetPosition = -slidePos
             slideL.targetPosition = slidePos
             slideR.mode = DcMotor.RunMode.RUN_TO_POSITION
@@ -144,6 +150,13 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         inlift = hardwareMap[Servo::class.java, "inlift"]
         imu = hardwareMap[IMU::class.java, "imu"]
 
+
+        //  make sure your config has motors with these names (or change them)
+        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
+        leftFront = hardwareMap.get(DcMotorEx::class.java, "frontL")
+        leftBack = hardwareMap.get(DcMotorEx::class.java, "backL")
+        rightBack = hardwareMap.get(DcMotorEx::class.java, "backR")
+        rightFront = hardwareMap.get(DcMotorEx::class.java, "frontR")
 //        data class Timeout(val calltime: Long, val callback: () -> Unit)
 //        val waitList: ArrayList<Timeout> = arrayListOf();
 //        fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
@@ -161,7 +174,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
         trussPos = TrussPosition.DOWN
         drone.position = 1.0
-        inlift.position = 0.0
+        inlift.position = 0.01
 
         waitForStart()
 
@@ -182,7 +195,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
                 isSlideMovingUp = true
                 if (runToHeight == 0 || slidePos > 0){
-                    slidePos = 1500
+                    slidePos = 2000
                     runToHeight = 6
                 } else {
                     slidePos = runToHeight * 200 + 300
@@ -299,6 +312,17 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("hangMode", trussPos)
             telemetry.addData("RunToHeight", runToHeight)
             telemetry.addData("Slide Pos", slidePos)
+            telemetry.addData("Right Lift Voltage", slideR.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("Left Lift Voltage", slideL.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("leftFront", leftFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("rightFront", rightFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("leftBack", rightFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("rightBack", rightFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("intake", intake.getCurrent(CurrentUnit.AMPS))
+
+
+
+
             telemetry.update()
         }
     }

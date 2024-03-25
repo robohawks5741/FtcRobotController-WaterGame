@@ -16,7 +16,7 @@ import kotlin.math.abs
 
 /**
  * Truss module.
- *
+ *x
  * Used to be called "September," then spelled with an EL instead of LE
  */
 class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
