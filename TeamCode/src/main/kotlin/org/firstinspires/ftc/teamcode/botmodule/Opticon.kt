@@ -1,16 +1,34 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import android.util.Size
+import org.firstinspires.ftc.teamcode.CvTeamElementPipeline
+import org.firstinspires.ftc.teamcode.SpikeMark
+import org.firstinspires.ftc.teamcode.search
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.VisionPortal.CameraState
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.firstinspires.ftc.vision.tfod.TfodProcessor
-
+import com.qualcomm.robotcore.hardware.HardwareMap
+import org.firstinspires.ftc.robotcore.external.Telemetry
+import org.openftc.easyopencv.OpenCvCamera
+import org.openftc.easyopencv.OpenCvCamera.AsyncCameraOpenListener
+import org.openftc.easyopencv.OpenCvCameraFactory
+import org.openftc.easyopencv.OpenCvCameraRotation
 /**
  * AprilTag detection class
  */
 class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
+    // how have I never heard about the `inner` keyword??? this is so nice
+    private inner class EpicCameraListener : AsyncCameraOpenListener {
+        override fun onOpened() {
+            cvCamera?.startStreaming(resolutionWidth, resolutionHeight, OpenCvCameraRotation.UPRIGHT)
+        }
+
+        override fun onError(errorCode: Int) {
+            telemetry.addLine("Camera open encountered an error! $errorCode")
+        }
+    }
 //    /**
 //     * The variable to store our instance of the AprilTag processor.
 //     */
@@ -37,6 +55,22 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
     @JvmField val tfod: TfodProcessor?
     @JvmField val aprilTag: AprilTagProcessor?
 
+    val cvCamera: OpenCvCamera?
+    @JvmField
+    val pipeline: CvTeamElementPipeline?
+    val resolutionWidth = 1920
+    val resolutionHeight = 1080
+    var spikeMark = SpikeMark.RIGHT
+    var previewMode = PreviewMode.OPENCV
+    var isStreaming: Boolean = false
+
+    enum class PreviewMode {
+        NONE,
+        APRILTAG,
+        TENSORFLOW,
+        OPENCV,
+    }
+
     /**
      * The variable to store our instance of the vision portal.
      */
@@ -46,7 +80,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 //        get() = aprilTag.detections
 
     override fun modStart() {
-        if (camera == null) {
+        if (cvCamera == null) {
             status = Status(StatusEnum.BAD, null, hardwareMissing = setOf("Webcam 1"))
         }
         // Wait for the DS start button to be touched.
@@ -71,12 +105,34 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
                     else -> { /* shouldn't ever get here, but whatever */  }
                 }
             }
-            // Share the CPU.
-            Thread.sleep(20)
+            // Share the CPU. This ~30 updates per second, which is kind of a lot...
+            Thread.sleep(30)
+        } else {
+            telemetry.addLine("(Opticon) VisionPortal is null!")
         }
+
+        pipeline?.showDefault = config.opMode.gamepad1.back
+
+//        when (previewMode) {
+//            PreviewMode.TENSORFLOW,
+//            PreviewMode.APRILTAG -> {
+//                visionPortal?.resumeLiveView()
+//                visionPortal?.resumeStreaming()
+//                cvCamera?.stopStreaming()
+//            }
+//            PreviewMode.OPENCV -> {
+//                cvCamera?.startStreaming(resolutionWidth, resolutionHeight, OpenCvCameraRotation.UPRIGHT)
+//                visionPortal?.stopLiveView()
+//                visionPortal?.stopStreaming()
+//            }
+//            PreviewMode.NONE -> {
+//                cvCamera?.stopStreaming()
+//                visionPortal?.stopLiveView()
+//                visionPortal?.stopStreaming()
+//            }
+//        }
     }
 
-    var isStreaming: Boolean = true
 
     override fun modStop() {
         // Save more CPU resources when camera is no longer needed.
@@ -147,73 +203,87 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 
     init {
         if (camera == null) {
+            // we have to set these to null so all
+            // code paths lead to variable instantiation
             visionPortal = null
             tfod = null
             aprilTag = null
+            cvCamera = null
+            pipeline = null
             status = Status(StatusEnum.BAD, hardwareMissing = setOf("Webcam 1"))
         } else {
-            // Create the TensorFlow processor by using a builder.
-            tfod = TfodProcessor.Builder()
-                //   Use setModelAssetName() if the custom TF Model is built in as an asset (AS only).
-                //   Use setModelFileName() if you have downloaded a custom team model to the Robot Controller.
-                .setModelAssetName(TFOD_MODEL_ASSET)
-//                .setModelFileName(TFOD_MODEL_FILE)
-                // The following default settings are available to un-comment and edit as needed to
-                // set parameters for custom models.
-                .setModelLabels(LABELS)
-                .setIsModelTensorFlow2(true)
-//                .setIsModelQuantized(true)
-                .setModelInputSize(640)
-                .setModelAspectRatio(16.0 / 9.0)
-                .build()
+            cvCamera = OpenCvCameraFactory.getInstance().createWebcam(camera)
+            pipeline = CvTeamElementPipeline(opMode)
+            cvCamera.setPipeline(pipeline)
+            cvCamera.openCameraDeviceAsync(EpicCameraListener())
 
-            aprilTag = AprilTagProcessor.Builder()
-                // The following default settings are available to un-comment and edit as needed.
+            // DISABLES APRIL TAG/TFOD
+            tfod = null
+            aprilTag = null
+            visionPortal = null
 
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
-                //.setDrawTagOutline(true)
-                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
-                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
-                // == CAMERA CALIBRATION ==
-                // If you do not manually specify calibration parameters, the SDK will attempt
-                // to load a predefined calibration for your camera.
-                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
-                // ... these parameters are fx, fy, cx, cy.
-
-                .build()
-
-            // or AprilTagProcessor.easyCreateWithDefaults()
-            val portalBuilder = VisionPortal.Builder()
-
-            // We only use a webcam in practice, so we don't have any code for builtin cameras.
-            portalBuilder.setCamera(camera)
-
-            // Choose a camera resolution. Not all cameras support all resolutions.
-            portalBuilder.setCameraResolution(Size(1280, 720))
-
-            // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-            portalBuilder.enableLiveView(true)
-
-            // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-            // builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-            // Choose whether or not LiveView stops if no processors are enabled.
-            // If set "true", monitor shows solid orange screen if no processors enabled.
-            // If set "false", monitor shows camera view without annotations.
-            //builder.setAutoStopLiveView(false);
-
-            // Set and enable the processor.
-            portalBuilder.addProcessor(aprilTag)
-//            portalBuilder.addProcessor(tfod)
-
-            // Build the Vision Portal, using the above settings.
-            visionPortal = portalBuilder.build()
-
-            // Disable or re-enable the aprilTag processor at any time.
-            //visionPortal.setProcessorEnabled(aprilTag, true);
-            isStreaming = true
+//            // Create the TensorFlow processor by using a builder.
+//            tfod = TfodProcessor.Builder()
+//                //   Use setModelAssetName() if the custom TF Model is built in as an asset (AS only).
+//                //   Use setModelFileName() if you have downloaded a custom team model to the Robot Controller.
+//                .setModelAssetName(TFOD_MODEL_ASSET)
+////                .setModelFileName(TFOD_MODEL_FILE)
+//                // The following default settings are available to un-comment and edit as needed to
+//                // set parameters for custom models.
+//                .setModelLabels(LABELS)
+//                .setIsModelTensorFlow2(true)
+////                .setIsModelQuantized(true)
+//                .setModelInputSize(640)
+//                .setModelAspectRatio(16.0 / 9.0)
+//                .build()
+//
+//            aprilTag = AprilTagProcessor.Builder()
+//                // The following default settings are available to un-comment and edit as needed.
+//
+//                //.setDrawAxes(false)
+//                //.setDrawCubeProjection(false)
+//                //.setDrawTagOutline(true)
+//                //.setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
+//                //.setTagLibrary(AprilTagGameDatabase.getCenterStageTagLibrary())
+//                //.setOutputUnits(DistanceUnit.INCH, AngleUnit.DEGREES)
+//                // == CAMERA CALIBRATION ==
+//                // If you do not manually specify calibration parameters, the SDK will attempt
+//                // to load a predefined calibration for your camera.
+//                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
+//                // ... these parameters are fx, fy, cx, cy.
+//
+//                .build()
+//
+//            // or AprilTagProcessor.easyCreateWithDefaults()
+//            val portalBuilder = VisionPortal.Builder()
+//
+//            // We only use a webcam in practice, so we don't have any code for builtin cameras.
+//            portalBuilder.setCamera(camera)
+//
+//            // Choose a camera resolution. Not all cameras support all resolutions.
+//            portalBuilder.setCameraResolution(Size(1280, 720))
+//
+//            // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+//            portalBuilder.enableLiveView(false)
+//
+//            // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+//            // builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
+//
+//            // Choose whether or not LiveView stops if no processors are enabled.
+//            // If set "true", monitor shows solid orange screen if no processors enabled.
+//            // If set "false", monitor shows camera view without annotations.
+//            //builder.setAutoStopLiveView(false);
+//
+//            // Set and enable the processor.
+//            portalBuilder.addProcessor(aprilTag)
+////            portalBuilder.addProcessor(tfod)
+//
+//            // Build the Vision Portal, using the above settings.
+//            visionPortal = portalBuilder.build()
+//
+//            // Disable or re-enable the aprilTag processor at any time.
+//            //visionPortal.setProcessorEnabled(aprilTag, true);
+//            isStreaming = false
         }
     }
 

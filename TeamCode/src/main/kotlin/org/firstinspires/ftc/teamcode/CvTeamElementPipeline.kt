@@ -1,60 +1,71 @@
 package org.firstinspires.ftc.teamcode
 
+import android.R.id
+import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import org.opencv.core.Core
+import org.opencv.core.Core.MinMaxLocResult
 import org.opencv.core.Mat
 import org.opencv.core.MatOfFloat
 import org.opencv.core.MatOfInt
+import org.opencv.core.Point
 import org.opencv.core.Rect
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import org.openftc.easyopencv.OpenCvPipeline
-import kotlin.math.pow
-import kotlin.math.sqrt
 
 
 class CvTeamElementPipeline(private val opMode: OpMode) : OpenCvPipeline() {
     // * 360 / 256 = H 0-256 to to H 0-360
     private var elementHue = 120
 
-    // TODO: see if this needs to be atomic
-    var toggleShow = true
-    lateinit var zone1: Mat
-    lateinit var zone2: Mat
-    lateinit var zone3: Mat
+    var showDefault = false
+    private lateinit var zone1: Mat
+    private lateinit var zone2: Mat
+    private lateinit var zone3: Mat
+    private val hueHist = Mat()
+    private val histRange = MatOfFloat(0f, 256f)
+    private val subMatrices = arrayOf(Mat(), Mat(), Mat())
+    private val hueInput: Mat = Mat()
+    private val mask = Mat()
 
+    var maxPos0: Point = Point(0.0, 0.0)
+    var maxPos1: Point = Point(0.0, 0.0)
+    var maxPos2: Point = Point(0.0, 0.0)
+
+    private val rectangles = arrayOf(
+        Rect(0, 0, 640, 600),
+        Rect(640, 0, 640, 600),
+        Rect(1280, 0, 640, 600)
+    )
     var elementSpikeMark = SpikeMark.RIGHT
 
     override fun init(mat: Mat) {
         //Defining Zones
         //Rect(top left x, top left y, bottom right x, bottom right y)
-        zone1 = mat
-        zone2 = mat
-        zone3 = mat
+        zone1 = mat.submat(rectangles[0])
+        zone2 = mat.submat(rectangles[1])
+        zone3 = mat.submat(rectangles[2])
+//        // Creating duplicate of original frame with no edits
+//        hsvMat.create(input.size(), input.type())
     }
 
     override fun processFrame(input: Mat): Mat {
+        if (showDefault) return input
+        Log.i("CV TEAM ELEMENT PIPELINE", "processing frame")
 
-        // Creating duplicate of original frame with no edits
-        val hsvMat = Mat()
-        hsvMat.create(input.size(), input.type())
-        Imgproc.cvtColor(input, hsvMat, Imgproc.COLOR_RGB2HSV);
+        Imgproc.cvtColor(input, input, Imgproc.COLOR_RGB2HSV)
         val channels = ArrayList<Mat>()
-        Core.split(hsvMat, channels)
-        val hueInput = channels[0]//.mul(channels[1])
+        Core.split(input, channels)
+        channels[0].copyTo(hueInput)//.mul(channels[1])
 
-        val rectangles = arrayOf(
-            Rect(0, 0, 639, 600),
-            Rect(641, 0, 639, 600),
-            Rect(1281, 0, 639, 600)
-        )
-        val dxs = arrayOf(Double.NaN, Double.NaN, Double.NaN)
-        val subMatrices = ArrayList<Mat>()
+        val minMaxResults = arrayOf(MinMaxLocResult(), MinMaxLocResult(), MinMaxLocResult())
+
         var i = 0
         while (i < 3) {
-            val submat = hueInput.submat(rectangles[i])
+            hueInput.submat(rectangles[i]).copyTo(subMatrices[i])
 
-            val planes = arrayListOf(hueInput)
+            val planes = arrayListOf(subMatrices[i])
 
             // TODO: new algorithm:
             //      - convert to HSV and posterize
@@ -62,75 +73,75 @@ class CvTeamElementPipeline(private val opMode: OpMode) : OpenCvPipeline() {
             //      - weighted?
 
             // create histogram
-            val hsHist = Mat()
             // range of values
-            val histRange = MatOfFloat(0f, 256f)
             Imgproc.calcHist(
                 planes,
                 MatOfInt(0),
-                Mat(),
-                hsHist,
+                mask,
+                hueHist,
                 MatOfInt(256),
                 histRange,
                 true
             )
 
             // the mode (max value of a histogram is the most frequent)
-            val mml = Core.minMaxLoc(hsHist)
+            val mml = Core.minMaxLoc(hueHist)
 
-            opMode.telemetry.addLine("(CV PIPELINE INJECT) maxVal: ${mml.maxVal} maxLoc: ${mml.maxLoc}")
+//            opMode.telemetry.addLine("(CV PIPELINE INJECT) maxVal: ${mml.maxVal} maxLoc: ${mml.maxLoc}")
 
-            dxs[i] = mml.maxLoc.x
+            minMaxResults[i] = mml
 
-            //Putting averaged colors on zones (we can see on camera now)
-//        zone1.setTo(avgColor1)
-//        zone2.setTo(avgColor2)
-//        zone3.setTo(avgColor3)
-
-            subMatrices.add(submat)
+            when (i) {
+                0 -> maxPos0 = mml.maxLoc
+                1 -> maxPos1 = mml.maxLoc
+                2 -> maxPos2 = mml.maxLoc
+            }
 
             i++
         }
 
         val targetHue = elementHue * 256f / 360f
-//        dxs
-        // TODO: set this based on the distance to the desired hue
-//        elementSpikeMark
+        // TODO: set elementSpikeMark based on the distance to the desired hue
 
+        //Putting averaged colors on zones (we can see on camera now)
+        zone1.setTo(Scalar(
+            minMaxResults[0].maxLoc.x * 255.0,
+            minMaxResults[0].maxLoc.y * 255.0,
+            0.2
+        ))
+        zone2.setTo(Scalar(
+            minMaxResults[1].maxLoc.x * 255.0,
+            minMaxResults[1].maxLoc.y * 255.0,
+            0.4
+        ))
+        zone3.setTo(Scalar(
+            minMaxResults[2].maxLoc.x * 255.0,
+            minMaxResults[2].maxLoc.y * 255.0,
+            0.6
+        ))
+
+        Log.i("CV TEAM ELEMENT PIPELINE", "frame processed")
         // Allowing for the showing of the averages on the stream
         // just show the first one of them since I'm still testing this
-        return if (toggleShow) subMatrices[0] else hueInput
-    }
 
-    private fun colorDistance(color1: Scalar, color2: List<Int>): Double {
-        val r1 = color1.`val`[0]
-        val g1 = color1.`val`[1]
-        val b1 = color1.`val`[2]
-        val r2 = color2[0]
-        val g2 = color2[1]
-        val b2 = color2[2]
-
-//        deltaL = L1 - L2
-//        C1 = √(a1² + b1²)
-//        C2 = √(a2² + b2²)
-//        ΔC = C1 - C2
-//        Δa = a1 - a2
-//        Δb = b1 - b2
-//        ΔH = √(Δa² + Δb² - ΔC²)
-//        ΔEOK = √(ΔL² + ΔC² + ΔH²)
-        return sqrt(
-            (r1 - r2).pow(2.0) +
-            (g1 - g2).pow(2.0) +
-            (b1 - b2).pow(2.0)
+        Imgproc.rectangle(
+            input,
+            Point(
+                input.cols() / 4.0,
+                input.rows() / 4.0
+            ),
+            Point(
+                input.cols() * (3.0 / 4.0),
+                input.rows() * (3.0 / 4.0)
+            ),
+            Scalar(0.0, 255.0, 0.0), 4
         )
+
+        return input
     }
 
     fun setAlliancePipe(alliance: Alliance) = when (alliance) {
         Alliance.RED -> elementHue = 355 // approx. red on a 0-360 color picker
         Alliance.BLUE -> elementHue = 220 // approx. blue on a 0-360 color picker
-    }
-
-    fun toggleShowAverageZone() {
-        toggleShow = !toggleShow
     }
 }

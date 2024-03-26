@@ -28,10 +28,10 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Drive(config: ModuleConfig) : BotModule(config) {
-    @JvmField val motorRightFront: DcMotorEx        = hardwareMap.search("frontR")!!
-    @JvmField val motorLeftFront: DcMotorEx         = hardwareMap.search("frontL")!!
-    @JvmField val motorRightBack: DcMotorEx         = hardwareMap.search("backR")!!
-    @JvmField val motorLeftBack: DcMotorEx          = hardwareMap.search("backL")!!
+    @JvmField val motorRightFront: DcMotorEx?       = hardwareMap.search("frontR")
+    @JvmField val motorLeftFront: DcMotorEx?        = hardwareMap.search("frontL")
+    @JvmField val motorRightBack: DcMotorEx?        = hardwareMap.search("backR")
+    @JvmField val motorLeftBack: DcMotorEx?         = hardwareMap.search("backL")
     @JvmField val indicatorRed: DigitalChannel?     = hardwareMap.search("led1")
     @JvmField val indicatorGreen: DigitalChannel?   = hardwareMap.search("led0")
 
@@ -65,19 +65,29 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         }
 
     init {
-        // Drive motor directions **(DO NOT CHANGE THESE!!!)**
-        motorRightFront.direction = DcMotorSimple.Direction.FORWARD
-        motorLeftFront. direction = DcMotorSimple.Direction.REVERSE
-        motorRightBack. direction = DcMotorSimple.Direction.FORWARD
-        motorLeftBack.  direction = DcMotorSimple.Direction.REVERSE
+        if (motorRightFront == null || motorLeftFront == null || motorRightBack == null || motorLeftBack == null) {
+            val missing = mutableSetOf<String>()
+            if (motorRightFront == null) missing.add("frontR")
+            if (motorLeftFront == null) missing.add("frontL")
+            if (motorRightBack == null) missing.add("backR")
+            if (motorLeftBack == null) missing.add("backL")
 
-        // Zero-power behavior
-        motorLeftFront.     zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        motorLeftBack.      zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        motorRightFront.    zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        motorRightBack.     zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            status = Status(StatusEnum.BAD, hardwareMissing = missing)
+        } else {
+            // Drive motor directions **(DO NOT CHANGE THESE!!!)**
+            motorRightFront.direction = DcMotorSimple.Direction.FORWARD
+            motorLeftFront.direction = DcMotorSimple.Direction.REVERSE
+            motorRightBack.direction = DcMotorSimple.Direction.FORWARD
+            motorLeftBack.direction = DcMotorSimple.Direction.REVERSE
 
-        useDriverRelative = true
+            // Zero-power behavior
+            motorLeftFront.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            motorLeftBack.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            motorRightFront.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            motorRightBack.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+            useDriverRelative = true
+        }
     }
 
     override fun modUpdate() {

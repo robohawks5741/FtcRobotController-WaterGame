@@ -23,6 +23,7 @@ import computer.living.gamepadyn.ftc.InputBackendFtc
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
 import org.firstinspires.ftc.teamcode.ActionAnalog2.*
 import org.firstinspires.ftc.teamcode.ActionDigital.*
+import org.firstinspires.ftc.teamcode.botmodule.BotModule
 import org.firstinspires.ftc.teamcode.botmodule.LSD
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
 import kotlin.math.roundToInt
@@ -45,7 +46,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
     private lateinit var shared: BotShared
     private lateinit var moduleHandler: ModuleHandler
 
-    private lateinit var drone: Servo
+    private var drone: Servo? = null
     private lateinit var imu: IMU
 
     private var driverRelative = true
@@ -61,16 +62,14 @@ class AddieFebruaryDriverControl : LinearOpMode() {
     private var wantSlideUp = false
 
     override fun runOpMode() {
-        drone   = hardwareMap!![Servo::class.java, "drone"]
-        imu     = hardwareMap!![IMU::class.java, "imu"]
+        drone   = hardwareMap.search("drone")
+        imu     = hardwareMap.search("imu")!!
 
         shared = BotShared(this)
 
         // initial drone position
-        drone.position = 1.0
+        drone?.position = 1.0
 
-        // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
-        shared.rr = MecanumDrive(hardwareMap, BotShared.storedPose)
         moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn)
 
         // Configuration
@@ -82,13 +81,16 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         // MOD INIT
         moduleHandler.init()
 
+        // MAKE SURE THAT SHARED IS INITIALIZED BEFORE THIS!!!
+        shared.rr = if (moduleHandler.drive.status.status == BotModule.StatusEnum.OK) MecanumDrive(hardwareMap, BotShared.storedPose) else null
+
         val claw = moduleHandler.claw
         val drive = moduleHandler.drive
         val intake = moduleHandler.intake
         val lsd = moduleHandler.lsd
         val opticon = moduleHandler.opticon
         val trussle = moduleHandler.trussle
-        val rr = shared.rr!!
+        val rr = shared.rr
 
         imu.resetYaw()
 
@@ -96,7 +98,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         claw.rightOpen = true
 
         trussle.position = TrussPosition.DOWN
-        drone.position = 0.36
+        drone?.position = 0.36
         intake.raised = false
 
         telemetry.update()
@@ -214,15 +216,15 @@ class AddieFebruaryDriverControl : LinearOpMode() {
 //            }
 
             // drone launch turnkey
-            if (droneTurnKey0 && droneTurnKey1) drone.position = 0.0
+            if (droneTurnKey0 && droneTurnKey1) drone?.position = 0.0
 
             slideAdjustHeight = slideAdjustHeight.coerceIn(0..6)
             if (wantSlideUp) moduleHandler.lsd.targetHeight = (slideAdjustHeight.toDouble() * ((LSD.HEIGHT_MAX - LSD.HEIGHT_ARM_SAFE).toDouble() / 6.0) + LSD.HEIGHT_ARM_SAFE.toDouble()).roundToInt()
 
-            rr.updatePoseEstimate()
-            telemetry.addData("RR pos x", rr.pose.position.x)
-            telemetry.addData("RR pos y", rr.pose.position.y)
-            telemetry.addData("RR heading", rr.pose.heading.log())
+            rr?.updatePoseEstimate()
+            telemetry.addData("RR pos x", rr?.pose?.position?.x)
+            telemetry.addData("RR pos y", rr?.pose?.position?.y)
+            telemetry.addData("RR heading", rr?.pose?.heading?.log())
 //            telemetry.addData("Distance", distance.getDistance(DistanceUnit.CM))
             telemetry.update()
         }

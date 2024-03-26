@@ -29,7 +29,7 @@ public final class ClayAuto extends LinearOpMode {
 
             if (togglePreview && gamepad2.a) {
                 togglePreview = false;
-                autoSub.pipeline.toggleShowAverageZone();
+                autoSub.pipeline.setShowDefault(true);
             } else if (!gamepad2.a) {
                 togglePreview = true;
             }
