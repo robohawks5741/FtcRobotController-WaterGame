@@ -48,8 +48,7 @@ abstract class AutoSuper : LinearOpMode() {
         slideL.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
         slideL.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
 
-        autoSub = CvSubsystem(this)
-        autoSub.setAlliance(alliance)
+        autoSub = CvSubsystem(alliance,this)
 
         shared = BotShared(this)
 //        opticon = Opticon(ModuleConfig(this, shared, false))
@@ -66,7 +65,6 @@ abstract class AutoSuper : LinearOpMode() {
 
         while (!isStarted && !isStopRequested) {
             autoSub.detectElement()
-            autoSub.setAlliance(alliance)
             telemetry.addData("Current Alliance Selected", alliance.name)
             placementZone = autoSub.spikeMark
 

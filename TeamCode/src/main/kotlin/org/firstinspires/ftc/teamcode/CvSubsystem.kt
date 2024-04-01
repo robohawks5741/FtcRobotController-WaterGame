@@ -8,7 +8,7 @@ import org.openftc.easyopencv.OpenCvCamera.AsyncCameraOpenListener
 import org.openftc.easyopencv.OpenCvCameraFactory
 import org.openftc.easyopencv.OpenCvCameraRotation
 
-class CvSubsystem(private var opMode: OpMode) {
+class CvSubsystem(private var alliance: Alliance, private var opMode: OpMode) {
     var camera: OpenCvCamera
     @JvmField
     var pipeline: CvTeamElementPipeline
@@ -36,13 +36,9 @@ class CvSubsystem(private var opMode: OpMode) {
 
     init {
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.search("Webcam 1")!!)
-        pipeline = CvTeamElementPipeline(opMode)
+        pipeline = CvTeamElementPipeline(alliance, opMode)
         camera.setPipeline(pipeline)
         camera.openCameraDeviceAsync(EpicCameraListener(hardwareMap, telemetry))
-    }
-
-    fun setAlliance(alliance: Alliance?) {
-        pipeline.setAlliancePipe(alliance!!)
     }
 
     fun detectElement() {

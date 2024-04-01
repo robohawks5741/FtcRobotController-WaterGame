@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.Alliance
+import org.firstinspires.ftc.teamcode.AllianceSide
 import org.firstinspires.ftc.teamcode.BotShared
 import org.firstinspires.ftc.teamcode.GamepadynRH
 
@@ -10,9 +12,13 @@ class ModuleHandler(
     opMode: OpMode,
     shared: BotShared,
     isTeleOp: Boolean,
+    alliance: Alliance? = null,
+    side: AllianceSide? = null,
     gamepadyn: GamepadynRH? = null
 ) {
     private val config: ModuleConfig = ModuleConfig(
+        alliance,
+        side,
         opMode,
         shared,
         this,

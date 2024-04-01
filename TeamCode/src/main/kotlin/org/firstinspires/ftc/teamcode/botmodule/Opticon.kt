@@ -1,15 +1,13 @@
 package org.firstinspires.ftc.teamcode.botmodule
 
 import android.util.Size
+import org.firstinspires.ftc.teamcode.Alliance
 import org.firstinspires.ftc.teamcode.CvTeamElementPipeline
 import org.firstinspires.ftc.teamcode.SpikeMark
-import org.firstinspires.ftc.teamcode.search
 import org.firstinspires.ftc.vision.VisionPortal
 import org.firstinspires.ftc.vision.VisionPortal.CameraState
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor
 import org.firstinspires.ftc.vision.tfod.TfodProcessor
-import com.qualcomm.robotcore.hardware.HardwareMap
-import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.openftc.easyopencv.OpenCvCamera
 import org.openftc.easyopencv.OpenCvCamera.AsyncCameraOpenListener
 import org.openftc.easyopencv.OpenCvCameraFactory
@@ -111,7 +109,19 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             telemetry.addLine("(Opticon) VisionPortal is null!")
         }
 
-        pipeline?.showDefault = config.opMode.gamepad1.back
+        if (pipeline != null) {
+            pipeline.showDefault = config.opMode.gamepad1.back
+            telemetry.addLine("(Opticon) Hue Left: ${pipeline.hue0}")
+            telemetry.addLine("(Opticon) Hue Center: ${pipeline.hue1}")
+            telemetry.addLine("(Opticon) Hue Right: ${pipeline.hue2}")
+            telemetry.addLine("(Opticon) MML0 Loc: ${pipeline.mml0.maxLoc}")
+            telemetry.addLine("(Opticon) MML1 Loc: ${pipeline.mml1.maxLoc}")
+            telemetry.addLine("(Opticon) MML2 Loc: ${pipeline.mml2.maxLoc}")
+            telemetry.addLine("(Opticon) MML0 Val: ${pipeline.mml0.maxVal}")
+            telemetry.addLine("(Opticon) MML1 Val: ${pipeline.mml1.maxVal}")
+            telemetry.addLine("(Opticon) MML2 Val: ${pipeline.mml2.maxVal}")
+            telemetry.addLine("(Opticon) Zone: ${pipeline.elementSpikeMark}")
+        }
 
 //        when (previewMode) {
 //            PreviewMode.TENSORFLOW,
@@ -213,14 +223,19 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
             status = Status(StatusEnum.BAD, hardwareMissing = setOf("Webcam 1"))
         } else {
             cvCamera = OpenCvCameraFactory.getInstance().createWebcam(camera)
-            pipeline = CvTeamElementPipeline(opMode)
+            // default alliance is red
+            pipeline = CvTeamElementPipeline(config.alliance ?: Alliance.RED, opMode)
             cvCamera.setPipeline(pipeline)
             cvCamera.openCameraDeviceAsync(EpicCameraListener())
 
-            // DISABLES APRIL TAG/TFOD
+            // !!!!! DISABLES APRIL TAG/TFOD !!!!!
+            // !!!!! DISABLES APRIL TAG/TFOD !!!!!
+            // !!!!! DISABLES APRIL TAG/TFOD !!!!!
             tfod = null
-            aprilTag = null
-            visionPortal = null
+            if (true) {
+                aprilTag = null
+                visionPortal = null
+            } else {
 
 //            // Create the TensorFlow processor by using a builder.
 //            tfod = TfodProcessor.Builder()
@@ -237,7 +252,7 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 //                .setModelAspectRatio(16.0 / 9.0)
 //                .build()
 //
-//            aprilTag = AprilTagProcessor.Builder()
+                aprilTag = AprilTagProcessor.Builder()
 //                // The following default settings are available to un-comment and edit as needed.
 //
 //                //.setDrawAxes(false)
@@ -251,39 +266,40 @@ class Opticon(cfg: ModuleConfig) : BotModule(cfg) {
 //                // to load a predefined calibration for your camera.
 //                //.setLensIntrinsics(578.272, 578.272, 402.145, 221.506)
 //                // ... these parameters are fx, fy, cx, cy.
-//
-//                .build()
-//
+
+                    .build()
+
 //            // or AprilTagProcessor.easyCreateWithDefaults()
-//            val portalBuilder = VisionPortal.Builder()
-//
-//            // We only use a webcam in practice, so we don't have any code for builtin cameras.
-//            portalBuilder.setCamera(camera)
-//
+                val portalBuilder = VisionPortal.Builder()
+
+                // We only use a webcam in practice, so we don't have any code for builtin cameras.
+                portalBuilder.setCamera(camera)
+
 //            // Choose a camera resolution. Not all cameras support all resolutions.
-//            portalBuilder.setCameraResolution(Size(1280, 720))
-//
+                portalBuilder.setCameraResolution(Size(1280, 720))
+
 //            // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-//            portalBuilder.enableLiveView(false)
-//
+                portalBuilder.enableLiveView(false)
+
 //            // Set the stream format; MJPEG uses less bandwidth than default YUY2.
 //            // builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-//
+
 //            // Choose whether or not LiveView stops if no processors are enabled.
 //            // If set "true", monitor shows solid orange screen if no processors enabled.
 //            // If set "false", monitor shows camera view without annotations.
 //            //builder.setAutoStopLiveView(false);
-//
+
 //            // Set and enable the processor.
-//            portalBuilder.addProcessor(aprilTag)
+                portalBuilder.addProcessor(aprilTag)
 ////            portalBuilder.addProcessor(tfod)
 //
 //            // Build the Vision Portal, using the above settings.
-//            visionPortal = portalBuilder.build()
+                visionPortal = portalBuilder.build()
 //
 //            // Disable or re-enable the aprilTag processor at any time.
-//            //visionPortal.setProcessorEnabled(aprilTag, true);
+                visionPortal.setProcessorEnabled(aprilTag, true);
 //            isStreaming = false
+            }
         }
     }
 

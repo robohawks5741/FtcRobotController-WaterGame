@@ -101,9 +101,7 @@ class SamFin(config: ModuleConfig) : BotModule(config) {
         }
     }
 
-    override fun modUpdate() {
-
-    }
+    override fun modUpdate() { }
 
     override fun modStop() {
         jerma?.interrupt()

@@ -70,7 +70,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         // initial drone position
         drone?.position = 1.0
 
-        moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn)
+        moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn = gamepadyn)
 
         // Configuration
         val p0 = gamepadyn.players[0]
@@ -88,7 +88,7 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         val drive = moduleHandler.drive
         val intake = moduleHandler.intake
         val lsd = moduleHandler.lsd
-        val opticon = moduleHandler.opticon
+//        val opticon = moduleHandler.opticon
         val trussle = moduleHandler.trussle
         val rr = shared.rr
 

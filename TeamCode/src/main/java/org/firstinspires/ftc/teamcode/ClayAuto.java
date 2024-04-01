@@ -16,7 +16,7 @@ public final class ClayAuto extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         Pose2d beginPose = new Pose2d(0, 0, 0);
         MecanumDrive drive = new MecanumDrive(hardwareMap, beginPose);
-        CvSubsystem autoSub = new CvSubsystem(this);
+        CvSubsystem autoSub = new CvSubsystem(teamAlliance, this);
 
         waitForStart();
 
@@ -40,7 +40,7 @@ public final class ClayAuto extends LinearOpMode {
                 teamAlliance = Alliance.RED;
             }
 
-            autoSub.setAlliance(teamAlliance);
+            autoSub.pipeline.setAlliance(teamAlliance);
             telemetry.addLine("Select Alliance (Gamepad1 X = Blue, Gamepad1 B = Red)");
             telemetry.addData("Current Alliance Selected", teamAlliance.toString());
 
