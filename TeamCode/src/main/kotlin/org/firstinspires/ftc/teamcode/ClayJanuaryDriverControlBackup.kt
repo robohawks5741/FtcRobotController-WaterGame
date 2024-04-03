@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -20,10 +21,18 @@ import kotlin.math.sqrt
 @TeleOp(name = "## Clay January Driver Control Backup")
 class ClayJanuaryDriverControlBackup : LinearOpMode() {
     private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
+
+    private val maxHeight = 11;
+    private var hangMode = 0
+    private var pressed = false
     private lateinit var hang: DcMotorEx
     private lateinit var intake: DcMotorEx
     private lateinit var slideR: DcMotorEx
     private lateinit var slideL: DcMotorEx
+    private lateinit var leftFront: DcMotorEx
+    private lateinit var rightFront: DcMotorEx
+    private lateinit var leftBack: DcMotorEx
+    private lateinit var rightBack: DcMotorEx
     private lateinit var trussL: Servo
     private lateinit var trussR: Servo
     private lateinit var armR: Servo
@@ -42,21 +51,17 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
     private var hasCycledTrussHang = false
     private var driverRelative = false
     private var hasToggledDriverRelativity = false
-    private var runToHeight = 0
-    private var dpadUpPressed = false
+    private var runToHeight = 0;
+    private var dpadUpPressed = false;
+
 
     // automatically updates the truss servos when the value is changed
-    private var trussPos = TrussPosition.DOWN
-        set(pos) {
-            field = pos
-            trussL.position = trussPos.leftPos
-            trussR.position = trussPos.rightPos
-        }
+
 
     private var isArmDown = true
         set(status) {
             armR.position = if (status) 0.05 else 0.35
-            armL.position = if (status) 0.95 else 0.65
+            armL.position = if (status) 0.98 else 0.65
             field = status
         }
 
@@ -104,9 +109,9 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
             drive.setDrivePowers(
                 PoseVelocity2d(
                     Vector2d(
-                        -gamepad1.left_stick_y.toDouble().stickCurve(),
-                        -gamepad1.left_stick_x.toDouble().stickCurve()
-                    ), -gamepad1.right_stick_x.toDouble().stickCurve()
+                        -gamepad1.left_stick_y.toDouble(),//.stickCurve(
+                        -gamepad1.left_stick_x.toDouble(), //.stickCurve()
+                    ), -gamepad1.right_stick_x.toDouble().stickCurve(),
                 )
             )
         }
@@ -140,6 +145,10 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
         clawL = hardwareMap[Servo::class.java, "clawL"]
         inlift = hardwareMap[Servo::class.java, "inlift"]
         imu = hardwareMap[IMU::class.java, "imu"]
+        leftFront = hardwareMap.get(DcMotorEx::class.java, "frontL")
+        leftBack = hardwareMap.get(DcMotorEx::class.java, "backL")
+        rightBack = hardwareMap.get(DcMotorEx::class.java, "backR")
+        rightFront = hardwareMap.get(DcMotorEx::class.java, "frontR")
 
 //        data class Timeout(val calltime: Long, val callback: () -> Unit)
 //        val waitList: ArrayList<Timeout> = arrayListOf();
@@ -156,9 +165,11 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
         isLeftClawOpen = true
         isArmDown = true
 
-        trussPos = TrussPosition.DOWN
-        drone.position = 0.0
+        drone.position = 1.0
         inlift.position = 0.0
+        trussL.setPosition(0.083);
+        trussR.setPosition(0.3);
+
         waitForStart()
 
         while (opModeIsActive()) {
@@ -173,35 +184,35 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
             }
 
             // Move slides up
-            if (gamepad1.dpad_up && !dpadUpPressed || gamepad2.dpad_up && !dpadUpPressed) {
+            if (gamepad1.dpad_up && !dpadUpPressed|| gamepad2.dpad_up && !dpadUpPressed) {
                 dpadUpPressed = true
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
                     isLeftClawOpen = false
-                    Thread.sleep(300)
+                    sleep(300)
                 }
                 isSlideMovingUp = true
-                if (runToHeight == 0 || slidePos > 0) {
-                    slidePos = 1500
-                    runToHeight = 6
+                if (runToHeight == 0 || slidePos > 0){
+                    slidePos = maxHeight*200;
+                    runToHeight = 11
                 } else {
-                    slidePos = runToHeight * 200 + 300
+                    slidePos = runToHeight*200 + 300
 
                 }
 
             }
 
-            if (!gamepad1.dpad_up && !gamepad2.dpad_up) {
-                dpadUpPressed = false
+            if (!gamepad1.dpad_up && !gamepad2.dpad_up){
+                dpadUpPressed = false;
             }
 
             // Move slides down
             if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
 
-                runToHeight = 0
-                if (slidePos in 1..399) {
+                runToHeight = 0;
+                if (slidePos > 0 && slidePos < 503){
                     isArmDown = true
-                    Thread.sleep(450)
+                    sleep(500)
                     slidePos = 0
                 } else {
                     isArmDown = true
@@ -210,22 +221,22 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
 
             }
             // TODO:
-            if ((gamepad1.dpad_left && runToHeight < 6 && !slideAdjustmentPressed || gamepad2.dpad_left && runToHeight < 6 && !slideAdjustmentPressed)) {
+            if ((gamepad1.dpad_left && runToHeight < maxHeight && !slideAdjustmentPressed|| gamepad2.dpad_left && runToHeight < maxHeight  && !slideAdjustmentPressed)) {
                 slideAdjustmentPressed = true
-                runToHeight++
+                runToHeight++;
 
-                if (slidePos > 0) {
-                    slidePos += 200
+                if (slidePos > 0 ){
+                    slidePos += 200;
 
                 }
-            } else if (gamepad1.dpad_right && runToHeight > 0 && !slideAdjustmentPressed || gamepad2.dpad_right && runToHeight > 0 && !slideAdjustmentPressed) {
+            } else if (gamepad1.dpad_right && runToHeight > 0 && !slideAdjustmentPressed|| gamepad2.dpad_right && runToHeight > 0 && !slideAdjustmentPressed) {
                 slideAdjustmentPressed = true
                 runToHeight--
-                if (slidePos > 0) {
-                    slidePos -= 200
+                if (slidePos > 0 ){
+                    slidePos -= 200;
 
                 }
-            } else if (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left) {
+            } else if (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left){
                 slideAdjustmentPressed = false
             }
 
@@ -251,12 +262,12 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
                 if (!isRightClawOpen || !isLeftClawOpen) {
                     isLeftClawOpen = true
                     isRightClawOpen = true
-                    Thread.sleep(200)
+                    sleep(200)
                 }
 
-                if (runToHeight == 0 && slidePos > 0 && slidePos < 400) {
+                if (runToHeight == 0 && slidePos > 0 && slidePos < 502){
                     isArmDown = true
-                    Thread.sleep(450)
+                    sleep(450)
                     slidePos = 0
                 } else {
                     isArmDown = true
@@ -264,17 +275,25 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
                 }
             }
 
-            // Truss Hang
-            if (gamepad1.y && !hasCycledTrussHang || gamepad2.y && !hasCycledTrussHang) {
-                hasCycledTrussHang = true
-                // swap (used to cycle, so it's an enum just in case)
-                trussPos = when (trussPos) {
-                    TrussPosition.DOWN -> TrussPosition.UP
-                    TrussPosition.UP -> TrussPosition.DOWN
-                }
-            } else if (!gamepad1.y && !gamepad2.y) {
-                hasCycledTrussHang = false
+            if (hangMode % 2 == 0) {
+                trussL.setPosition(0.65);
+                trussR.setPosition(0.3);
+            } else if (hangMode % 2 == 1) {
+                trussR.setPosition(0.65);
+                trussL.setPosition(0.3);
             }
+
+            //Truss Hang
+
+
+            if (gamepad1.y && !pressed || gamepad2.y && !pressed) {
+                pressed = true;
+
+                hangMode++;
+            } else if (!gamepad1.y && !gamepad2.y){
+                pressed = false;
+            }
+
 
             hang.power = if (gamepad1.a || gamepad2.a) 1.0 else 0.0
 
@@ -288,7 +307,7 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
             }
 
             // Drone Launch ( !!! BOTH PLAYERS MUST HOLD B !!! )
-            if (gamepad1.b || gamepad2.b) drone.position = 1.0
+            if (gamepad1.b || gamepad2.b) drone.position = 0.0
 
             drive.updatePoseEstimate()
             telemetry.addData("DriverRelative", driverRelative)
@@ -299,9 +318,15 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
             telemetry.addData("leftSlide", slideL.currentPosition)
             telemetry.addData("drone", drone.position)
             telemetry.addData("inlift", inlift.position)
-            telemetry.addData("hangMode", trussPos)
             telemetry.addData("RunToHeight", runToHeight)
             telemetry.addData("Slide Pos", slidePos)
+            telemetry.addData("Right Lift Amp", slideR.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("Left Lift Amp", slideL.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("leftFront", leftFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("rightFront", rightFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("leftBack", rightFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("rightBack", rightFront.getCurrent(CurrentUnit.AMPS))
+            telemetry.addData("intake", intake.getCurrent(CurrentUnit.AMPS))
             telemetry.update()
         }
     }

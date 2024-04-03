@@ -18,7 +18,7 @@ public class AutoSubsystem {
     public TeamElementPipeline pipeline;
     int resolutionWidth = 1920;
     int resolutionHeight = 1080;
-    SpikeMark spikeMark = SpikeMark.RIGHT;
+    public  SpikeMark spikeMark = SpikeMark.RIGHT;
     HardwareMap hardwareMap;
     OpMode opMode;
     Telemetry telemetry;
@@ -33,7 +33,7 @@ public class AutoSubsystem {
         }
 
         @Override
-            public void onOpened() {
+        public void onOpened() {
             camera.startStreaming(resolutionWidth, resolutionHeight, OpenCvCameraRotation.UPRIGHT);
         }
 
@@ -48,7 +48,6 @@ public class AutoSubsystem {
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
 
-        assert hardwareMap != null;
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
         pipeline = new TeamElementPipeline();
 
@@ -60,11 +59,10 @@ public class AutoSubsystem {
         pipeline.setAlliancePipe(alliance);
     }
 
-    public void detectElement() {
+    public SpikeMark elementDetection() {
         spikeMark = pipeline.getElementSpikeMark();
         telemetry.addData("Element Zone", spikeMark);
-//        return spikeMark;
+        return spikeMark;
     }
 
 }
-

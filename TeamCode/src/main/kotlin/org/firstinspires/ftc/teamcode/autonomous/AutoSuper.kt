@@ -70,7 +70,7 @@ abstract class AutoSuper : LinearOpMode() {
         } */
 
         while (!isStarted && !isStopRequested) {
-            autoSub.detectElement()
+            autoSub.elementDetection()
             autoSub.setAlliance(alliance)
             telemetry.addData("Current Alliance Selected", alliance.name)
             placementZone = autoSub.spikeMark
