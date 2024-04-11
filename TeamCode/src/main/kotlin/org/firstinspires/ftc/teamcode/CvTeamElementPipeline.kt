@@ -4,6 +4,8 @@ import android.util.Log
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import org.opencv.core.Core
 import org.opencv.core.Core.MinMaxLocResult
+import org.opencv.core.CvType
+import org.opencv.core.CvType.CV_32FC1
 import org.opencv.core.CvType.CV_8UC1
 import org.opencv.core.CvType.CV_8UC3
 import org.opencv.core.Mat
@@ -44,6 +46,8 @@ class CvTeamElementPipeline(var alliance: Alliance, private val opMode: OpMode) 
     var mml0: MinMaxLocResult = MinMaxLocResult()
     var mml1: MinMaxLocResult = MinMaxLocResult()
     var mml2: MinMaxLocResult = MinMaxLocResult()
+    var quantityRed: Double = 0.0
+    var quantityBlue: Double = 0.0
 
     private val rectangles = arrayOf(
         Rect(0, 0, 640, 600),
@@ -186,14 +190,19 @@ class CvTeamElementPipeline(var alliance: Alliance, private val opMode: OpMode) 
             }
         }
 
+        opMode.telemetry.addLine("PIPELINE: ${hueHist.type()} ${CvType.typeToString(hueHist.type())}")
+        println("OPENCV PIPELINE THING: ${hueHist.type()} ${CvType.typeToString(hueHist.type())}")
 //        preview.copySize(input)
 //        preview.convertTo(preview, CV_8UC3)
-//        preview.setTo(Scalar(0.0, 0.0, 0.0, 1.0))
 //        preview.
 
 //        Imgproc.putText(preview, "so sad that steve jobs died of ligma", Point(100.0, 100.0), Imgproc.FONT_HERSHEY_SIMPLEX, 1.0, Scalar(255.0, 255.0, 255.0, 255.0), 8)
 
-//        hueHist.convertTo(preview, CV_8UC1)
-        return hueChannel
+//        preview.copySize(hueHist)
+        println("converting")
+//        preview.setTo(Scalar(0.0, 0.0, 0.0, 1.0))
+        hueHist.convertTo(preview, CV_8UC1)
+        println("converted, done processing")
+        return preview//hueChannel
     }
 }
