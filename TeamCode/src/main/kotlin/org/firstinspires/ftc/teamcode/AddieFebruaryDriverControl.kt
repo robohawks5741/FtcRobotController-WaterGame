@@ -26,11 +26,6 @@ import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
 import kotlin.math.abs
 
-typealias GamepadynRH = Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>
-typealias ConfigurationRH = Configuration<ActionDigital, ActionAnalog1, ActionAnalog2>
-typealias PlayerRH = Player<ActionDigital, ActionAnalog1, ActionAnalog2>
-// TODO: fix this up
-
 @TeleOp(name = "# Addie February Driver Control")
 class AddieFebruaryDriverControl : LinearOpMode() {
 
@@ -55,83 +50,6 @@ class AddieFebruaryDriverControl : LinearOpMode() {
     private var droneTurnKey0 = false
     private var droneTurnKey1 = false
 
-    object GamepadConfig {
-        /**
-         * Player 1 (index 0) config
-         */
-        val player0 = ConfigurationRH(
-            ActionBind(TOGGLE_DRIVER_RELATIVITY,            SPECIAL_BACK),
-            ActionBind(MOVEMENT,                            STICK_LEFT),
-            ActionBind(TRUSS_CYCLE,                         FACE_UP),
-
-            ActionBind(CLAW_LEFT_OPEN,                      BUMPER_LEFT),
-            ActionBind(CLAW_RIGHT_OPEN,                     BUMPER_RIGHT),
-
-            ActionBind(CLAW_LEFT_CLOSE,                     FACE_LEFT),
-            ActionBind(CLAW_RIGHT_CLOSE,                    FACE_LEFT),
-            // TODO: Replace with BindSingleAxis
-            object : ActionBind<ActionAnalog1>(TRUSS_PULL, FACE_DOWN) {
-                override fun transform(
-                    inputState: InputData,
-                    targetActionState: InputData,
-                    delta: Double
-                ): InputData {
-                    if (inputState !is InputDataDigital) {
-                        Log.e("Gamepadyn", "truss pull code broke :(")
-                        return targetActionState
-                    }
-                    return InputDataAnalog1(if (inputState()) 1.0f else 0.0f)
-                }
-            },
-
-            ActionBind(MACRO_SLIDE_UP,                      DPAD_UP),
-            ActionBind(MACRO_SLIDE_DOWN,                    DPAD_DOWN),
-
-            ActionBind(SLIDE_ADJUST_UP,                     DPAD_LEFT),
-            ActionBind(SLIDE_ADJUST_DOWN,                   DPAD_RIGHT),
-
-            ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
-            ActionBindAnalog1SnapToAnalog1(INTAKE_SPIN,     TRIGGER_LEFT, activeValue = 0.8f, inactiveValue = Float.NaN, threshold = 0.2f),
-            // TODO: Replace with BindSingleAxis
-            object : ActionBind<ActionAnalog1>(ROTATION, STICK_RIGHT) {
-                override fun transform(
-                    inputState: InputData,
-                    targetActionState: InputData,
-                    delta: Double
-                ): InputData {
-                    if (inputState !is InputDataAnalog2) {
-                        Log.e("Gamepadyn", "rotation code broke :(")
-                        return targetActionState
-                    }
-                    return InputDataAnalog1(inputState.x)
-                }
-            }
-        )
-
-        /**
-         * Player 2 (index 1) config
-         */
-        val player1 = ConfigurationRH(
-            ActionBind(MACRO_SLIDE_UP,                      DPAD_UP),
-            ActionBind(MACRO_SLIDE_DOWN,                    DPAD_DOWN),
-
-            ActionBind(SLIDE_ADJUST_UP,                     DPAD_LEFT),
-            ActionBind(SLIDE_ADJUST_DOWN,                   DPAD_RIGHT),
-
-            /*
-             * These are backwards. This is sorta intentional.
-             */
-            ActionBind(CLAW_LEFT_OPEN,                      BUMPER_RIGHT),
-            ActionBind(CLAW_RIGHT_OPEN,                     BUMPER_LEFT),
-            ActionBind(CLAW_LEFT_CLOSE,                     FACE_LEFT),
-            ActionBind(CLAW_RIGHT_CLOSE,                    FACE_LEFT),
-
-            ActionBind(DRONE_LAUNCH,                        FACE_RIGHT),
-            ActionBindAnalog1Threshold(MACRO_PLACE_PIXEL,   TRIGGER_RIGHT, threshold = 0.2f),
-            ActionBindAnalog1SnapToAnalog1(INTAKE_SPIN,     TRIGGER_LEFT, activeValue = 0.65f, threshold = 0.2f),
-        )
-    }
-
     override fun runOpMode() {
         drone   = hardwareMap!![Servo::class.java, "drone"]
         imu     = hardwareMap!![IMU::class.java, "imu"]
@@ -146,10 +64,10 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         moduleHandler = ModuleHandler(this, shared, isTeleOp = true, gamepadyn)
 
         // Configuration
-        val p0 = gamepadyn.players[0]
-        val p1 = gamepadyn.players[1]
-        p0.configuration = GamepadConfig.player0
-        p1.configuration = GamepadConfig.player1
+        val p0 = gamepadyn.getPlayer(0)!!
+        val p1 = gamepadyn.getPlayer(1)!!
+        p0.configuration =
+        p1.configuration =
 
         // MOD INIT
         moduleHandler.init()

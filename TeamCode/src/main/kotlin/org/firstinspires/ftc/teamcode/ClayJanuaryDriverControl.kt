@@ -319,10 +319,6 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("leftBack", rightFront.getCurrent(CurrentUnit.AMPS))
             telemetry.addData("rightBack", rightFront.getCurrent(CurrentUnit.AMPS))
             telemetry.addData("intake", intake.getCurrent(CurrentUnit.AMPS))
-
-
-
-
             telemetry.update()
         }
     }

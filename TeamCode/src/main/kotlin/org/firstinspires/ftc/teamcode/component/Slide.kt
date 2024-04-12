@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
 import com.qualcomm.robotcore.hardware.Servo
-import computer.living.gamepadyn.InputDataDigital
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.BotShared
@@ -22,9 +21,8 @@ import kotlin.math.roundToInt
 //  - make sure that the slides won't break if they get stuck on the truss
 //  - collision avoidance in both TeleOp and Auto
 //  - Beam breaks to the claws so we know when the pixels are in and maybe to spin the intake
-class LSD(cfg: ModuleConfig) : BotModule(cfg) {
-
-
+class Slide(manager: ComponentManager) : Component(manager) {
+    
 //    private val slideLeftController: DcMotorControllerEx?   = slideLeft?.controller as? DcMotorControllerEx
 //    private val slideRightController: DcMotorControllerEx?  = slideRight?.controller as? DcMotorControllerEx
     private val slideLeft: DcMotorEx?                       = hardwareMap.search("slideL")
