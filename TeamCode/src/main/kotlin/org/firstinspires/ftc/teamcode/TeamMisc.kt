@@ -2,10 +2,15 @@
 package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.roadrunner.Vector2d
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous
+import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.HardwareMap
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
+import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.full.hasAnnotation
 
 /**
  * **I Don't Care** if it's `null`, but I don't want an exception, so I use the `idc` function
@@ -43,3 +48,18 @@ fun Boolean.toDouble(): Double = if (this) 1.0 else 0.0
 fun Boolean.toFloat(): Float = if (this) 1f else 0f
 
 fun Double.clamp(min: Double, max: Double) = if (this < min) min; else if (this > max) max; else this
+
+/**
+ * Allows you to assign a boolean property its flipped value.
+ * This is shorthand overkill, but I love that kind of stuff.
+ */
+fun KMutableProperty0<Boolean>.flip(): Unit = this.set(!this.get())
+
+fun isOpModeTeleOp(opMode: OpMode) = when {
+    opMode::class.hasAnnotation<TeleOp>() -> true
+    opMode::class.hasAnnotation<Autonomous>() -> false
+    else -> {
+        val hasAuto = opMode::class.qualifiedName?.contains("auto", true)
+        if (hasAuto == null) true else !hasAuto
+    }
+}

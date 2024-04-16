@@ -3,9 +3,12 @@ package org.firstinspires.ftc.teamcode.botmodule
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import com.qualcomm.robotcore.hardware.HardwareDevice
 import com.qualcomm.robotcore.hardware.HardwareMap
+import computer.living.gamepadyn.Gamepadyn
 import org.firstinspires.ftc.robotcore.external.Telemetry
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
-import org.firstinspires.ftc.teamcode.GamepadynRH
+import org.firstinspires.ftc.teamcode.ActionAnalog1
+import org.firstinspires.ftc.teamcode.ActionAnalog2
+import org.firstinspires.ftc.teamcode.ActionDigital
 
 /**
  * An abstract representation of an individual feature set of the greater robot.
@@ -35,7 +38,7 @@ abstract class BotModule protected constructor(val config: ModuleConfig) {
     /**
      * A gamepadyn instance, if present.
      */
-    protected val gamepadyn: GamepadynRH? = config.gamepadyn
+    protected val gamepadyn: Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>? = config.gamepadyn
 
     /**
      * The internal Inertial Measurement Unit (IMU) of the control hub.

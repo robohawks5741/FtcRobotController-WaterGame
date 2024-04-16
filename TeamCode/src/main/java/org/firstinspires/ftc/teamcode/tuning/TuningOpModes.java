@@ -25,7 +25,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.BotShared;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
-import org.firstinspires.ftc.teamcode.TankDrive;
+//import org.firstinspires.ftc.teamcode.TankDrive;
 import org.firstinspires.ftc.teamcode.ThreeDeadWheelLocalizer;
 import org.firstinspires.ftc.teamcode.TwoDeadWheelLocalizer;
 
@@ -104,7 +104,7 @@ public final class TuningOpModes {
                                 MecanumDrive.PARAMS.kA / MecanumDrive.PARAMS.inPerTick)
                 );
             };
-        } else if (DRIVE_CLASS.equals(TankDrive.class)) {
+        } else /*if (DRIVE_CLASS.equals(TankDrive.class)) {
             dvf = hardwareMap -> {
                 TankDrive td = new TankDrive(hardwareMap, new Pose2d(0, 0, 0));
 
@@ -147,7 +147,7 @@ public final class TuningOpModes {
                                 TankDrive.PARAMS.kA / TankDrive.PARAMS.inPerTick)
                 );
             };
-        } else {
+        } else*/ {
             throw new RuntimeException();
         }
 

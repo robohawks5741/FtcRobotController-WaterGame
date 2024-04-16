@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
-import computer.living.gamepadyn.ActionBind
 import computer.living.gamepadyn.Configuration
 import computer.living.gamepadyn.Gamepadyn
 import computer.living.gamepadyn.InputData
@@ -26,10 +25,11 @@ import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
 import org.firstinspires.ftc.teamcode.botmodule.ModuleHandler
 import kotlin.math.abs
 
-@TeleOp(name = "# Addie February Driver Control")
+//@TeleOp(name = "# Addie February Driver Control")
+@Deprecated("Kept here for the purpose of migration. Prefer [DriveControlNouveau].")
 class AddieFebruaryDriverControl : LinearOpMode() {
 
-    private val gamepadyn = GamepadynRH.create(
+    private val gamepadyn = Gamepadyn.create(
         ActionDigital::class,
         ActionAnalog1::class,
         ActionAnalog2::class,
@@ -66,8 +66,8 @@ class AddieFebruaryDriverControl : LinearOpMode() {
         // Configuration
         val p0 = gamepadyn.getPlayer(0)!!
         val p1 = gamepadyn.getPlayer(1)!!
-        p0.configuration =
-        p1.configuration =
+//        p0.configuration =
+//        p1.configuration =
 
         // MOD INIT
         moduleHandler.init()

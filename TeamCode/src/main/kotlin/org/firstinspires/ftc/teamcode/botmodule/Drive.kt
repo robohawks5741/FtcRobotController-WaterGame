@@ -80,13 +80,13 @@ class Drive(config: ModuleConfig) : BotModule(config) {
             telemetry.addLine("(Drive Module) TeleOp was enabled but Gamepadyn was null!")
             return
         }
-        gamepadyn.players[0].addListener(TOGGLE_DRIVER_RELATIVITY) { if (it.data()) useDriverRelative = !useDriverRelative }
+        gamepadyn.getPlayer(0)!!.addListener(TOGGLE_DRIVER_RELATIVITY) { if (it.data()) useDriverRelative = !useDriverRelative }
         // IMU orientation/calibration
         val logo = RevHubOrientationOnRobot.LogoFacingDirection.LEFT
         val usb = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
         val orientationOnRobot = RevHubOrientationOnRobot(logo, usb)
-        imu.initialize(IMU.Parameters(orientationOnRobot))
-        imu.resetYaw()
+        imu?.initialize(IMU.Parameters(orientationOnRobot))
+        imu?.resetYaw()
     }
 
     override fun modUpdateTeleOp() {
@@ -98,10 +98,10 @@ class Drive(config: ModuleConfig) : BotModule(config) {
         //        val drive = shared.drive!!
 
         // counter-clockwise
-        val currentYaw = imu.robotYawPitchRollAngles.getYaw(AngleUnit.RADIANS)
+        val currentYaw = imu?.robotYawPitchRollAngles?.getYaw(AngleUnit.RADIANS) ?: 0.0
 
-        val movement = gamepadyn.players[0].getState(MOVEMENT)
-        val rotation = gamepadyn.players[0].getState(ROTATION)
+        val movement = gamepadyn.getPlayer(0)!!.getState(MOVEMENT)
+        val rotation = gamepadyn.getPlayer(0)!!.getState(ROTATION)
 
         // +X = forward
         // +Y = left

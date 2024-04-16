@@ -1,16 +1,5 @@
 package org.firstinspires.ftc.teamcode
 
-/**
- * RoboHawks 5741 Demo System v1
- * Used to create an autonomous OpMode in around 2 hours.
- * It's a bit clunky, but we used it to "reprogram" our autonomous on the fly.
- * You can record TeleOp gameplay, then play it back as autonomous.
- * REQUIREMENTS:
- * - A project with Kotlin support (root buildscript dependency `org.jetbrains.kotlin:kotlin-gradle-plugin` and plugin `org.jetbrains.kotlin.android`)
- * - Kotlin's reflection library (org.jetbrains.kotlin:kotlin-reflect)
- * - A TeleOp OpMode that **DOESN'T INHERIT FROM LinearOpMode**
- */
-
 /*
  * The Clear BSD License
  *
@@ -68,14 +57,51 @@ import kotlin.math.floor
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
-
+/**
+ * # RoboHawks 5741 Demo System v2
+ * Created in a few hours before a scrimmage. Allows any team with a functioning TeleOp to use that
+ * same code in Autonomous by recording their gameplay (like demos from Quake and Source).
+ *
+ * It's a bit clunky, you can "reprogram" our autonomous without having to recompile code.
+ *
+ *
+ * ## How it Works:
+ * Using reflection and a bit of other trickery, the OpModes in this file "pretend" to be the FTC
+ * SDK. When the Demo OpModes run, they pass what the FTC SDK passes to them to an
+ * OpMode that they instantiated (sort of like an emulator).
+ * When recording, the OpMode will intercept the current state of the gamepads and record it.
+ * After the OpMode stops, it will write that data to a file, stored as JSON and Base64.
+ * During playback, the OpMode will ignore gamepad input, and will send the previously recorded
+ * input to the OpMode it is "emulating," thus recreating what was previously recorded.
+ * There is no error correction in the demo system. The robot does not try to retrace its steps,
+ * it simply repeats the inputs that you, the human player, gave it when it was running.
+ * As such, we HIGHLY recommend programming your autonomous manually, as you have fine grained
+ * control over the robot's behavior.
+ * The DemoSystem has no knowledge of anything your robot does, but YOU do.
+ * Maybe you could even extend the DemoSystem to meet your more specific needs?
+ *
+ *
+ * ## How to Customize the DemoSystem (aka. Going Forward)
+ * We highly recommend a system for recording and playing back multiple takes;
+ * as-is, **the DemoSystem only stores one recording,** and there is no "undo."
+ * The filenames of the currently active demos are stored as global variables
+ * ([inputFileName] and [outputFileName]), and you could create a way to cycle them out.
+ * Demos are persistent, and can only be fully removed or moved around by using ADB/Android Studio.
+ * If you want to know where they're being stored, open LogCat before you run a DemoSystem OpMode.
+ *
+ *
+ * ## Setup Requirements:
+ * - A project with Kotlin support (see [Using the Kotlin Programming Language - FIRST Tech Challenge](https://ftc-docs.firstinspires.org/en/latest/programming_resources/shared/installing_kotlin/Installing-Kotlin.html))
+ * - Kotlin's reflection library (org.jetbrains.kotlin:kotlin-reflect)
+ * - An OpMode controlled with gamepad input (which may be a LinearOpMode)
+ */
 @Suppress("unused")
 object DemoSystem {
 
     /** Replace this with your own Driver Control. */
-    val PLAYBACK_OPMODE: KClass<*> = ClayJanuaryDriverControl::class
-    const val TICK_RATE: Double = 30.0
-    const val DEMO_DIRECTORY: String = "demos"
+    var playbackOpmode: KClass<out OpMode> = ClayJanuaryDriverControl::class
+    val TICK_RATE: Double = 60.0
+    val DEMO_DIRECTORY: String = "demos"
     var outputFileName: String = "0.replay"
     var inputFileName: String = "0.replay"
 
@@ -84,11 +110,12 @@ object DemoSystem {
 
     fun ByteArray.toBase64(): String = String(Base64.encode(this, Base64.DEFAULT or Base64.NO_WRAP))
 
+    // TODO: port to LinearOpMode for more control and to drop less frames
     @Autonomous(name = "Play Recorded Demo", group = "DemoSystem")
     open class DemoPlayback : OpMode() {
 
         private var timeOffset: Double = 0.0
-        private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
+        private val emulatedOpMode: OpMode = playbackOpmode.createInstance() as OpMode
         private var hackedInternalRunOpMode: Method? = null
         private var hackedInternalOnStart: Method? = null
         private var hackedInternalOnEventLoopIteration: Method? = null
@@ -186,11 +213,13 @@ object DemoSystem {
         }
     }
 
+
+    // TODO: port to LinearOpMode for more control and to drop less frames
     @TeleOp(name = "Record Demo", group = "DemoSystem")
     class DemoRecorder : OpMode() {
 
         private var timeOffset: Double = 0.0
-        private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
+        private val emulatedOpMode: OpMode = playbackOpmode.createInstance() as OpMode
         private var hackedInternalRunOpMode: Method? = null
         private var hackedInternalOnStart: Method? = null
         private var hackedInternalOnEventLoopIteration: Method? = null
@@ -283,9 +312,7 @@ object DemoSystem {
 
             val context = hardwareMap.appContext
             val dir = File(context.filesDir, DEMO_DIRECTORY)
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
+            if (!dir.exists()) dir.mkdir()
             val file = File(dir, outputFileName)
             val jsonAllFrames = JsonArray()
             val jsonFrames1 = JsonArray()
