@@ -2,15 +2,17 @@ package org.firstinspires.ftc.teamcode.botmodule
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
 import computer.living.gamepadyn.Gamepadyn
+import org.firstinspires.ftc.teamcode.ActionAnalog1
+import org.firstinspires.ftc.teamcode.ActionAnalog2
+import org.firstinspires.ftc.teamcode.ActionDigital
 import org.firstinspires.ftc.teamcode.BotShared
-import org.firstinspires.ftc.teamcode.GamepadynRH
 
 @Suppress("MemberVisibilityCanBePrivate")
 class ModuleHandler(
     opMode: OpMode,
     shared: BotShared,
     isTeleOp: Boolean,
-    gamepadyn: GamepadynRH? = null
+    gamepadyn: Gamepadyn<ActionDigital, ActionAnalog1, ActionAnalog2>? = null
 ) {
     private val config: ModuleConfig = ModuleConfig(
         opMode,

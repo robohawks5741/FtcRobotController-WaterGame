@@ -264,8 +264,8 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
                 trussR.position = 0.65
                 trussL.position = 0.3
             } else {
-                trussL.position = 0.65
                 trussR.position = 0.3
+                trussL.position = 0.65
             }
 
             // Truss Hang

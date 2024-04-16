@@ -8,7 +8,6 @@ import computer.living.gamepadyn.InputDataDigital
 import computer.living.gamepadyn.Player
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.ActionAnalog1.*
-import org.firstinspires.ftc.teamcode.PlayerRH
 import org.firstinspires.ftc.teamcode.TrussPosition
 import org.firstinspires.ftc.teamcode.idc
 import org.firstinspires.ftc.teamcode.stickCurve
@@ -64,8 +63,8 @@ class Trussle(cfg: ModuleConfig) : BotModule(cfg) {
         if (gamepadyn == null) {
             TODO("cry about it")
         }
-        val p0 = gamepadyn.players[0]
-        val p1 = gamepadyn.players[1]
+        val p0 = gamepadyn.getPlayer(0)!!
+        val p1 = gamepadyn.getPlayer(1)!!
         val power = p0.getState(TRUSS_PULL).x + p1.getState(TRUSS_PULL).x
         trussPull?.power = power.toDouble().stickCurve()
     }

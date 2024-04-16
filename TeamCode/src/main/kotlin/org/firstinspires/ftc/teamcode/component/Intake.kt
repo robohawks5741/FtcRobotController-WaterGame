@@ -5,30 +5,31 @@ import com.qualcomm.robotcore.hardware.DcMotor.RunMode.STOP_AND_RESET_ENCODER
 import com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.FORWARD
+import com.qualcomm.robotcore.hardware.DigitalChannel
+import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit
 import org.firstinspires.ftc.teamcode.ActionDigital.*
 import org.firstinspires.ftc.teamcode.BotShared
+import org.firstinspires.ftc.teamcode.botmodule.Claw
 import org.firstinspires.ftc.teamcode.search
 import kotlin.math.roundToInt
 
-/**
- * Linear Slide Driver
- * Also controls the arm, maybe the claw in the future
- */
 // TODO: make sure the slides are zeroed out and that the zero-position is KEPT across autonomous and TeleOp boundaries
 // TODO:
 //  - make sure that the slides won't break if they get stuck on the truss
 //  - collision avoidance in both TeleOp and Auto
 //  - Beam breaks to the claws so we know when the pixels are in and maybe to spin the intake
-class Slide(manager: ComponentManager) : Component(manager) {
-    
+class Intake(manager: ComponentManager) : Component(manager) {
+
 //    private val slideLeftController: DcMotorControllerEx?   = slideLeft?.controller as? DcMotorControllerEx
 //    private val slideRightController: DcMotorControllerEx?  = slideRight?.controller as? DcMotorControllerEx
-    private val slideLeft: DcMotorEx?                       = hardwareMap.search("slideL")
     private val slideRight: DcMotorEx?                      = hardwareMap.search("slideR")
-    private val armLeft: Servo?                             = hardwareMap.search("armL")
+    private val slideLeft: DcMotorEx?                       = hardwareMap.search("slideL")
     private val armRight: Servo?                            = hardwareMap.search("armR")
+    private val armLeft: Servo?                             = hardwareMap.search("armL")
+    private val clawRight: Servo?                           = hardwareMap.search("clawR")
+    private val clawLeft: Servo?                            = hardwareMap.search("clawL")
 //    private val armLeftController: ServoControllerEx?       = armLeft?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armL"] }
 //    private val armRightController: ServoControllerEx?      = armRight?.controller as? ServoControllerEx // idc { hardwareMap[ServoControllerEx::class.java, "armR"] }
 
@@ -36,10 +37,18 @@ class Slide(manager: ComponentManager) : Component(manager) {
     // it takes ~600ms to move the slides down to HEIGHT_MIN from HEIGHT_MAX
     companion object {
         /**
-         * The maximum position of the slide, in encoder ticks.
+         * The max position of the slide, in encoder ticks.
          */
         const val HEIGHT_MAX = 1500
+
+        /**
+         * The min position of the slide, in encoder ticks.
+         */
         const val HEIGHT_MIN = 0
+
+        /**
+         * The lowest position of the slide where the arm can still freely rotate, in encoder ticks.
+         */
         const val HEIGHT_ARM_SAFE = 502
 
         const val ARM_UP_LEFT = 0.65
@@ -47,24 +56,44 @@ class Slide(manager: ComponentManager) : Component(manager) {
         const val ARM_DOWN_LEFT = 0.98
         const val ARM_DOWN_RIGHT = 0.05
 
+        const val CLAW_LEFT_POS_OPEN: Double       = 0.0
+        const val CLAW_LEFT_POS_CLOSED: Double     = 0.29
+        const val CLAW_RIGHT_POS_OPEN: Double      = 0.36
+        const val CLAW_RIGHT_POS_CLOSED: Double    = 0.07
+
         var POWER_MAX = 1.0
         // scale when moving downwards
         var POWER_DOWNWARD_SCALE = 1.0 // 0.75
     }
 
-    init {
-        if (slideLeft == null || slideRight == null || armLeft == null || armRight == null) {
-            val missing = mutableSetOf<String>()
-            if (slideLeft == null)  missing.add("slideL")
-            if (slideRight == null) missing.add("slideR")
-            if (armLeft == null)    missing.add("armL")
-            if (armRight == null)   missing.add("armR")
+    override val status: Status
 
-            status = Status(StatusEnum.BAD, hardwareMissing = missing)
-        } else {
+    init {
+        val functionality = when {
+            slideLeft == null || slideRight == null -> Functionality.NONE
+            armRight == null || armLeft == null || clawRight == null || clawLeft == null -> Functionality.PARTIAL
+            else -> Functionality.FULL
+        }
+        val hardwareSet: Set<HardwareUsage> = setOf(
+            HardwareUsage("slideR", DcMotorEx::class, slideRight != null),
+            HardwareUsage("slideL", DcMotorEx::class, slideLeft != null),
+            HardwareUsage("armR", Servo::class, armRight != null, false),
+            HardwareUsage("armL", Servo::class, armLeft != null, false),
+            HardwareUsage("clawR", Servo::class, clawRight != null, false),
+            HardwareUsage("clawL", Servo::class, clawLeft != null, false),
+        )
+        status = Status(
+            functionality,
+            hardwareSet
+        )
+        if (slideLeft != null && slideRight != null) {
             slideLeft.targetPosition = 0
             slideRight.targetPosition = 0
 
+            /**
+             * This is really important!!!
+             * This WILL NOT RESET THE SLIDES if the previous OpMode said that it was
+             */
             if (!BotShared.wasLastOpModeAutonomous) {
                 slideLeft.mode = STOP_AND_RESET_ENCODER
                 slideRight.mode = STOP_AND_RESET_ENCODER
@@ -79,21 +108,30 @@ class Slide(manager: ComponentManager) : Component(manager) {
             // Directions
             slideLeft.direction = FORWARD
             slideLeft.direction = FORWARD
-//            slideRight.direction =              REVERSE
+            // WHY ARE THERE TWO SEPARATE DIRECTION ENUMS?!?!
+            clawLeft?.direction = Servo.Direction.FORWARD
+            clawRight?.direction = Servo.Direction.FORWARD
+
+            //            slideRight.direction =              REVERSE
         }
     }
 
     var targetHeight: Int = 0
         set(height) {
+            if (slideLeft == null || slideRight == null) {
+                field = 0
+                return
+            }
+
             // half the power for downwards movement
             val desiredPower = if (height < currentHeight) POWER_MAX * POWER_DOWNWARD_SCALE else POWER_MAX
 
-            slideLeft?. power = desiredPower
-            slideRight?.power = desiredPower
+            slideLeft. power = desiredPower
+            slideRight.power = desiredPower
             // evaluated height
             field = height.coerceIn(HEIGHT_MIN..HEIGHT_MAX)
-            slideLeft?. targetPosition = field
-            slideRight?.targetPosition = -field
+            slideLeft. targetPosition = field
+            slideRight.targetPosition = -field
         }
 
     private var isMovingSlides = false
@@ -110,10 +148,28 @@ class Slide(manager: ComponentManager) : Component(manager) {
      */
     val currentHeight: Int
         // pay attention to the negative sign here, the right slide is negative.
-        get() = if (status.status == StatusEnum.OK) ((slideLeft!!.currentPosition + -slideRight!!.currentPosition).toFloat() / 2f).roundToInt()
-                else 0
+        get() = if (slideLeft != null && slideRight != null) ((slideLeft.currentPosition + -slideRight.currentPosition).toFloat() / 2f).roundToInt() else 0
 
-    override fun modStart() {
+    /**
+     * Whether the left claw is open. The setter moves the servos.
+     */
+    var leftOpen: Boolean = true
+        set(state) {
+            field = state
+            // TODO: make sure that you can't open the claws while the slide is moving
+            clawLeft?.position = if (state) Claw.CLAW_LEFT_POS_OPEN else Claw.CLAW_LEFT_POS_CLOSED
+        }
+    /**
+     * Whether the right claw is open. The setter moves the servos.
+     */
+    var rightOpen: Boolean = true
+        set(state) {
+            field = state
+            // TODO: make sure that you can't open the claws while the slide is moving
+            clawRight?.position = if (state) Claw.CLAW_RIGHT_POS_OPEN else Claw.CLAW_RIGHT_POS_CLOSED
+        }
+
+    override fun start() {
         slideLeft?.targetPosition = 0
         slideRight?.targetPosition = 0
 
@@ -121,39 +177,7 @@ class Slide(manager: ComponentManager) : Component(manager) {
         slideRight?.mode = RUN_TO_POSITION
     }
 
-    private fun teleOpSlideUpdate() {
-        teleOpTargetHeight = teleOpTargetHeight.coerceIn(0..6)
-        if (isSlideUp) targetHeight = teleOpTargetHeight * 200 + 300
-    }
-
-    override fun modStartTeleOp() {
-        if (gamepadyn == null) {
-            telemetry.addLine("(LSD Module) TeleOp was enabled but Gamepadyn was null!")
-            return
-        }
-        
-        gamepadyn.addListener(SLIDE_ADJUST_UP) {
-            // D-Pad left -> raise slides
-            // pos = target * 200 + 300
-            if (it.data() && teleOpTargetHeight < 6) {
-                teleOpTargetHeight++
-                teleOpSlideUpdate()
-            }
-        }
-
-        gamepadyn.addListener(SLIDE_ADJUST_DOWN) {
-            if (it.data() && teleOpTargetHeight > 0) {
-                teleOpTargetHeight--
-                teleOpSlideUpdate()
-            }
-        }
-    }
-
-    override fun modUpdateTeleOp() {
-        telemetry.addData("LSD (TeleOp) target height:", teleOpTargetHeight)
-    }
-
-    override fun modUpdate() {
+    override fun update() {
         // if our target & current heights are above the safe height for the arm, always extend the arm.
         if (targetHeight >= HEIGHT_ARM_SAFE && currentHeight >= HEIGHT_ARM_SAFE) {
             armRight?.position = ARM_DOWN_RIGHT
@@ -163,15 +187,14 @@ class Slide(manager: ComponentManager) : Component(manager) {
             armLeft?.position =  ARM_UP_LEFT
         }
 
-        telemetry.addData("LSD target height:", targetHeight)
-        telemetry.addData("LSD current avg. height", currentHeight)
-        telemetry.addData("LSD slide L height", slideLeft?.currentPosition)
-        telemetry.addData("LSD slide R height", slideRight?.currentPosition)
-        telemetry.addData("LSD arm L pos", armLeft?.position)
-        telemetry.addData("LSD arm R pos", armRight?.position)
-
-        telemetry.addData("LSD slide L amps", slideLeft?.getCurrent(CurrentUnit.AMPS))
-        telemetry.addData("LSD slide R amps", slideRight?.getCurrent(CurrentUnit.AMPS))
+        log("target height: $targetHeight")
+        log("current avg. height: $currentHeight")
+        log("slide L height: ${slideLeft?.currentPosition}")
+        log("slide R height: ${slideRight?.currentPosition}")
+        log("arm L pos: ${armLeft?.position}")
+        log("arm R pos: ${armRight?.position}")
+        log("slide L amps: ${slideLeft?.getCurrent(CurrentUnit.AMPS)}")
+        log("slide R amps: ${slideRight?.getCurrent(CurrentUnit.AMPS)}")
 
 //        if (slideLeft?.getCurrent(CurrentUnit.AMPS) >)
     }

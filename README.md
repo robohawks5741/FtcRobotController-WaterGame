@@ -3,8 +3,7 @@
 ## Notes
 
 - Our Robot Controller is tested with the Java 11 JDK. Any lower or higher might not work.
-- We use Kotlin a lot, but any Kotlin code should either be self-contained (like an OpMode)
-or fully compatible with Java (use `@JvmWhatever` annotations where applicable)
+- We write our code in Kotlin primarily, but always try to maintain Java usability with `@Jvm` annotations.
 
 # Upstream Readme
 
