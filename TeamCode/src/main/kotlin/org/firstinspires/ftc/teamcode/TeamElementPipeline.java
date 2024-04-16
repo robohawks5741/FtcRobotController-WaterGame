@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode;
 
-import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.SpikeMark;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.Arrays;
@@ -15,9 +14,7 @@ import java.util.List;
 public class TeamElementPipeline extends OpenCvPipeline {
     List<Integer> ELEMENT_COLOR = Arrays.asList(0, 0, 255); //(red, green, blue)
 
-    /**
-     * TODO: document
-     */
+    // TODO: document
     static SpikeMark spikeMark = SpikeMark.RIGHT;
 
     // TODO: see if this needs to be atomic
@@ -60,7 +57,7 @@ public class TeamElementPipeline extends OpenCvPipeline {
         original = input.clone();
 
 //        input = input.submat(new Rect(0));
-        // TODO: use OKLab/Lch for color delta
+        // TODO: use OKLab/Lch for color delta and improve algorithm
 //        Imgproc.cvtColor(input, grey, Imgproc.COLOR_RGBALab);
 
         //Averaging the colors in the zones
@@ -76,8 +73,10 @@ public class TeamElementPipeline extends OpenCvPipeline {
         distance1 = colorDistance(avgColor1, ELEMENT_COLOR);
         distance2 = colorDistance(avgColor2, ELEMENT_COLOR);
         distance3 = colorDistance(avgColor3, ELEMENT_COLOR);
+
         maxDistance = Math.min(distance1, distance2);
         maxDistance = Math.min(maxDistance, distance3);
+
         if (maxDistance == distance1){
             spikeMark = SpikeMark.LEFT;
         } else if (maxDistance == distance2){

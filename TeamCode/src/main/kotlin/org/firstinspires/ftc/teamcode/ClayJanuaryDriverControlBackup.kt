@@ -163,9 +163,9 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
 
         drone.position = 1.0
         inlift.position = 0.0
-        trussL.position = 0.083
-        trussR.position = 0.3
 
+        trussR.position = 0.65
+        trussL.position = 0.3
         waitForStart()
 
         while (opModeIsActive()) {
@@ -261,11 +261,11 @@ class ClayJanuaryDriverControlBackup : LinearOpMode() {
             }
 
             if (hangMode % 2 == 0) {
+                trussR.position = 0.65
+                trussL.position = 0.3
+            } else {
                 trussL.position = 0.65
                 trussR.position = 0.3
-            } else if (hangMode % 2 == 1) {
-                trussL.position = 0.3
-                trussR.position = 0.65
             }
 
             // Truss Hang

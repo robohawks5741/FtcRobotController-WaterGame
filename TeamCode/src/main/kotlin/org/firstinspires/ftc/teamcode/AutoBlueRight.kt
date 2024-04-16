@@ -1,12 +1,9 @@
-package org.firstinspires.ftc.teamcode.autonomous
+package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.ftc.runBlocking
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.hardware.DcMotor
-import org.firstinspires.ftc.teamcode.Alliance
-import org.firstinspires.ftc.teamcode.AllianceSide
-import org.firstinspires.ftc.teamcode.SpikeMark
 
 @Autonomous(name = "# Clay Blue Right")
 class AutoBlueRight : AutoSuper() {

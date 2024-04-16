@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous
+package org.firstinspires.ftc.teamcode
 
 import com.acmerobotics.roadrunner.Pose2d
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
@@ -6,11 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
-import org.firstinspires.ftc.teamcode.Alliance
-import org.firstinspires.ftc.teamcode.AllianceSide
-import org.firstinspires.ftc.teamcode.BotShared
-import org.firstinspires.ftc.teamcode.MecanumDrive
-import org.firstinspires.ftc.teamcode.SpikeMark
+import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
+import org.firstinspires.ftc.teamcode.botmodule.Opticon
 
 abstract class AutoSuper : LinearOpMode() {
     protected val intake: DcMotorEx by lazy { hardwareMap[DcMotorEx::class.java,    "intake"] }
@@ -41,7 +38,7 @@ abstract class AutoSuper : LinearOpMode() {
     final override fun runOpMode() {
         clawR.position = 0.07
         clawL.position = 0.29
-        inlift.position = 0.2
+        inlift.position = 0.34
 
         // arm
         armR.position = 0.05
@@ -70,7 +67,7 @@ abstract class AutoSuper : LinearOpMode() {
         } */
 
         while (!isStarted && !isStopRequested) {
-            autoSub.elementDetection()
+            autoSub.detectElement()
             autoSub.setAlliance(alliance)
             telemetry.addData("Current Alliance Selected", alliance.name)
             placementZone = autoSub.spikeMark

@@ -1,11 +1,9 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode;
 
 import androidx.annotation.NonNull;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.Alliance;
-import org.firstinspires.ftc.teamcode.SpikeMark;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -18,7 +16,7 @@ public class AutoSubsystem {
     public TeamElementPipeline pipeline;
     int resolutionWidth = 1920;
     int resolutionHeight = 1080;
-    public  SpikeMark spikeMark = SpikeMark.RIGHT;
+    SpikeMark spikeMark = SpikeMark.RIGHT;
     HardwareMap hardwareMap;
     OpMode opMode;
     Telemetry telemetry;
@@ -48,6 +46,7 @@ public class AutoSubsystem {
         this.hardwareMap = opMode.hardwareMap;
         this.telemetry = opMode.telemetry;
 
+        assert hardwareMap != null;
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
         pipeline = new TeamElementPipeline();
 
@@ -59,10 +58,11 @@ public class AutoSubsystem {
         pipeline.setAlliancePipe(alliance);
     }
 
-    public SpikeMark elementDetection() {
+    public void detectElement() {
         spikeMark = pipeline.getElementSpikeMark();
         telemetry.addData("Element Zone", spikeMark);
-        return spikeMark;
+//        return spikeMark;
     }
 
 }
+
