@@ -13,22 +13,26 @@ class AutoRedRight : AutoSuper() {
     override fun runSpecialized() {
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(21.34, 9.51), Math.toRadians(46.81))
-                .splineToConstantHeading(Vector2d(3.75, -10.95), Math.toRadians(46.81))
+                .splineTo(Vector2d(20.32, 9.60), Math.toRadians(44.51))
+                .splineToConstantHeading(Vector2d(2.98, -7.4), Math.toRadians(44.51))
+                .turnTo(Math.toRadians(0.0))
+                .splineToConstantHeading(Vector2d(50.4, -10.67), 0.0)
                 .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(25.25, -32.85 + 2.5), Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(31.70 , -33.90 + 2.5), Math.toRadians(90.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(24.33, 5.11), Math.toRadians(0.0))
-                .splineToConstantHeading(Vector2d(6.45, -1.47), 0.0)
+                .splineTo(Vector2d(24.5, 5.97), Math.toRadians(3.0))
+                .splineToConstantHeading(Vector2d(4.96, -20.0), 0.0)
+                .splineToConstantHeading(Vector2d(49.75, -18.46), 0.0)
                 .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(27.16, -32.85), Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(26.91, -33.90), Math.toRadians(90.0))
                 .build()
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(18.29, 0.823), Math.toRadians(-6.47))
-                .splineToConstantHeading(Vector2d(5.49, 4.21), Math.toRadians(0.0))
+                .splineTo(Vector2d(18.61, 0.0), Math.toRadians(0.0))
+                .splineToConstantHeading(Vector2d(3.72, -18.46), Math.toRadians(0.0))
+                .splineToConstantHeading(Vector2d(50.21, -16.11), Math.toRadians(0.0))
                 .turnTo(Math.toRadians(90.0))
-                .splineToConstantHeading(Vector2d(21.63, -32.85), Math.toRadians(90.0))
+                .splineToConstantHeading(Vector2d(20.03, -33.90), Math.toRadians(90.0))
                 .build()
 
         })
@@ -62,12 +66,25 @@ class AutoRedRight : AutoSuper() {
         slideL.mode = DcMotor.RunMode.RUN_TO_POSITION
         slideR.power = 1.0
         slideL.power = 1.0
+        inlift.position = 0.22
         sleep(200)
-        runBlocking(
+
+        //right side
+      /*  runBlocking(
             drive.actionBuilder(drive.pose)
                 .strafeToConstantHeading(Vector2d(3.93, -29.9))
                 .splineToConstantHeading(Vector2d(3.93, -45.99), Math.toRadians(90.0))
                 .build()
+        )*/
+
+        //left side
+        runBlocking(
+            drive.actionBuilder(drive.pose)
+                .strafeToConstantHeading(Vector2d(49.33, -29.9))
+                .splineToConstantHeading(Vector2d(49.33, -45.99), Math.toRadians(90.0))
+                .build()
         )
+
+
     }
 }

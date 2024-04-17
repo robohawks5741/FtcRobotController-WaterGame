@@ -71,13 +71,13 @@ public class ServoTest extends LinearOpMode {
 
 
             if (gamepad1.dpad_left) {
-                inLift.setPosition(inLift.getPosition() + 0.01);
+                drone.setPosition(drone.getPosition() + 0.01);
 
 
             } else if (gamepad1.dpad_right) {
-                inLift.setPosition(inLift.getPosition() - 0.01);
+                drone.setPosition(drone.getPosition() - 0.01);
             } else if (gamepad1.dpad_down) {
-                inLift.setPosition(0);
+                drone.setPosition(0);
             }
 //0.36
             if (gamepad1.x) {
@@ -98,7 +98,7 @@ public class ServoTest extends LinearOpMode {
             telemetry.addData("heading (deg)", Math.toDegrees(drive.pose.heading.toDouble()));
             telemetry.addData("rightSlide", slideR.getCurrentPosition());
             telemetry.addData("leftSlide", slideL.getCurrentPosition());
-            telemetry.addData("inLift", inLift.getPosition());
+            telemetry.addData("drone", drone .getPosition());
             telemetry.addData("right servo", armR .getPosition());
 
             telemetry.update();

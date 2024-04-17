@@ -18,19 +18,19 @@ class AutoBlueLeft : AutoSuper() {
     override fun runSpecialized() {
         runBlocking(when (placementZone) {
             SpikeMark.LEFT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(21.00, 2.08), Math.toRadians(0.0))
+                .splineTo(Vector2d(22.50, 0.0), Math.toRadians(0.0))
                 .splineToConstantHeading(Vector2d(10.42, -3.43), Math.toRadians(0.0))
                 .turnTo(Math.toRadians(270.0))
                 .splineToConstantHeading(Vector2d(19.85, 34.42), Math.toRadians(270.0))
                 .build()
             SpikeMark.CENTER -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(25.22, -3.60), 0.0)
+                .splineTo (Vector2d(24.4, -7.5), 0.0)
                 .splineToConstantHeading(Vector2d(23.386, 0.0), 0.0)
                 .turnTo(Math.toRadians(270.0))
                 .splineToConstantHeading(Vector2d(25.94, 34.42), Math.toRadians(270.0))
                 .build()
             SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
-                .splineTo(Vector2d(22.56, -8.72), Math.toRadians(-40.26))
+                .splineTo(Vector2d(22.9, -9.1), Math.toRadians(-52.26))
                 .splineToConstantHeading(Vector2d(11.85, 5.24), Math.toRadians(-40.26))
                 .turnTo(Math.toRadians(270.0))
                 .splineToConstantHeading(Vector2d(30.8, 34.42), Math.toRadians(270.0))
@@ -66,12 +66,20 @@ class AutoBlueLeft : AutoSuper() {
         slideL.mode = DcMotor.RunMode.RUN_TO_POSITION
         slideR.power = 1.0
         slideL.power = 1.0
-        inlift.position = 0.0
+        inlift.position = 0.22
         sleep(200)
-        runBlocking(
+        //Left side
+      /*  runBlocking(
             drive.actionBuilder(drive.pose)
                 .strafeToConstantHeading(Vector2d(1.81, 34.19))
                 .splineToConstantHeading(Vector2d(1.38, 45.79), Math.toRadians(270.0))
+                .build()
+        )*/
+        //Right side
+        runBlocking(
+            drive.actionBuilder(drive.pose)
+                .strafeToConstantHeading(Vector2d(48.98, 34.19))
+                .splineToConstantHeading(Vector2d(48.98, 45.79), Math.toRadians(270.0))
                 .build()
         )
     }

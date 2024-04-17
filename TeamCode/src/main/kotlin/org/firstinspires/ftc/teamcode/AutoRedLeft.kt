@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.roadrunner.Pose2d
 import com.acmerobotics.roadrunner.Vector2d
 import com.acmerobotics.roadrunner.ftc.runBlocking
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
@@ -20,7 +21,7 @@ class AutoRedLeft : AutoSuper() {
                     .turnTo(Math.toRadians(-90.0))
                     .splineToConstantHeading(Vector2d(55.16, -69.26), Math.toRadians(-90.0))
                     .turnTo(Math.toRadians(90.0))
-                    .splineToConstantHeading(Vector2d(28.03, (-83.24 - 3)), Math.toRadians(90.0))
+                    .splineToConstantHeading(Vector2d(31.26, -86.5), Math.toRadians(90.0))
                     .build()
 
                 SpikeMark.CENTER -> drive.actionBuilder(beginPose)
@@ -30,7 +31,7 @@ class AutoRedLeft : AutoSuper() {
                     .turnTo(Math.toRadians(-90.0))
                     .splineToConstantHeading(Vector2d(60.88, -67.68), Math.toRadians(-90.0))
                     .turnTo(Math.toRadians(90.0))
-                    .splineToConstantHeading(Vector2d(38.62, (-83.33 - 3)), Math.toRadians(90.0))
+                    .splineToConstantHeading(Vector2d(25.48, -86.5), Math.toRadians(90.0))
                     .build()
 
                 SpikeMark.RIGHT -> drive.actionBuilder(beginPose)
@@ -41,7 +42,7 @@ class AutoRedLeft : AutoSuper() {
                     .turnTo(Math.toRadians(-90.0))
                     .splineToConstantHeading(Vector2d(58.23, -70.92), Math.toRadians(-90.0))
                     .turnTo(Math.toRadians(90.0))
-                    .splineToConstantHeading(Vector2d(39.35, (-84.85 - 3)), Math.toRadians(90.0))
+                    .splineToConstantHeading(Vector2d(20.17, -86.5), Math.toRadians(90.0))
                     .build()
             }
         )
@@ -74,12 +75,23 @@ class AutoRedLeft : AutoSuper() {
         slideL.mode = DcMotor.RunMode.RUN_TO_POSITION
         slideR.power = 1.0
         slideL.power = 1.0
+        inlift.position = 0.22
         sleep(200)
+        //Left Side
         runBlocking(
             drive.actionBuilder(drive.pose)
-                .strafeToConstantHeading(Vector2d(60.0, -84.0))
-                .splineToConstantHeading(Vector2d(62.0, -94.15), Math.toRadians(90.0))
+                .strafeToConstantHeading(Vector2d(47.35, -84.0))
+                .splineToConstantHeading(Vector2d(46.95, -101.25), Math.toRadians(90.0))
                 .build()
         )
+
+        //Right Side
+        /*
+        runBlocking(
+            drive.actionBuilder(drive.pose)
+                .strafeToConstantHeading(Vector2d(0.98, -74.34))
+                .splineToConstantHeading(Vector2d(-0.71, -99.13), Math.toRadians(90.0))
+                .build()
+        )*/
     }
 }

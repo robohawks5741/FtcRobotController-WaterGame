@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor
 import com.qualcomm.robotcore.hardware.DcMotorEx
 import com.qualcomm.robotcore.hardware.IMU
 import com.qualcomm.robotcore.hardware.Servo
+import org.firstinspires.ftc.teamcode.botmodule.ModuleConfig
+import org.firstinspires.ftc.teamcode.botmodule.Opticon
 
 abstract class AutoSuper : LinearOpMode() {
     protected val intake: DcMotorEx by lazy { hardwareMap[DcMotorEx::class.java,    "intake"] }
@@ -36,7 +38,7 @@ abstract class AutoSuper : LinearOpMode() {
     final override fun runOpMode() {
         clawR.position = 0.07
         clawL.position = 0.29
-        inlift.position = 0.34
+        inlift.position = 0.22
 
         // arm
         armR.position = 0.05
@@ -76,12 +78,8 @@ abstract class AutoSuper : LinearOpMode() {
         placementZone = autoSub.spikeMark
 
         waitForStart()
-        if (isStarted) BotShared.wasLastOpModeAutonomous = true
-
-        sleep(BotShared.autoWaitTimeMs)
-
+        BotShared.wasLastOpModeAutonomous = true
         runSpecialized()
-
         while (opModeIsActive()) {
             BotShared.storedPose = drive.pose
         }

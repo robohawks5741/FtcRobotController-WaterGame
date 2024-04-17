@@ -18,9 +18,13 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@TeleOp(name = "## Clay January Driver Control")
+@TeleOp(name = "## Clay January Driver Control Backup")
 class ClayJanuaryDriverControl : LinearOpMode() {
     private var poseEstimate = Pose2d(0.0, 0.0, 0.0)
+
+    private val maxHeight = 7;
+    private var hangMode = 0
+    private var pressed = false
     private lateinit var hang: DcMotorEx
     private lateinit var intake: DcMotorEx
     private lateinit var slideR: DcMotorEx
@@ -29,7 +33,6 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private lateinit var rightFront: DcMotorEx
     private lateinit var leftBack: DcMotorEx
     private lateinit var rightBack: DcMotorEx
-
     private lateinit var trussL: Servo
     private lateinit var trussR: Servo
     private lateinit var armR: Servo
@@ -48,20 +51,15 @@ class ClayJanuaryDriverControl : LinearOpMode() {
     private var hasCycledTrussHang = false
     private var driverRelative = false
     private var hasToggledDriverRelativity = false
-    private var runToHeight = 0
-    private var dpadUpPressed = false
+    private var runToHeight = 0;
+    private var dpadUpPressed = false;
+
 
     // automatically updates the truss servos when the value is changed
-    private var trussPos = TrussPosition.DOWN
-        set(pos) {
-            field = pos
-            trussL.position = trussPos.leftPos
-            trussR.position = trussPos.rightPos
-        }
+
 
     private var isArmDown = true
         set(status) {
-            //              if    [down pos] else [up pos]
             armR.position = if (status) 0.05 else 0.35
             armL.position = if (status) 0.98 else 0.65
             field = status
@@ -69,13 +67,11 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
     private var isLeftClawOpen: Boolean = true
         set(status) {
-            //               if   [open pos] else [closed pos]
             clawL.position = if (status) 0.0 else 0.29
             field = status
         }
     private var isRightClawOpen: Boolean = true
         set(status) {
-            //               if    [open pos] else [closed pos]
             clawR.position = if (status) 0.36 else 0.07
             field = status
         }
@@ -113,8 +109,8 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             drive.setDrivePowers(
                 PoseVelocity2d(
                     Vector2d(
-                        -gamepad1.left_stick_y.toDouble().stickCurve(),
-                        -gamepad1.left_stick_x.toDouble().stickCurve()
+                        -gamepad1.left_stick_y.toDouble(),//.stickCurve(
+                        -gamepad1.left_stick_x.toDouble(), //.stickCurve()
                     ), -gamepad1.right_stick_x.toDouble().stickCurve(),
                 )
             )
@@ -123,7 +119,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
 
     private var slidePos = 0
         set(pos) {
-            field = pos.coerceIn(0..2000)
+            field = pos
             slideR.targetPosition = -slidePos
             slideL.targetPosition = slidePos
             slideR.mode = DcMotor.RunMode.RUN_TO_POSITION
@@ -149,14 +145,11 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         clawL = hardwareMap[Servo::class.java, "clawL"]
         inlift = hardwareMap[Servo::class.java, "inlift"]
         imu = hardwareMap[IMU::class.java, "imu"]
-
-
-        //  make sure your config has motors with these names (or change them)
-        //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         leftFront = hardwareMap.get(DcMotorEx::class.java, "frontL")
         leftBack = hardwareMap.get(DcMotorEx::class.java, "backL")
         rightBack = hardwareMap.get(DcMotorEx::class.java, "backR")
         rightFront = hardwareMap.get(DcMotorEx::class.java, "frontR")
+
 //        data class Timeout(val calltime: Long, val callback: () -> Unit)
 //        val waitList: ArrayList<Timeout> = arrayListOf();
 //        fun wait(calltime: Long, callback: () -> Unit) = waitList.add(Timeout((time * 1000).toLong() + calltime, callback))
@@ -172,21 +165,26 @@ class ClayJanuaryDriverControl : LinearOpMode() {
         isLeftClawOpen = true
         isArmDown = true
 
-        trussPos = TrussPosition.DOWN
         drone.position = 1.0
         inlift.position = 0.01
+        trussR.setPosition(0.65);
+        trussL.setPosition(0.3);
 
         waitForStart()
 
         while (opModeIsActive()) {
-            BotShared.wasLastOpModeAutonomous = false
+
             updateDrive()
 
-            // Left trigger -> Spin intake inwards
-            intake.power = if (gamepad1.left_trigger > 0.2 || gamepad2.left_trigger > 0.2) 0.8 else 0.0
+            // Intake
+            if (gamepad1.left_trigger > 0.1 || gamepad2.left_trigger > 0.1) {
+                intake.power = 0.8
+            } else {
+                intake.power = 0.0
+            }
 
-            // D-Pad up -> Close claws, move slides up to a safe height, rotate arm up, move slide up fully (or to runToHeight)
-            if ((gamepad1.dpad_up || gamepad2.dpad_up) && !dpadUpPressed) {
+            // Move slides up
+            if (gamepad1.dpad_up && !dpadUpPressed|| gamepad2.dpad_up && !dpadUpPressed) {
                 dpadUpPressed = true
                 if (isRightClawOpen || isLeftClawOpen) {
                     isRightClawOpen = false
@@ -195,54 +193,59 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
                 isSlideMovingUp = true
                 if (runToHeight == 0 || slidePos > 0){
-                    slidePos = 2000
-                    runToHeight = 6
-                } else {
+                    runToHeight = 7
                     slidePos = runToHeight * 200 + 300
+                } else {
+                    slidePos = runToHeight*200 + 300
+
                 }
 
-            } else dpadUpPressed = gamepad1.dpad_up || gamepad2.dpad_up
-
-            // D-Pad down -> lower slides
-            if ((gamepad1.dpad_down || gamepad2.dpad_down) || runToHeight == 0 && slidePos > 0) {
-                runToHeight = 0
-                isArmDown = true
-                // if the slide is too low, wait 450ms in order to give the arm time to retract
-                if (slidePos in 1..502) sleep(450)
-                slidePos = 0
             }
 
-            // make sure that the running height is
-            runToHeight.coerceIn(0..6)
+            if (!gamepad1.dpad_up && !gamepad2.dpad_up){
+                dpadUpPressed = false;
+            }
 
-            // D-Pad left -> raise slides
-            if ((gamepad1.dpad_left || gamepad2.dpad_left) && runToHeight < 6 && !slideAdjustmentPressed) {
+            // Move slides down
+            if (gamepad1.dpad_down || gamepad2.dpad_down || runToHeight == 0 && slidePos > 0) {
+
+                runToHeight = 0;
+                if (slidePos > 0 && slidePos < 503){
+                    isArmDown = true
+                    sleep(500)
+                    slidePos = 0
+                } else {
+                    isArmDown = true
+                    slidePos = 0
+                }
+
+            }
+            // TODO:
+            if ((gamepad1.dpad_left && runToHeight < maxHeight && !slideAdjustmentPressed|| gamepad2.dpad_left && runToHeight < maxHeight  && !slideAdjustmentPressed)) {
                 slideAdjustmentPressed = true
-                runToHeight++
+                runToHeight++;
 
-                // move slide up 200 ticks
-                if (slidePos < 1500) slidePos += 200
-            // D-Pad right -> lower slides
-            } else if ((gamepad1.dpad_right || gamepad2.dpad_right) && runToHeight > 0 && !slideAdjustmentPressed) {
+                if (slidePos > 0 ){
+                    slidePos += 200;
+
+                }
+            } else if (gamepad1.dpad_right && runToHeight > 0 && !slideAdjustmentPressed|| gamepad2.dpad_right && runToHeight > 0 && !slideAdjustmentPressed) {
                 slideAdjustmentPressed = true
                 runToHeight--
-                // move slide down 200 ticks
-                if (slidePos > 0) slidePos -= 200
+                if (slidePos > 0 ){
+                    slidePos -= 200;
+
+                }
+            } else if (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left){
+                slideAdjustmentPressed = false
             }
-            // if no slide adjustment buttons are pressed
-            slideAdjustmentPressed = (!gamepad1.dpad_right && !gamepad1.dpad_left && !gamepad2.dpad_right && !gamepad2.dpad_left)
 
-            /*
-             * These are backwards. This is sorta intentional.
-             */
-
-            // Left bumper -> Open right claw
-            if (gamepad1.left_bumper || gamepad2.left_bumper)
+            // Arm Rotation
+            if (gamepad1.left_bumper || gamepad2.left_bumper) { //place
                 isRightClawOpen = true
-
-            // Right bumper -> Open left claw
-            if (gamepad1.right_bumper || gamepad2.right_bumper)
+            } else if (gamepad1.right_bumper || gamepad2.right_bumper) { //Pickup
                 isLeftClawOpen = true
+            }
 
             if (slideL.currentPosition > 500 && isSlideMovingUp) {
                 isArmDown = false
@@ -262,7 +265,7 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                     sleep(200)
                 }
 
-                if (runToHeight == 0 && (slidePos in 1..501)) {
+                if (runToHeight == 0 && slidePos > 0 && slidePos < 502){
                     isArmDown = true
                     sleep(450)
                     slidePos = 0
@@ -272,26 +275,32 @@ class ClayJanuaryDriverControl : LinearOpMode() {
                 }
             }
 
-            // Truss Hang
-            if ((gamepad1.y || gamepad2.y) && !hasCycledTrussHang) {
-                hasCycledTrussHang = true
-                // swap (this used to be a cycle, so it's an enum)
-                trussPos = when (trussPos) {
-                    TrussPosition.DOWN -> TrussPosition.UP
-                    TrussPosition.UP -> TrussPosition.DOWN
-                }
+            if (hangMode % 2 == 0) {
+                trussR.setPosition(0.65);
+                trussL.setPosition(0.3);
+            } else if (hangMode % 2 == 1) {
+                trussL.setPosition(0.65);
+                trussR.setPosition(0.3);
             }
-            hasCycledTrussHang = gamepad1.y || gamepad2.y
 
-            // Face down / A -> Pull in truss hang
-            hang.power = (gamepad1.a || gamepad2.a).toDouble()
+            //Truss Hang
+
+
+            if (gamepad1.y && !pressed || gamepad2.y && !pressed) {
+                pressed = true;
+
+                hangMode++;
+            } else if (!gamepad1.y && !gamepad2.y){
+                pressed = false;
+            }
+
+
+            hang.power = if (gamepad1.a || gamepad2.a) 1.0 else 0.0
 
             // Driver 2 Override
-            // Manual intake controls
             if (abs(gamepad2.left_stick_y) > 0.1) {
                 intake.power = gamepad2.left_stick_y.toDouble().stickCurve()
             }
-
             // Gamepad 2 truss controls
             if (abs(gamepad2.right_stick_y) > 0.1) {
                 hang.power = gamepad2.right_stick_y.toDouble().stickCurve()
@@ -309,7 +318,6 @@ class ClayJanuaryDriverControl : LinearOpMode() {
             telemetry.addData("leftSlide", slideL.currentPosition)
             telemetry.addData("drone", drone.position)
             telemetry.addData("inlift", inlift.position)
-            telemetry.addData("hangMode", trussPos)
             telemetry.addData("RunToHeight", runToHeight)
             telemetry.addData("Slide Pos", slidePos)
             telemetry.addData("Right Lift Amp", slideR.getCurrent(CurrentUnit.AMPS))
