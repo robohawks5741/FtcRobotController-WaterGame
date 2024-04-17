@@ -44,9 +44,16 @@ public class TeamElementPipeline extends OpenCvPipeline {
     public void init(Mat mat) {
         //Defining Zones
         //Rect(top left x, top left y, bottom right x, bottom right y)
-        zone1 = mat.submat(new Rect(0, 0 , 639, 600));
-        zone2 = mat.submat(new Rect(641, 0, 639, 600));
-        zone3 =  mat.submat(new Rect(1281, 0, 639, 600));
+        // TODO: change these constants
+        if (BotShared.autoShouldParkRight) {
+            zone1 = mat.submat(new Rect(0, 0 , 639, 600));
+            zone2 = mat.submat(new Rect(641, 0, 639, 600));
+            zone3 =  mat.submat(new Rect(1281, 0, 639, 600));
+        } else {
+            zone1 = mat.submat(new Rect(0, 0 , 639, 600));
+            zone2 = mat.submat(new Rect(641, 0, 639, 600));
+            zone3 =  mat.submat(new Rect(1281, 0, 639, 600));
+        }
 
     }
 

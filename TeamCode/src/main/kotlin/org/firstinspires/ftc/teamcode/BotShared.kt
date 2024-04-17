@@ -4,10 +4,7 @@ import com.acmerobotics.roadrunner.Pose2d
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.UsbFacingDirection
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot.LogoFacingDirection
-import com.qualcomm.robotcore.eventloop.opmode.AnnotatedOpModeManager
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
-import com.qualcomm.robotcore.eventloop.opmode.OpModeManager
-import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar
 import com.qualcomm.robotcore.hardware.IMU
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName
 
@@ -39,6 +36,13 @@ class BotShared(opMode: OpMode) {
         @JvmField var storedPose: Pose2d = Pose2d(0.0, 0.0, 0.0)
         @JvmField var wasLastOpModeAutonomous: Boolean = false
         @JvmField val orientationOnRobot = RevHubOrientationOnRobot(LogoFacingDirection.LEFT, UsbFacingDirection.FORWARD)
+        @JvmField var autoWaitTimeMs: Long = 0L
+
+        /**
+         * If the bot is on the right or left tile
+         */
+        @JvmField var autoIsCameraRight = false
+        @JvmField var autoShouldParkRight = true
     }
 
 }

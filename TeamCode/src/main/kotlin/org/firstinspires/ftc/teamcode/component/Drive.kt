@@ -95,6 +95,25 @@ class Drive(manager: ComponentManager) : Component(manager) {
 
             if (imu != null) useDriverRelative = true
         }
+
+        val functionality = when {
+            motorRightFront == null || motorLeftFront == null || motorRightBack == null || motorLeftBack == null -> Functionality.NONE
+            imu == null || indicatorGreen == null || indicatorRed == null -> Functionality.PARTIAL
+            else -> Functionality.FULL
+        }
+        val hardwareSet: Set<HardwareUsage> = setOf(
+            HardwareUsage("frontR", DcMotorEx::class, motorRightFront != null),
+            HardwareUsage("frontL", DcMotorEx::class, motorLeftFront != null),
+            HardwareUsage("backR", DcMotorEx::class, motorRightBack != null),
+            HardwareUsage("backL", DcMotorEx::class, motorLeftBack != null),
+            HardwareUsage("imu", IMU::class, motorRightFront != null, false),
+            HardwareUsage("led0", DigitalChannel::class, indicatorGreen != null, false),
+            HardwareUsage("led1", DigitalChannel::class, indicatorRed != null, false)
+        )
+        status = Status(
+            functionality,
+            hardwareSet
+        )
     }
 
     override fun start() {
@@ -185,27 +204,6 @@ class Drive(manager: ComponentManager) : Component(manager) {
         log("Movement Input: (${movement.x}, ${movement.y})")
         log("Input Yaw: ${if (inputVector.x > 0.05 && inputVector.y > 0.05) inputTheta * 180.0 / PI else 0.0}")
 //        telemetry.addLine("Yaw Difference (bot - input): " + )
-    }
-
-    init {
-        val functionality = when {
-            motorRightFront == null || motorLeftFront == null || motorRightBack == null || motorLeftBack == null -> Functionality.NONE
-            imu == null || indicatorGreen == null || indicatorRed == null -> Functionality.PARTIAL
-            else -> Functionality.FULL
-        }
-        val hardwareSet: Set<HardwareUsage> = setOf(
-            HardwareUsage("frontR", DcMotorEx::class, motorRightFront != null),
-            HardwareUsage("frontL", DcMotorEx::class, motorLeftFront != null),
-            HardwareUsage("backR", DcMotorEx::class, motorRightBack != null),
-            HardwareUsage("backL", DcMotorEx::class, motorLeftBack != null),
-            HardwareUsage("imu", IMU::class, motorRightFront != null, false),
-            HardwareUsage("led0", DigitalChannel::class, indicatorGreen != null, false),
-            HardwareUsage("led1", DigitalChannel::class, indicatorRed != null, false)
-        )
-        status = Status(
-            functionality,
-            hardwareSet
-        )
     }
 
 }
