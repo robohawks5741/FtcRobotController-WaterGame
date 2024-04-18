@@ -20,16 +20,21 @@ class HorizontalSlide(manager: ComponentManager) : Component(manager) {
             hSlideLeft.power = 1.0
             hSlideRight.power = 1.0
 
-            hSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-            hSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-            hSlideLeft.targetPositionTolerance = 8
-            hSlideRight.targetPositionTolerance = 8
-            hSlideRight.targetPosition = 0
-            hSlideLeft.targetPosition = 0
-            hSlideLeft.mode = DcMotor.RunMode.RUN_TO_POSITION
-            hSlideRight.mode = DcMotor.RunMode.RUN_TO_POSITION
             hSlideLeft.direction = DcMotorSimple.Direction.FORWARD
             hSlideRight.direction = DcMotorSimple.Direction.REVERSE
+
+            hSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            hSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+
+            hSlideLeft.targetPositionTolerance = 8
+            hSlideRight.targetPositionTolerance = 8
+
+            hSlideRight.targetPosition = 0
+            hSlideLeft.targetPosition = 0
+
+            hSlideLeft.mode = DcMotor.RunMode.RUN_TO_POSITION
+            hSlideRight.mode = DcMotor.RunMode.RUN_TO_POSITION
+
         }
     }
 

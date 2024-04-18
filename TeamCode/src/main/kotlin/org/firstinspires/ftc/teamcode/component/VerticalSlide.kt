@@ -16,11 +16,14 @@ class VerticalSlide(manager: ComponentManager) : Component(manager) {
             vSlideLeft.power = 1.0
             vSlideRight.power = 1.0
 
-//            vSlideLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-//            vSlideRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+            vSlideLeft.direction = DcMotorSimple.Direction.FORWARD
+            vSlideRight.direction = DcMotorSimple.Direction.REVERSE
 
-            vSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
-            vSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+            vSlideLeft.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+            vSlideRight.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
+
+//            vSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
+//            vSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.FLOAT
 
             vSlideLeft.targetPositionTolerance = 60
             vSlideRight.targetPositionTolerance = 60
@@ -30,16 +33,10 @@ class VerticalSlide(manager: ComponentManager) : Component(manager) {
 
             vSlideLeft.mode = DcMotor.RunMode.RUN_TO_POSITION
             vSlideRight.mode = DcMotor.RunMode.RUN_TO_POSITION
-
-            vSlideLeft.direction = DcMotorSimple.Direction.FORWARD
-            vSlideRight.direction = DcMotorSimple.Direction.REVERSE
         }
     }
 
     override fun loop() {
-        vSlideLeft?.power = 1.0
-        vSlideRight?.power = 1.0
-
         telemetry.addLine("V. Slide Left Current Pos: ${vSlideLeft?.currentPosition}")
         telemetry.addLine("V. Slide Left Target Pos: ${vSlideLeft?.targetPosition}")
         telemetry.addLine("V. Slide Right Current Pos: ${vSlideRight?.currentPosition}")
