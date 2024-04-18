@@ -47,17 +47,18 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
 
     private val claw = Claw(componentManager)
     private val drive = Drive(componentManager)
-//    private val horizontalSlide = HorizontalSlide(componentManager)
+
+    //    private val horizontalSlide = HorizontalSlide(componentManager)
     private val verticalSlide = VerticalSlide(componentManager)
-    private val leftFrontDrive: DcMotorEx   = getHardware("leftFront")!!
-    private val leftBackDrive: DcMotorEx    = getHardware("leftBack")!!
-    private val rightFrontDrive: DcMotorEx  = getHardware("rightFront")!!
-    private val rightBackDrive: DcMotorEx   = getHardware("rightBack")!!
+    private val leftFrontDrive: DcMotorEx = getHardware("leftFront")!!
+    private val leftBackDrive: DcMotorEx = getHardware("leftBack")!!
+    private val rightFrontDrive: DcMotorEx = getHardware("rightFront")!!
+    private val rightBackDrive: DcMotorEx = getHardware("rightBack")!!
 
-    private val imu: IMU                    = getHardware("imu")!!
+    private val imu: IMU = getHardware("imu")!!
 
-    private val droneLaunch: Servo?         = getHardware("drone")
-    private val arm: Servo?                 = getHardware("arm")
+    private val droneLaunch: Servo? = getHardware("drone")
+    private val arm: Servo? = getHardware("arm")
 
     private var useDriverRelative = true
     private var hasToggledDriverRelative = false
@@ -79,8 +80,8 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         // +X = forward
         // +Y = left
         val inputVector = Vector2d(
-            movementInput.y.toDouble().stickCurve(),
-            -movementInput.x.toDouble().stickCurve()
+            -movementInput.y.toDouble().stickCurve(),
+            movementInput.x.toDouble().stickCurve()
         )
 
         // angle of the stick
@@ -91,7 +92,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         val inputPower = clamp(
             sqrt(
                 (inputVector.x * inputVector.x) +
-                (inputVector.y * inputVector.y)
+                        (inputVector.y * inputVector.y)
             ), 0.0, 1.0
         )
 
@@ -101,8 +102,8 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         var max: Double
 
         // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-        val axial = if (useDriverRelative) driveRelativeX else inputVector.x
-        val lateral = if (useDriverRelative) -driveRelativeY else -inputVector.y
+        val axial = if (useDriverRelative) driveRelativeX else -inputVector.x
+        val lateral = if (useDriverRelative) -driveRelativeY else inputVector.y
         val yaw = rotation.toDouble().stickCurve()
 
         // Combine the joystick requests for each axis-motion to determine each wheel's power.
@@ -144,7 +145,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
 //            armMove.
 //        }
         val arm = arm
-        if (arm != null) arm.position = (arm.position + armMove * 0.1f).coerceIn(0.0..1.0)
+        if (arm != null) arm.position = (arm.position + armMove * 0.0016f).coerceIn(0.0..1.0)
 
         telemetry.addLine("Claw Position: ${claw.isOpen}")
         telemetry.addLine("Arm Position: ${arm?.position}")
@@ -173,9 +174,24 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         p0.configuration = Configuration {
             actionDigital(ActionDigital.TOGGLE_DRIVER_RELATIVITY) { input(RawInputDigital.SPECIAL_BACK) }
             actionAnalog2(ActionAnalog2.MOVEMENT) { input(RawInputAnalog2.STICK_LEFT) }
-            actionAnalog1(ActionAnalog1.ROTATION) { split(input(RawInputAnalog2.STICK_RIGHT), Axis.X) }
-            actionDigital(ActionDigital.H_SLIDE_EXTEND) { gt(input(RawInputAnalog1.TRIGGER_RIGHT), constant(0.5f)) }
-            actionDigital(ActionDigital.H_SLIDE_RETRACT) { gt(input(RawInputAnalog1.TRIGGER_LEFT), constant(0.5f)) }
+            actionAnalog1(ActionAnalog1.ROTATION) {
+                split(
+                    input(RawInputAnalog2.STICK_RIGHT),
+                    Axis.X
+                )
+            }
+            actionDigital(ActionDigital.H_SLIDE_EXTEND) {
+                gt(
+                    input(RawInputAnalog1.TRIGGER_RIGHT),
+                    constant(0.5f)
+                )
+            }
+            actionDigital(ActionDigital.H_SLIDE_RETRACT) {
+                gt(
+                    input(RawInputAnalog1.TRIGGER_LEFT),
+                    constant(0.5f)
+                )
+            }
         }
 
         p1.configuration = Configuration {
@@ -248,6 +264,4 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         telemetry.update()
     }
 
-    companion object {
-    }
 }

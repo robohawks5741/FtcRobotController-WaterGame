@@ -242,6 +242,7 @@ object DemoSystem {
         }
     }
 
+    @TeleOp(name = "Record Demo (0.replay)", group = "DemoSystem")
     open class DemoRecorder : OpMode() {
 
         init {
