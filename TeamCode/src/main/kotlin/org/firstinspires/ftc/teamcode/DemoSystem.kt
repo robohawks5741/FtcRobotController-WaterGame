@@ -98,7 +98,7 @@ import kotlin.reflect.full.createInstance
 @Suppress("unused")
 object DemoSystem {
     /** Replace this with your own Driver Control. */
-    var playbackOpmode: KClass<out OpMode> = ClayJanuaryDriverControl::class
+    var playbackOpmode: KClass<out OpMode> = MainDriverControl::class
     val TICK_RATE: Double = 60.0
     val DEMO_DIRECTORY: String = "demos"
     var outputFileName: String = "0.replay"
@@ -282,10 +282,11 @@ object DemoSystem {
         }
 
         override fun stop() {
-            if (emulatedOpMode !is LinearOpMode) emulatedOpMode.requestOpModeStop()
+            Log.i("DemoSystem", "Got stopped!")
+//            if (emulatedOpMode !is LinearOpMode) emulatedOpMode.requestOpModeStop()
             emulatedOpMode.stop()
 
-            Thread.sleep(50)
+//            Thread.sleep(50)
             opThread?.interrupt()
 
             Log.i("DemoSystem", "Demo recorded, frames:")
