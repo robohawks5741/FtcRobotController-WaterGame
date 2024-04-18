@@ -98,9 +98,9 @@ import kotlin.reflect.full.createInstance
 @Suppress("unused")
 object DemoSystem {
     /** Replace this with your own Driver Control. */
-    var playbackOpmode: KClass<out OpMode> = MainDriverControl::class
-    val TICK_RATE: Double = 60.0
-    val DEMO_DIRECTORY: String = "demos"
+    var playbackOpmode: KClass<out OpMode> = MainDriverControl.Host::class
+    const val TICK_RATE: Double = 60.0
+    const val DEMO_DIRECTORY: String = "demos"
     var outputFileName: String = "0.replay"
     var inputFileName: String = "0.replay"
 
@@ -210,13 +210,42 @@ object DemoSystem {
         }
     }
 
+    @TeleOp(name = "Record Demo (BLUE LEFT)", group = "DemoSystem")
+    class DemoRecorderBlueLeft : DemoRecorder() {
+        init {
+            inputFileName = "blueLeft.replay"
+            outputFileName = "blueLeft.replay"
+        }
+    }
 
-    // TODO: port to LinearOpMode for more control and to drop less frames
-    @TeleOp(name = "Record Demo", group = "DemoSystem")
-    class DemoRecorder : OpMode() {
+    @TeleOp(name = "Record Demo (BLUE RIGHT)", group = "DemoSystem")
+    class DemoRecorderBlueRight : DemoRecorder() {
+        init {
+            inputFileName = "blueRight.replay"
+            outputFileName = "blueRight.replay"
+        }
+    }
+
+    @TeleOp(name = "Record Demo (RED LEFT)", group = "DemoSystem")
+    class DemoRecorderRedLeft : DemoRecorder() {
+        init {
+            inputFileName = "redLeft.replay"
+            outputFileName = "redLeft.replay"
+        }
+    }
+
+    @TeleOp(name = "Record Demo (RED RIGHT)", group = "DemoSystem")
+    class DemoRecorderRedRight : DemoRecorder() {
+        init {
+            inputFileName = "redRight.replay"
+            outputFileName = "redRight.replay"
+        }
+    }
+
+    open class DemoRecorder : OpMode() {
 
         private var timeOffset: Double = 0.0
-        private val emulatedOpMode: OpMode = playbackOpmode.createInstance() as OpMode
+        private val emulatedOpMode: OpMode = playbackOpmode.createInstance()
         private var opThread: Thread? = null
 
         override fun init() {

@@ -11,12 +11,17 @@ enum class ActionDigital : ActionEnumDigital {
     H_SLIDE_RETRACT,
     V_SLIDE_EXTEND,
     V_SLIDE_RETRACT,
+    ARM_EXTEND,
+    ARM_RETRACT,
+    CLAW_OPEN,
+    CLAW_CLOSE,
 }
 
 enum class ActionAnalog1 : ActionEnumAnalog1 {
     ROTATION,
-    H_SLIDE_EXTEND_MANUAL,
-    H_SLIDE_RETRACT_MANUAL,
+    H_SLIDE_MOVE_MANUAL,
+    V_SLIDE_MOVE_MANUAL,
+    ARM_MOVE_MANUAL,
 }
 
 enum class ActionAnalog2 : ActionEnumAnalog2 {

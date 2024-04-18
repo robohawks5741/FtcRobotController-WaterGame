@@ -24,6 +24,7 @@ import kotlinx.coroutines.channels.ActorScope
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.max
@@ -31,27 +32,36 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@TeleOp
-class MainDriverControl : OpMode() {
+class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host) {
+    @TeleOp(name = "MainDriverControl")
+    class Host : OpModeHost<MainDriverControl>(MainDriverControl::class)
 
     private val gamepadyn = Gamepadyn.create(
         ActionDigital::class,
         ActionAnalog1::class,
         ActionAnalog2::class,
-        InputBackendFtc(this),
+        InputBackendFtc(host),
         strict = true
     )
 
-    private lateinit var leftFrontDrive: DcMotorEx
-    private lateinit var leftBackDrive: DcMotorEx
-    private lateinit var rightFrontDrive: DcMotorEx
-    private lateinit var rightBackDrive: DcMotorEx
-    private var hSlideLeft: DcMotorEx? = null
-    private var hSlideRight: DcMotorEx? = null
-    private var vSlideLeft: DcMotorEx? = null
-    private var vSlideRight: DcMotorEx? = null
-    private var droneLaunch: Servo? = null
-    private lateinit var imu: IMU
+    private val p0 = gamepadyn.getPlayer(0)!!
+    private val p1 = gamepadyn.getPlayer(1)!!
+
+    private val leftFrontDrive: DcMotorEx   = getHardware("leftFront")!!
+    private val leftBackDrive: DcMotorEx    = getHardware("leftBack")!!
+    private val rightFrontDrive: DcMotorEx  = getHardware("rightFront")!!
+    private val rightBackDrive: DcMotorEx   = getHardware("rightBack")!!
+
+    private val imu: IMU                    = getHardware("imu")!!
+
+    private val hSlideRight: DcMotorEx?     = getHardware("hslideRight")
+    private val hSlideLeft: DcMotorEx?      = getHardware("hslideLeft")
+
+    private val vSlideLeft: DcMotorEx?      = getHardware("vslideLeft")
+    private val vSlideRight: DcMotorEx?     = getHardware("vslideRight")
+    private val droneLaunch: Servo?         = getHardware("drone")
+    private val arm: Servo?                 = getHardware("arm")
+    private val claw: Servo?                = getHardware("claw")
 
     private var useDriverRelative = true
     private var hasToggledDriverRelative = false
@@ -62,133 +72,9 @@ class MainDriverControl : OpMode() {
 
     private var hasLaunchedDrone = false
 
-    override fun init() {
-        leftFrontDrive = hardwareMap.search("leftFront")!!
-        leftBackDrive = hardwareMap.search("leftBack")!!
-        rightFrontDrive = hardwareMap.search("rightFront")!!
-        rightBackDrive = hardwareMap.search("rightBack")!!
-        hSlideRight = hardwareMap.search("hslideRight")
-        hSlideLeft = hardwareMap.search("hslideLeft")
-        vSlideRight = hardwareMap.search("vslideRight")
-        vSlideLeft = hardwareMap.search("vslideLeft")
-        droneLaunch = hardwareMap.search("drone")
-        imu = hardwareMap.search("imu")!!
-
-        leftFrontDrive.direction = DcMotorSimple.Direction.REVERSE
-        leftBackDrive.direction = DcMotorSimple.Direction.FORWARD
-        rightFrontDrive.direction = DcMotorSimple.Direction.FORWARD
-        rightBackDrive.direction = DcMotorSimple.Direction.REVERSE
-
-        hSlideLeft?.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        hSlideRight?.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        hSlideLeft?.targetPositionTolerance = 8
-        hSlideRight?.targetPositionTolerance = 8
-        hSlideRight?.targetPosition = 0
-        hSlideLeft?.targetPosition = 0
-        hSlideLeft?.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hSlideRight?.mode = DcMotor.RunMode.RUN_TO_POSITION
-        hSlideLeft?.direction = DcMotorSimple.Direction.FORWARD
-        hSlideRight?.direction = DcMotorSimple.Direction.REVERSE
-
-        // TODO: make these brake once we're confident
-        vSlideLeft?.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        vSlideRight?.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        vSlideLeft?.targetPositionTolerance = 8
-        vSlideRight?.targetPositionTolerance = 8
-        vSlideRight?.targetPosition = 0
-        vSlideLeft?.targetPosition = 0
-        vSlideLeft?.mode = DcMotor.RunMode.RUN_TO_POSITION
-        vSlideRight?.mode = DcMotor.RunMode.RUN_TO_POSITION
-        vSlideLeft?.direction = DcMotorSimple.Direction.FORWARD
-        vSlideRight?.direction = DcMotorSimple.Direction.REVERSE
-
-        droneLaunch?.position = 0.0
-
-        imu.initialize(IMU.Parameters(orientationOnRobot))
-        imu.resetYaw()
-
-        gamepadyn.getPlayer(0)!!.configuration = Configuration {
-            actionDigital(ActionDigital.TOGGLE_DRIVER_RELATIVITY) { input(RawInputDigital.SPECIAL_BACK) }
-            actionAnalog2(ActionAnalog2.MOVEMENT) { input(RawInputAnalog2.STICK_LEFT) }
-            actionAnalog1(ActionAnalog1.ROTATION) { split(input(RawInputAnalog2.STICK_RIGHT), Axis.X) }
-            actionDigital(ActionDigital.H_SLIDE_EXTEND) { gt(input(RawInputAnalog1.TRIGGER_RIGHT), constant(0.5f)) }
-            actionDigital(ActionDigital.H_SLIDE_RETRACT) { gt(input(RawInputAnalog1.TRIGGER_LEFT), constant(0.5f)) }
-        }
-
-        gamepadyn.getPlayer(1)!!.configuration = Configuration {
-            actionDigital(ActionDigital.LAUNCH_DRONE) { input(RawInputDigital.STICK_RIGHT_BUTTON) }
-            actionDigital(ActionDigital.H_SLIDE_EXTEND) { gt(input(RawInputAnalog1.TRIGGER_RIGHT), constant(0.5f)) }
-            actionDigital(ActionDigital.H_SLIDE_RETRACT) { gt(input(RawInputAnalog1.TRIGGER_LEFT), constant(0.5f)) }
-            actionDigital(ActionDigital.V_SLIDE_EXTEND) {
-                gt(
-                    split(
-                        input(RawInputAnalog2.STICK_RIGHT),
-                        Axis.Y
-                    ),
-                    constant(0.5f)
-                )
-            }
-            actionDigital(ActionDigital.V_SLIDE_RETRACT) {
-                lt(
-                    split(
-                        input(RawInputAnalog2.STICK_RIGHT),
-                        Axis.Y
-                    ),
-                    constant(-0.5f)
-                )
-            }
-        }
-
-        gamepadyn.addListener(ActionDigital.H_SLIDE_EXTEND) {
-            if (it.data()) {
-                hSlideLeft?.targetPosition = H_SLIDE_MAX
-                hSlideRight?.targetPosition = H_SLIDE_MAX
-            }
-        }
-
-        gamepadyn.addListener(ActionDigital.H_SLIDE_RETRACT) {
-            if (it.data()) {
-                hSlideLeft?.targetPosition = 0
-                hSlideRight?.targetPosition = 0
-            }
-        }
-
-        gamepadyn.addListener(ActionDigital.V_SLIDE_EXTEND) {
-            if (it.data()) {
-                vSlideLeft?.targetPosition = V_SLIDE_MAX
-                vSlideRight?.targetPosition = V_SLIDE_MAX
-            }
-        }
-
-        gamepadyn.addListener(ActionDigital.V_SLIDE_RETRACT) {
-            if (it.data()) {
-                vSlideLeft?.targetPosition = 0
-                vSlideRight?.targetPosition = 0
-            }
-        }
-
-        gamepadyn.addListener(ActionDigital.LAUNCH_DRONE) {
-            if (it.data() && !hasLaunchedDrone) {
-                droneLaunch?.position = 1.0
-            }
-        }
-
-        gamepadyn.addListener(ActionDigital.TOGGLE_DRIVER_RELATIVITY) {
-            if (it.data()) {
-                imu.resetYaw()
-                useDriverRelative = !useDriverRelative
-            }
-        }
-
-    }
-
     private fun handleDrive() {
 
         val p0 = gamepadyn.getPlayer(0)!!
-        // TODO: gamepadyn
-        p0.getState(ActionAnalog2.MOVEMENT)
-
-        //        val drive = shared.drive!!
 
         // counter-clockwise
         val currentYaw = imu.robotYawPitchRollAngles?.getYaw(AngleUnit.RADIANS) ?: 0.0
@@ -219,19 +105,12 @@ class MainDriverControl : OpMode() {
         val driveRelativeX = cos(driveTheta) * inputPower
         val driveRelativeY = sin(driveTheta) * inputPower
 
-        // \frac{1}{1+\sqrt{2\left(1-\frac{\operatorname{abs}\left(\operatorname{mod}\left(a,90\right)-45\right)}{45}\right)\ }}
-//        powerModifier = 1.0 / (1.0 + sqrt(2.0 * (1.0 - abs((gyroYaw % (PI / 2)) - (PI / 4)) / (PI / 4))))
-
-        val turnPower: Double = -rotation.toDouble().stickCurve()
-
         var max: Double
-
-        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
 
         // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
         val axial = if (useDriverRelative) driveRelativeX else -inputVector.x
         val lateral = if (useDriverRelative) -driveRelativeY else inputVector.y
-        val yaw = gamepad1.right_stick_x.toDouble()
+        val yaw = rotation.toDouble().stickCurve()
 
         // Combine the joystick requests for each axis-motion to determine each wheel's power.
         // Set up a variable for each drive wheel to save the power level for telemetry.
@@ -291,6 +170,19 @@ class MainDriverControl : OpMode() {
         telemetry.addLine("V. Slide Right Target Pos: ${vSlideRight?.targetPosition}")
     }
 
+    private fun handleIntake() {
+        val p1 = gamepadyn.getPlayer(1)!!
+        val armMove = p1.getState(ActionAnalog1.ARM_MOVE_MANUAL).x
+//        if (armMove.absoluteValue > 0.1) {
+//            armMove.
+//        }
+        val arm = arm
+        if (arm != null) arm.position = (arm.position + armMove * 0.1f).coerceIn(0.0..1.0)
+
+        telemetry.addLine("Claw Position: ${claw?.position}")
+        telemetry.addLine("Arm Position: ${arm?.position}")
+    }
+
     private fun handleDroneLaunch() {
 //        if (runtime > 90) {
 //
@@ -299,12 +191,142 @@ class MainDriverControl : OpMode() {
         telemetry.addLine("Drone launch servo pos: ${droneLaunch?.position}")
     }
 
+    override fun start() {
+
+        leftFrontDrive.direction = DcMotorSimple.Direction.REVERSE
+        leftBackDrive.direction = DcMotorSimple.Direction.FORWARD
+        rightFrontDrive.direction = DcMotorSimple.Direction.FORWARD
+        rightBackDrive.direction = DcMotorSimple.Direction.REVERSE
+
+        if (hSlideLeft != null && hSlideRight != null) {
+            hSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            hSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            hSlideLeft.targetPositionTolerance = 8
+            hSlideRight.targetPositionTolerance = 8
+            hSlideRight.targetPosition = 0
+            hSlideLeft.targetPosition = 0
+            hSlideLeft.mode = DcMotor.RunMode.RUN_TO_POSITION
+            hSlideRight.mode = DcMotor.RunMode.RUN_TO_POSITION
+            hSlideLeft.direction = DcMotorSimple.Direction.FORWARD
+            hSlideRight.direction = DcMotorSimple.Direction.REVERSE
+        }
+
+        if (vSlideLeft != null && vSlideRight != null) {
+            vSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            vSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
+            vSlideLeft.targetPositionTolerance = 8
+            vSlideRight.targetPositionTolerance = 8
+            vSlideRight.targetPosition = 0
+            vSlideLeft.targetPosition = 0
+            vSlideLeft.mode = DcMotor.RunMode.RUN_TO_POSITION
+            vSlideRight.mode = DcMotor.RunMode.RUN_TO_POSITION
+            vSlideLeft.direction = DcMotorSimple.Direction.FORWARD
+            vSlideRight.direction = DcMotorSimple.Direction.REVERSE
+        }
+
+        droneLaunch?.position = 0.0
+
+        imu.initialize(IMU.Parameters(orientationOnRobot))
+        imu.resetYaw()
+
+        gamepadyn.getPlayer(0)!!.configuration = Configuration {
+            actionDigital(ActionDigital.TOGGLE_DRIVER_RELATIVITY) { input(RawInputDigital.SPECIAL_BACK) }
+            actionAnalog2(ActionAnalog2.MOVEMENT) { input(RawInputAnalog2.STICK_LEFT) }
+            actionAnalog1(ActionAnalog1.ROTATION) { split(input(RawInputAnalog2.STICK_RIGHT), Axis.X) }
+            actionDigital(ActionDigital.H_SLIDE_EXTEND) { gt(input(RawInputAnalog1.TRIGGER_RIGHT), constant(0.5f)) }
+            actionDigital(ActionDigital.H_SLIDE_RETRACT) { gt(input(RawInputAnalog1.TRIGGER_LEFT), constant(0.5f)) }
+        }
+
+        gamepadyn.getPlayer(1)!!.configuration = Configuration {
+            actionDigital(ActionDigital.LAUNCH_DRONE) { input(RawInputDigital.STICK_RIGHT_BUTTON) }
+//            actionDigital(ActionDigital.H_SLIDE_EXTEND) { gt(input(RawInputAnalog1.TRIGGER_RIGHT), constant(0.5f)) }
+//            actionDigital(ActionDigital.H_SLIDE_RETRACT) { gt(input(RawInputAnalog1.TRIGGER_LEFT), constant(0.5f)) }
+            actionDigital(ActionDigital.V_SLIDE_EXTEND) {
+                gt(
+                    split(
+                        input(RawInputAnalog2.STICK_RIGHT),
+                        Axis.Y
+                    ),
+                    constant(0.5f)
+                )
+            }
+            actionDigital(ActionDigital.V_SLIDE_RETRACT) {
+                lt(
+                    split(
+                        input(RawInputAnalog2.STICK_RIGHT),
+                        Axis.Y
+                    ),
+                    constant(-0.5f)
+                )
+            }
+            actionDigital(ActionDigital.CLAW_CLOSE) { input(RawInputDigital.BUMPER_LEFT) }
+            actionDigital(ActionDigital.CLAW_OPEN) { input(RawInputDigital.BUMPER_RIGHT) }
+            actionAnalog1(ActionAnalog1.ARM_MOVE_MANUAL) {
+                subtract(
+                    input(RawInputAnalog1.TRIGGER_RIGHT),
+                    input(RawInputAnalog1.TRIGGER_LEFT)
+                )
+            }
+            actionDigital(ActionDigital.ARM_EXTEND) { input(RawInputDigital.FACE_DOWN) }
+            actionDigital(ActionDigital.ARM_RETRACT) { input(RawInputDigital.FACE_RIGHT) }
+        }
+
+        gamepadyn.addListener(ActionDigital.H_SLIDE_EXTEND) {
+            if (it.data()) {
+                hSlideLeft?.targetPosition = H_SLIDE_MAX
+                hSlideRight?.targetPosition = H_SLIDE_MAX
+            }
+        }
+
+        gamepadyn.addListener(ActionDigital.H_SLIDE_RETRACT) {
+            if (it.data()) {
+                hSlideLeft?.targetPosition = 0
+                hSlideRight?.targetPosition = 0
+            }
+        }
+
+        gamepadyn.addListener(ActionDigital.V_SLIDE_EXTEND) {
+            if (it.data()) {
+                vSlideLeft?.targetPosition = V_SLIDE_MAX
+                vSlideRight?.targetPosition = V_SLIDE_MAX
+            }
+        }
+
+        gamepadyn.addListener(ActionDigital.V_SLIDE_RETRACT) {
+            if (it.data()) {
+                vSlideLeft?.targetPosition = 0
+                vSlideRight?.targetPosition = 0
+            }
+        }
+
+        gamepadyn.addListener(ActionDigital.LAUNCH_DRONE) {
+            if (it.data() && !hasLaunchedDrone) {
+                droneLaunch?.position = 1.0
+            }
+        }
+
+        gamepadyn.addListener(ActionDigital.TOGGLE_DRIVER_RELATIVITY) {
+            if (it.data()) {
+                imu.resetYaw()
+                useDriverRelative = !useDriverRelative
+            }
+        }
+
+        gamepadyn.addListener(ActionDigital.CLAW_OPEN) { if (it.data()) claw?.position = 1.0 }
+        gamepadyn.addListener(ActionDigital.CLAW_CLOSE) { if (it.data()) claw?.position = 0.0 }
+
+        gamepadyn.addListener(ActionDigital.ARM_EXTEND) { if (it.data()) arm?.position = 1.0 }
+        gamepadyn.addListener(ActionDigital.ARM_RETRACT) { if (it.data()) arm?.position = 0.0 }
+
+    }
+
     override fun loop() {
         gamepadyn.update()
         handleDrive()
         handleHorizontalSlide()
         handleVerticalSlide()
         handleDroneLaunch()
+        handleIntake()
 
         telemetry.update()
     }
