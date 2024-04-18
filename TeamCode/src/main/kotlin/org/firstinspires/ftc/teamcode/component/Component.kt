@@ -43,7 +43,7 @@ abstract class Component(private val manager: ComponentManager) {
         opMode.telemetry.addLine("[${this::class.simpleName}] $line");
     }
 
-    open fun update() {}
+    open fun loop() {}
     open fun start() {}
     open fun stop() {}
 
@@ -57,7 +57,13 @@ abstract class Component(private val manager: ComponentManager) {
 
         fun update() {
             for (component in components) {
-                component.update()
+                if (component.status.functionality != Functionality.FULL) {
+                    opMode.telemetry.addLine(
+                        "[${if (component.status.functionality == Functionality.NONE) "ERROR" else "WARNING"}] Component \"${component::class.simpleName}\" is not fully functional!" +
+                        "\nDetails: ${component.status.hardware.joinToString() }}"
+                    )
+                }
+                component.loop()
             }
         }
 

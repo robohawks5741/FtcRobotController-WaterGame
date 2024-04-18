@@ -214,7 +214,7 @@ object DemoSystem {
     class DemoRecorderBlueLeft : DemoRecorder() {
         init {
             inputFileName = "blueLeft.replay"
-            outputFileName = "blueLeft.replay"
+            outputFileName = inputFileName
         }
     }
 
@@ -222,7 +222,7 @@ object DemoSystem {
     class DemoRecorderBlueRight : DemoRecorder() {
         init {
             inputFileName = "blueRight.replay"
-            outputFileName = "blueRight.replay"
+            outputFileName = inputFileName
         }
     }
 
@@ -230,7 +230,7 @@ object DemoSystem {
     class DemoRecorderRedLeft : DemoRecorder() {
         init {
             inputFileName = "redLeft.replay"
-            outputFileName = "redLeft.replay"
+            outputFileName = inputFileName
         }
     }
 
@@ -238,11 +238,16 @@ object DemoSystem {
     class DemoRecorderRedRight : DemoRecorder() {
         init {
             inputFileName = "redRight.replay"
-            outputFileName = "redRight.replay"
+            outputFileName = inputFileName
         }
     }
 
     open class DemoRecorder : OpMode() {
+
+        init {
+            inputFileName = "0.replay"
+            outputFileName = inputFileName
+        }
 
         private var timeOffset: Double = 0.0
         private val emulatedOpMode: OpMode = playbackOpmode.createInstance()
