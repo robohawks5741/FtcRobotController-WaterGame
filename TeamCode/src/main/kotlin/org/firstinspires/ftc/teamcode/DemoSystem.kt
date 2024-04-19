@@ -35,6 +35,7 @@ package org.firstinspires.ftc.teamcode
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import android.content.Context
 import android.util.Base64
 import android.util.Log
 import com.google.gson.Gson
@@ -43,8 +44,10 @@ import com.google.gson.JsonNull
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
+import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.*
 import java.io.BufferedReader
 import java.io.File

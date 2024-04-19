@@ -25,8 +25,8 @@ class VerticalSlide(manager: ComponentManager) : Component(manager) {
             vSlideLeft.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
             vSlideRight.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
 
-            vSlideLeft.targetPositionTolerance = 60
-            vSlideRight.targetPositionTolerance = 60
+            vSlideLeft.targetPositionTolerance = 10
+            vSlideRight.targetPositionTolerance = 10
 
             vSlideLeft.targetPosition = 0
             vSlideRight.targetPosition = 0
@@ -40,10 +40,12 @@ class VerticalSlide(manager: ComponentManager) : Component(manager) {
     }
 
     override fun loop() {
-        telemetry.addLine("V. Slide Left Current Pos: ${vSlideLeft?.currentPosition}")
-        telemetry.addLine("V. Slide Left Target Pos: ${vSlideLeft?.targetPosition}")
-        telemetry.addLine("V. Slide Right Current Pos: ${vSlideRight?.currentPosition}")
-        telemetry.addLine("V. Slide Right Target Pos: ${vSlideRight?.targetPosition}")
+        if (status.functionality != Functionality.NONE) {
+            telemetry.addLine("V. Slide Left Current Pos: ${vSlideLeft?.currentPosition}")
+            telemetry.addLine("V. Slide Left Target Pos: ${vSlideLeft?.targetPosition}")
+            telemetry.addLine("V. Slide Right Current Pos: ${vSlideRight?.currentPosition}")
+            telemetry.addLine("V. Slide Right Target Pos: ${vSlideRight?.targetPosition}")
+        }
     }
 
     fun retract() { position = 0 }

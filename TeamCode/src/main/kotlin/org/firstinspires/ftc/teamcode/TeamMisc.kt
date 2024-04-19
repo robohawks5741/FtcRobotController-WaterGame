@@ -1,6 +1,7 @@
 @file:JvmName("TeamMisc")
 package org.firstinspires.ftc.teamcode
 
+import android.util.Log
 import com.acmerobotics.roadrunner.Vector2d
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
@@ -55,11 +56,17 @@ fun Double.clamp(min: Double, max: Double) = if (this < min) min; else if (this 
  */
 fun KMutableProperty0<Boolean>.flip(): Unit = this.set(!this.get())
 
-fun isOpModeTeleOp(opMode: OpMode) = when {
-    opMode::class.hasAnnotation<TeleOp>() -> true
-    opMode::class.hasAnnotation<Autonomous>() -> false
-    else -> {
-        val hasAuto = opMode::class.qualifiedName?.contains("auto", true)
-        if (hasAuto == null) true else !hasAuto
+fun addieLog(message: String) { Log.i("ADDIE'S INTERNAL", message) }
+
+fun isOpModeTeleOp(opMode: OpMode): Boolean {
+    val isTeleOp = when {
+        opMode::class.hasAnnotation<TeleOp>() -> true
+        opMode::class.hasAnnotation<Autonomous>() -> false
+        else -> {
+            val hasAuto = opMode::class.qualifiedName?.contains("auto", true)
+            if (hasAuto == null) true else !hasAuto
+        }
     }
+    addieLog("OpMode \"${opMode::class.simpleName}\" is (probably) ${if (isTeleOp) "TeleOp" else "Autonomous"}!")
+    return isTeleOp
 }

@@ -15,6 +15,8 @@ enum class ActionDigital : ActionEnumDigital {
     ARM_RETRACT,
     CLAW_OPEN,
     CLAW_CLOSE,
+    WRIST_EXTEND,
+    WRIST_RETRACT,
 }
 
 enum class ActionAnalog1 : ActionEnumAnalog1 {
@@ -22,6 +24,7 @@ enum class ActionAnalog1 : ActionEnumAnalog1 {
     H_SLIDE_MOVE_MANUAL,
     V_SLIDE_MOVE_MANUAL,
     ARM_MOVE_MANUAL,
+    WRIST_MOVE_MANUAL,
 }
 
 enum class ActionAnalog2 : ActionEnumAnalog2 {

@@ -39,10 +39,12 @@ class HorizontalSlide(manager: ComponentManager) : Component(manager) {
     }
 
     override fun loop() {
-        telemetry.addLine("H. Slide Left Current Pos: ${hSlideLeft?.currentPosition}")
-        telemetry.addLine("H. Slide Left Target Pos: ${hSlideLeft?.targetPosition}")
-        telemetry.addLine("H. Slide Right Current Pos: ${hSlideRight?.currentPosition}")
-        telemetry.addLine("H. Slide Right Target Pos: ${hSlideRight?.targetPosition}")
+        if (status.functionality != Functionality.NONE) {
+            telemetry.addLine("H. Slide Left Current Pos: ${hSlideLeft?.currentPosition}")
+            telemetry.addLine("H. Slide Left Target Pos: ${hSlideLeft?.targetPosition}")
+            telemetry.addLine("H. Slide Right Current Pos: ${hSlideRight?.currentPosition}")
+            telemetry.addLine("H. Slide Right Target Pos: ${hSlideRight?.targetPosition}")
+        }
     }
 
     fun retract() { position = 0 }

@@ -16,6 +16,10 @@ class Claw(manager: ComponentManager) : Component(manager) {
             claw?.position = if (field) 1.0 else 0.0
         }
 
+    override fun loop() {
+        if (claw != null) telemetry.addLine("Claw Position: $isOpen (0.0 closed -> 1.0 open)")
+    }
+
     init {
         isOpen = true
 
