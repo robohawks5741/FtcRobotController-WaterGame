@@ -1,0 +1,6 @@
+<root>
+    <item
+        name='org.openftc.easyopencv.OpenCvCameraFactory org.openftc.easyopencv.OpenCvWebcam createWebcam(org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName) 0'>
+        <annotation name='androidx.annotation.NonNull' />
+    </item>
+</root>

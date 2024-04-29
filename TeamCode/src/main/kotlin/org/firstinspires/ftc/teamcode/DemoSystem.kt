@@ -1,16 +1,5 @@
 package org.firstinspires.ftc.teamcode
 
-/**
- * RoboHawks 5741 Demo System v1
- * Used to create an autonomous OpMode in around 2 hours.
- * It's a bit clunky, but we used it to "reprogram" our autonomous on the fly.
- * You can record TeleOp gameplay, then play it back as autonomous.
- * REQUIREMENTS:
- * - A project with Kotlin support (root buildscript dependency `org.jetbrains.kotlin:kotlin-gradle-plugin` and plugin `org.jetbrains.kotlin.android`)
- * - Kotlin's reflection library (org.jetbrains.kotlin:kotlin-reflect)
- * - A TeleOp OpMode that **DOESN'T INHERIT FROM LinearOpMode**
- */
-
 /*
  * The Clear BSD License
  *
@@ -46,6 +35,7 @@ package org.firstinspires.ftc.teamcode
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
+import android.content.Context
 import android.util.Base64
 import android.util.Log
 import com.google.gson.Gson
@@ -54,8 +44,10 @@ import com.google.gson.JsonNull
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 import com.qualcomm.robotcore.eventloop.opmode.OpMode
+import com.qualcomm.robotcore.eventloop.opmode.OpModeManagerNotifier
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import com.qualcomm.robotcore.hardware.Gamepad
+import com.qualcomm.robotcore.hardware.HardwareMap
 import org.firstinspires.ftc.teamcode.*
 import java.io.BufferedReader
 import java.io.File
@@ -68,13 +60,49 @@ import kotlin.math.floor
 import kotlin.reflect.KClass
 import kotlin.reflect.full.createInstance
 
-
+/**
+ * # RoboHawks 5741 Demo System v2
+ * Created in a few hours before a scrimmage. Allows any team with a functioning TeleOp to use that
+ * same code in Autonomous by recording their gameplay (like demos from Quake and Source).
+ *
+ * It's a bit clunky, you can "reprogram" our autonomous without having to recompile code.
+ *
+ *
+ * ## How it Works:
+ * Using reflection and a bit of other trickery, the OpModes in this file "pretend" to be the FTC
+ * SDK. When the Demo OpModes run, they pass what the FTC SDK passes to them to an
+ * OpMode that they instantiated (sort of like an emulator).
+ * When recording, the OpMode will intercept the current state of the gamepads and record it.
+ * After the OpMode stops, it will write that data to a file, stored as JSON and Base64.
+ * During playback, the OpMode will ignore gamepad input, and will send the previously recorded
+ * input to the OpMode it is "emulating," thus recreating what was previously recorded.
+ * There is no error correction in the demo system. The robot does not try to retrace its steps,
+ * it simply repeats the inputs that you, the human player, gave it when it was running.
+ * As such, we HIGHLY recommend programming your autonomous manually, as you have fine grained
+ * control over the robot's behavior.
+ * The DemoSystem has no knowledge of anything your robot does, but YOU do.
+ * Maybe you could even extend the DemoSystem to meet your more specific needs?
+ *
+ *
+ * ## How to Customize the DemoSystem (aka. Going Forward)
+ * We highly recommend a system for recording and playing back multiple takes;
+ * as-is, **the DemoSystem only stores one recording,** and there is no "undo."
+ * The filenames of the currently active demos are stored as global variables
+ * ([inputFileName] and [outputFileName]), and you could create a way to cycle them out.
+ * Demos are persistent, and can only be fully removed or moved around by using ADB/Android Studio.
+ * If you want to know where they're being stored, open LogCat before you run a DemoSystem OpMode.
+ *
+ *
+ * ## Setup Requirements:
+ * - A project with Kotlin support (see [Using the Kotlin Programming Language - FIRST Tech Challenge](https://ftc-docs.firstinspires.org/en/latest/programming_resources/shared/installing_kotlin/Installing-Kotlin.html))
+ * - Kotlin's reflection library (org.jetbrains.kotlin:kotlin-reflect)
+ * - An OpMode controlled with gamepad input (which may be a LinearOpMode)
+ */
 @Suppress("unused")
 object DemoSystem {
-
     /** Replace this with your own Driver Control. */
-    val PLAYBACK_OPMODE: KClass<*> = ClayJanuaryDriverControl::class
-    const val TICK_RATE: Double = 30.0
+    var playbackOpmode: KClass<out OpMode> = MainDriverControl.Host::class
+    const val TICK_RATE: Double = 60.0
     const val DEMO_DIRECTORY: String = "demos"
     var outputFileName: String = "0.replay"
     var inputFileName: String = "0.replay"
@@ -84,15 +112,12 @@ object DemoSystem {
 
     fun ByteArray.toBase64(): String = String(Base64.encode(this, Base64.DEFAULT or Base64.NO_WRAP))
 
+    // TODO: port to LinearOpMode for more control and to drop less frames
     @Autonomous(name = "Play Recorded Demo", group = "DemoSystem")
     open class DemoPlayback : OpMode() {
 
         private var timeOffset: Double = 0.0
-        private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
-        private var hackedInternalRunOpMode: Method? = null
-        private var hackedInternalOnStart: Method? = null
-        private var hackedInternalOnEventLoopIteration: Method? = null
-        private var hackedInternalOnStopRequested: Method? = null
+        private val emulatedOpMode: OpMode = playbackOpmode.createInstance()
         private var opThread: Thread? = null
 
         final override fun init() {
@@ -127,15 +152,16 @@ object DemoSystem {
 //            emulatedOpMode.internalOpModeServices = this.internalOpModeServices
             emulatedOpMode.time = this.time
 
-            try {
-                hackedInternalRunOpMode             = emulatedOpMode::class.java.getMethod("internalRunOpMode")
-                hackedInternalOnStart               = emulatedOpMode::class.java.getMethod("internalOnStart")
-                hackedInternalOnEventLoopIteration  = emulatedOpMode::class.java.getMethod("internalOnEventLoopIteration")
-                hackedInternalOnStopRequested       = emulatedOpMode::class.java.getMethod("internalOnStopRequested")
-                // we don't need newGamepadDataAvailable because we do that manually
-            } catch (e: Exception) {
-                telemetry.addLine("error getting \"hacked\" method: ${e.localizedMessage}")
-            }
+//            try {
+//
+//                hackedInternalRunOpMode             = emulatedOpMode::class.java.getMethod("internalRunOpMode")
+//                hackedInternalOnStart               = emulatedOpMode::class.java.getMethod("internalOnStart")
+//                hackedInternalOnEventLoopIteration  = emulatedOpMode::class.java.getMethod("internalOnEventLoopIteration")
+//                hackedInternalOnStopRequested       = emulatedOpMode::class.java.getMethod("internalOnStopRequested")
+//                // we don't need newGamepadDataAvailable because we do that manually
+//            } catch (e: Exception) {
+//                telemetry.addLine("error getting \"hacked\" method: ${e.localizedMessage}")
+//            }
 
             if (emulatedOpMode is LinearOpMode) {
                 opThread = thread(
@@ -145,7 +171,10 @@ object DemoSystem {
                     name = "Addie's Emulated OpMode Thread",
                     priority = -1
                 ) {
-                    hackedInternalRunOpMode?.invoke(emulatedOpMode)
+                    emulatedOpMode.runOpMode()
+                    // TODO: this is not how this actually works. the thread may end up being killed abruptly
+                    opThread!!.interrupt()
+                    emulatedOpMode.requestOpModeStop()
                 }
             }
             emulatedOpMode.init()
@@ -155,8 +184,7 @@ object DemoSystem {
             this.timeOffset = this.time
             emulatedOpMode.time = this.time - timeOffset
 
-            if (emulatedOpMode is LinearOpMode) hackedInternalOnStart?.invoke(emulatedOpMode)
-            emulatedOpMode.start()
+            if (emulatedOpMode is LinearOpMode) opThread!!.interrupt() else emulatedOpMode.start()
         }
 
         final override fun loop() {
@@ -173,12 +201,11 @@ object DemoSystem {
                 Log.i("DemoSystem", "skipping frame read #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
             }
 
-            if (emulatedOpMode is LinearOpMode) hackedInternalOnEventLoopIteration?.invoke(emulatedOpMode)
-            emulatedOpMode.loop()
+            if (emulatedOpMode !is LinearOpMode) emulatedOpMode.loop()
         }
 
         final override fun stop() {
-            if (emulatedOpMode is LinearOpMode) hackedInternalOnStopRequested?.invoke(emulatedOpMode)
+            if (emulatedOpMode !is LinearOpMode) emulatedOpMode.requestOpModeStop()
             emulatedOpMode.stop()
 
             Thread.sleep(50)
@@ -186,15 +213,48 @@ object DemoSystem {
         }
     }
 
-    @TeleOp(name = "Record Demo", group = "DemoSystem")
-    class DemoRecorder : OpMode() {
+    @TeleOp(name = "Record Demo (BLUE LEFT)", group = "DemoSystem")
+    class DemoRecorderBlueLeft : DemoRecorder() {
+        init {
+            inputFileName = "blueLeft.replay"
+            outputFileName = inputFileName
+        }
+    }
+
+    @TeleOp(name = "Record Demo (BLUE RIGHT)", group = "DemoSystem")
+    class DemoRecorderBlueRight : DemoRecorder() {
+        init {
+            inputFileName = "blueRight.replay"
+            outputFileName = inputFileName
+        }
+    }
+
+    @TeleOp(name = "Record Demo (RED LEFT)", group = "DemoSystem")
+    class DemoRecorderRedLeft : DemoRecorder() {
+        init {
+            inputFileName = "redLeft.replay"
+            outputFileName = inputFileName
+        }
+    }
+
+    @TeleOp(name = "Record Demo (RED RIGHT)", group = "DemoSystem")
+    class DemoRecorderRedRight : DemoRecorder() {
+        init {
+            inputFileName = "redRight.replay"
+            outputFileName = inputFileName
+        }
+    }
+
+    @TeleOp(name = "Record Demo (0.replay)", group = "DemoSystem")
+    open class DemoRecorder : OpMode() {
+
+        init {
+            inputFileName = "0.replay"
+            outputFileName = inputFileName
+        }
 
         private var timeOffset: Double = 0.0
-        private val emulatedOpMode: OpMode = PLAYBACK_OPMODE.createInstance() as OpMode
-        private var hackedInternalRunOpMode: Method? = null
-        private var hackedInternalOnStart: Method? = null
-        private var hackedInternalOnEventLoopIteration: Method? = null
-        private var hackedInternalOnStopRequested: Method? = null
+        private val emulatedOpMode: OpMode = playbackOpmode.createInstance()
         private var opThread: Thread? = null
 
         override fun init() {
@@ -213,15 +273,6 @@ object DemoSystem {
 //            emulatedOpMode.internalOpModeServices = this.internalOpModeServices
             emulatedOpMode.time = this.time
 
-            try {
-                hackedInternalRunOpMode             = emulatedOpMode::class.java.getMethod("internalRunOpMode")
-                hackedInternalOnStart               = emulatedOpMode::class.java.getMethod("internalOnStart")
-                hackedInternalOnEventLoopIteration  = emulatedOpMode::class.java.getMethod("internalOnEventLoopIteration")
-                hackedInternalOnStopRequested       = emulatedOpMode::class.java.getMethod("internalOnStopRequested")
-                // we don't need newGamepadDataAvailable because we do that manually
-            } catch (e: Exception) {
-                telemetry.addLine("error getting \"hacked\" method: ${e.localizedMessage}")
-            }
 
             if (emulatedOpMode is LinearOpMode) {
                 opThread = thread(
@@ -231,7 +282,10 @@ object DemoSystem {
                     name = "Addie's Emulated OpMode Thread",
                     priority = -1
                 ) {
-                    hackedInternalRunOpMode?.invoke(emulatedOpMode)
+                    emulatedOpMode.runOpMode()
+                    // TODO: this is not how this actually works. the thread may end up being killed abruptly
+                    opThread!!.interrupt()
+                    emulatedOpMode.requestOpModeStop()
                 }
             }
             emulatedOpMode.init()
@@ -244,8 +298,7 @@ object DemoSystem {
             emulatedOpMode.gamepad2.copy(this.gamepad2)
             Log.i("DemoSystem", "Started recording.")
 
-            if (emulatedOpMode is LinearOpMode) hackedInternalOnStart?.invoke(emulatedOpMode)
-            emulatedOpMode.start()
+            if (emulatedOpMode is LinearOpMode) opThread!!.interrupt() else emulatedOpMode.start()
         }
 
         override fun loop() {
@@ -263,15 +316,15 @@ object DemoSystem {
                 Log.i("DemoSystem", "skipping frame write #$index (max frames = ${frames1.size}, frame@index = ${frames1[index]})")
             }
 
-            if (emulatedOpMode is LinearOpMode) hackedInternalOnEventLoopIteration?.invoke(emulatedOpMode)
-            emulatedOpMode.loop()
+            if (emulatedOpMode !is LinearOpMode) emulatedOpMode.loop()
         }
 
         override fun stop() {
-            if (emulatedOpMode is LinearOpMode) hackedInternalOnStopRequested?.invoke(emulatedOpMode)
+            Log.i("DemoSystem", "Got stopped!")
+//            if (emulatedOpMode !is LinearOpMode) emulatedOpMode.requestOpModeStop()
             emulatedOpMode.stop()
 
-            Thread.sleep(50)
+//            Thread.sleep(50)
             opThread?.interrupt()
 
             Log.i("DemoSystem", "Demo recorded, frames:")
@@ -283,9 +336,7 @@ object DemoSystem {
 
             val context = hardwareMap.appContext
             val dir = File(context.filesDir, DEMO_DIRECTORY)
-            if (!dir.exists()) {
-                dir.mkdir()
-            }
+            if (!dir.exists()) dir.mkdir()
             val file = File(dir, outputFileName)
             val jsonAllFrames = JsonArray()
             val jsonFrames1 = JsonArray()
