@@ -31,10 +31,7 @@ class Arm(manager: ComponentManager) : Component(manager) {
     init {
         position = 0.0
 
-        val functionality = when {
-            arm == null -> Functionality.NONE
-            else -> Functionality.FULL
-        }
+        val functionality = if (arm == null) Functionality.NONE else Functionality.FULL
         val hardwareSet: Set<HardwareUsage> = setOf(
             HardwareUsage("arm", Servo::class, arm != null)
         )

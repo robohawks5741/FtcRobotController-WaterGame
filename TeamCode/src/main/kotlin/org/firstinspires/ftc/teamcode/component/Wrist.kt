@@ -30,10 +30,7 @@ class Wrist(manager: ComponentManager) : Component(manager) {
     init {
         position = 0.0
 
-        val functionality = when {
-            wrist == null -> Functionality.NONE
-            else -> Functionality.FULL
-        }
+        val functionality = if (wrist == null) Functionality.NONE else Functionality.FULL
         val hardwareSet: Set<HardwareUsage> = setOf(
             HardwareUsage("wrist", Servo::class, wrist != null)
         )

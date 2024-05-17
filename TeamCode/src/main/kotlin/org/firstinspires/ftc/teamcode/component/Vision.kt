@@ -16,7 +16,12 @@ import org.openftc.easyopencv.OpenCvCameraRotation
 import org.openftc.easyopencv.OpenCvInternalCamera.CameraDirection
 import org.openftc.easyopencv.OpenCvPipeline
 
-
+/**
+ * This module probably doesn't work.
+ * I don't think I've tested it.
+ * Use it more for reference of structure rather than as what working code should look like.
+ * Delete it if it isn't relevant in a later season.
+ */
 class Vision(
     manager: ComponentManager,
     private val alliance: Alliance

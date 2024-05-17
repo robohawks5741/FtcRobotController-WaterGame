@@ -23,10 +23,7 @@ class Claw(manager: ComponentManager) : Component(manager) {
     init {
         isOpen = true
 
-        val functionality = when {
-            claw == null -> Functionality.NONE
-            else -> Functionality.FULL
-        }
+        val functionality = if (claw == null) Functionality.NONE else Functionality.FULL
         val hardwareSet: Set<HardwareUsage> = setOf(
             HardwareUsage("claw", Servo::class, claw != null)
         )

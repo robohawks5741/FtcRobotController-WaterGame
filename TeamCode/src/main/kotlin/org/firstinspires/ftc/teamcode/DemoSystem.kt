@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode
 /*
  * The Clear BSD License
  *
- * Copyright (c) 2023 RoboHawks 5741
+ * Copyright (c) 2024 RoboHawks 5741
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -62,8 +62,9 @@ import kotlin.reflect.full.createInstance
 
 /**
  * # RoboHawks 5741 Demo System v2
- * Created in a few hours before a scrimmage. Allows any team with a functioning TeleOp to use that
- * same code in Autonomous by recording their gameplay (like demos from Quake and Source).
+ * Originally created in a few hours before a scrimmage.
+ * Allows any team with a functioning TeleOp to use that
+ * code in the Autonomous phase by _recording their gameplay_ (like demos from Quake and Source).
  *
  * It's a bit clunky, you can "reprogram" our autonomous without having to recompile code.
  *

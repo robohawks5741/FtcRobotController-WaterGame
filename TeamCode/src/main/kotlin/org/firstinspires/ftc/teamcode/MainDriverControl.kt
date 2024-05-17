@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.component.Drive
 import org.firstinspires.ftc.teamcode.component.VerticalSlide
 import org.firstinspires.ftc.teamcode.component.Wrist
 
+
 class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host) {
     @TeleOp(name = "MainDriverControl")
     class Host : OpModeHost<MainDriverControl>(MainDriverControl::class)
@@ -34,8 +35,8 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
     private val arm = Arm(componentManager)
     private val drive = Drive(componentManager)
     // TODO: wrist component
-//    private val wrist = Wrist(componentManager)
-    //    private val horizontalSlide = HorizontalSlide(componentManager)
+    // private val wrist = Wrist(componentManager)
+    // private val horizontalSlide = HorizontalSlide(componentManager)
     private val verticalSlide = VerticalSlide(componentManager)
 
     private val droneLaunch: Servo? = getHardware("drone")
@@ -154,7 +155,6 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         gamepadyn.update()
 
         arm.position = (arm.position + p1.getState(ActionAnalog1.ARM_MOVE_MANUAL).x * 0.0016f).coerceIn(0.0..1.0)
-//        wrist.position = (wrist.position + p1.getState(ActionAnalog1.WRIST_MOVE_MANUAL).x * 0.0016f).coerceIn(0.0..1.0)
         telemetry.addLine("Drone launch servo pos: ${droneLaunch?.position}")
 
         telemetry.update()

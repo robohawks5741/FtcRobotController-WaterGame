@@ -3,7 +3,9 @@
 ## Notes
 
 - Our Robot Controller is tested with the Java 11 JDK. Any lower or higher might not work.
-- We write our code in Kotlin primarily, but always try to maintain Java usability with `@Jvm` annotations.
+- We write almost all of our code in Kotlin, but try to maintain sensible Java compatibility with [these annotations](https://kotlinlang.org/docs/java-to-kotlin-interop.html).
+- The [Gamepadyn library](https://github.com/addiment/gamepadyn) is redistributed in binary form here.
+  - This version has its own branch (`working-prod`), but some day it should probably use `main` (once main is updated to 0.4.0+)
 
 # Upstream Readme
 

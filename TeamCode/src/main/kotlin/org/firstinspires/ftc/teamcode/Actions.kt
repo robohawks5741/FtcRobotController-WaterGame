@@ -4,6 +4,10 @@ import computer.living.gamepadyn.ActionEnumAnalog1
 import computer.living.gamepadyn.ActionEnumAnalog2
 import computer.living.gamepadyn.ActionEnumDigital
 
+/*
+ * This file holds our Gamepadyn action definitions.
+ */
+
 enum class ActionDigital : ActionEnumDigital {
     TOGGLE_DRIVER_RELATIVITY,
     LAUNCH_DRONE,
