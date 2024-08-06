@@ -39,30 +39,31 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
     // private val horizontalSlide = HorizontalSlide(componentManager)
     private val verticalSlide = VerticalSlide(componentManager)
 
-    private val droneLaunch: Servo? = getHardware("drone")
+    private val droneLaunch: Servo? = getHardware("drone") //looking for a servo with name "drone"
 
     private var hasLaunchedDrone = false
 
+    //Initializing code below
     override fun start() {
 
         droneLaunch?.position = 1.0
 
         p0.configuration = Configuration {
-            actionDigital(ActionDigital.TOGGLE_DRIVER_RELATIVITY) { input(RawInputDigital.SPECIAL_BACK) }
-            actionAnalog2(ActionAnalog2.MOVEMENT) { input(RawInputAnalog2.STICK_LEFT) }
+            actionDigital(ActionDigital.TOGGLE_DRIVER_RELATIVITY) { input(RawInputDigital.SPECIAL_BACK) } //toggle driver relative controls
+            actionAnalog2(ActionAnalog2.MOVEMENT) { input(RawInputAnalog2.STICK_LEFT) } //lateral movement, left stick
             actionAnalog1(ActionAnalog1.ROTATION) {
                 split(
-                    input(RawInputAnalog2.STICK_RIGHT),
+                    input(RawInputAnalog2.STICK_RIGHT), //rotation controlled by right stick left/right
                     Axis.X
                 )
             }
-            actionDigital(ActionDigital.H_SLIDE_EXTEND) {
+            actionDigital(ActionDigital.H_SLIDE_EXTEND) {// horizontal slide extend, right trigger
                 gt(
                     input(RawInputAnalog1.TRIGGER_RIGHT),
                     constant(0.5f)
                 )
             }
-            actionDigital(ActionDigital.H_SLIDE_RETRACT) {
+            actionDigital(ActionDigital.H_SLIDE_RETRACT) {// retracts slide, left trigger
                 gt(
                     input(RawInputAnalog1.TRIGGER_LEFT),
                     constant(0.5f)
@@ -71,7 +72,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         }
 
         p1.configuration = Configuration {
-            actionDigital(ActionDigital.LAUNCH_DRONE) { input(RawInputDigital.STICK_RIGHT_BUTTON) }
+            actionDigital(ActionDigital.LAUNCH_DRONE) { input(RawInputDigital.STICK_RIGHT_BUTTON) } //drone launch (not currently working by the looks of it)
 
 //            actionDigital(ActionDigital.H_SLIDE_EXTEND) {
 //                    gt(
@@ -86,7 +87,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
 //                    )
 //            }
 
-            actionDigital(ActionDigital.V_SLIDE_EXTEND) {
+            actionDigital(ActionDigital.V_SLIDE_EXTEND) {//vertical slide extend, right stick up
                 gt(
                     split(
                         input(RawInputAnalog2.STICK_RIGHT),
@@ -95,7 +96,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
                     constant(0.5f)
                 )
             }
-            actionDigital(ActionDigital.V_SLIDE_RETRACT) {
+            actionDigital(ActionDigital.V_SLIDE_RETRACT) {//vertical slide extend, right stick down
                 lt(
                     split(
                         input(RawInputAnalog2.STICK_RIGHT),
@@ -105,7 +106,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
                 )
             }
 
-            actionDigital(ActionDigital.CLAW_CLOSE) { input(RawInputDigital.BUMPER_LEFT) }
+            actionDigital(ActionDigital.CLAW_CLOSE) { input(RawInputDigital.BUMPER_LEFT) } //Claw open and close, right and left bumper respectively
             actionDigital(ActionDigital.CLAW_OPEN) { input(RawInputDigital.BUMPER_RIGHT) }
 
             actionAnalog1(ActionAnalog1.ARM_MOVE_MANUAL) {
@@ -126,7 +127,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         }
 
 //        gamepadyn.addListener(ActionDigital.H_SLIDE_EXTEND) { if (it.data()) horizontalSlide.extend() }
-//        gamepadyn.addListener(ActionDigital.H_SLIDE_RETRACT) {if (it.data()) horizontalSlide.retract() }
+//        gamepadyn.addListener(ActionDigital.H_SLIDE_RETRACT) {if (it.data()) horizontalSlide.retract() } // Horizontal slide not currently working
 
         gamepadyn.addListener(ActionDigital.V_SLIDE_EXTEND) { if (it.data()) verticalSlide.extend() }
         gamepadyn.addListener(ActionDigital.V_SLIDE_RETRACT) { if (it.data()) verticalSlide.retract() }
@@ -151,6 +152,7 @@ class MainDriverControl(host: OpModeHost<MainDriverControl>) : UltraOpMode(host)
         gamepadyn.addListener(ActionDigital.ARM_RETRACT) { if (it.data()) arm.retract() }
     }
 
+    //Main loop below
     override fun loop() {
         gamepadyn.update()
 
